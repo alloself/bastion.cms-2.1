@@ -1,0 +1,38 @@
+{
+    "compilerOptions": {
+        "target": "ES2022",
+        "useDefineForClassFields": true,
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "strict": true,
+        "jsx": "preserve",
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "forceConsistentCasingInFileNames": true,
+        "lib": ["ES2022", "DOM", "DOM.Iterable"],
+        "skipLibCheck": true,
+        "allowJs": true,
+        "noEmit": true,
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["./resources/*"],
+            "@shared/*": ["./resources/shared/*"],
+            "@site/*": ["./resources/site/*"],
+            "@account/*": ["./resources/account/*"],
+            "@admin/*": ["./resources/admin/*"]
+        },
+        "types": ["node"],
+        "typeRoots": ["./node_modules/@types/", "./resources/shared/types"]
+    },
+    "include": [
+        "resources/**/*.ts",
+        "resources/**/*.d.ts",
+        "resources/**/*.tsx",
+        "resources/**/*.vue",
+        "resources/**/*.js"
+    ],
+    "exclude": ["node_modules", "dist", "vendor", "bootstrap/cache"],
+    "references": [{ "path": "./tsconfig.node.json" }]
+}
