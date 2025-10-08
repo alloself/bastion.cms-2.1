@@ -13,10 +13,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
-    use HasRoles;
-    use HasUuids;
-    use HasApiTokens;
+    use HasFactory, Notifiable, HasApiTokens, HasUuids, HasRoles;
 
     public $incrementing = false;
     protected $keyType = 'string';
