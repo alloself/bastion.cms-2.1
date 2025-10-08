@@ -17,14 +17,9 @@
         "noEmit": true,
         "baseUrl": ".",
         "paths": {
-            "@/*": ["./resources/*"],
-            "@shared/*": ["./resources/shared/*"],
-            "@site/*": ["./resources/site/*"],
-            "@account/*": ["./resources/account/*"],
-            "@admin/*": ["./resources/admin/*"]
+            "@/*": ["./resources/*"]
         },
-        "types": ["node"],
-        "typeRoots": ["./node_modules/@types/", "./resources/shared/types"]
+        "typeRoots": ["./node_modules/@types/"]
     },
     "include": [
         "resources/**/*.ts",
