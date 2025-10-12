@@ -52,7 +52,9 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    'url' => env('APP_ENV') === 'local' && !str_contains(env('APP_URL', ''), ':808')
+        ? rtrim(env('APP_URL', 'http://localhost'), '/') . ':8080'
+        : env('APP_URL', 'http://localhost'),
 
     /*
     |--------------------------------------------------------------------------
