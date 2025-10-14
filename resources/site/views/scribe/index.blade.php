@@ -66,13 +66,13 @@
                     <a href="#authenticating-requests">Authenticating requests</a>
                 </li>
                             </ul>
-                    <ul id="tocify-header-authentication" class="tocify-header">
-                <li class="tocify-item level-1" data-unique="authentication">
-                    <a href="#authentication">Authentication</a>
+                    <ul id="tocify-header-endpoints" class="tocify-header">
+                <li class="tocify-item level-1" data-unique="endpoints">
+                    <a href="#endpoints">Endpoints</a>
                 </li>
-                                    <ul id="tocify-subheader-authentication" class="tocify-subheader">
-                                                    <li class="tocify-item level-2" data-unique="authentication-GETapi-auth-me">
-                                <a href="#authentication-GETapi-auth-me">Get authenticated user</a>
+                                    <ul id="tocify-subheader-endpoints" class="tocify-subheader">
+                                                    <li class="tocify-item level-2" data-unique="endpoints-GETapi-auth-me">
+                                <a href="#endpoints-GETapi-auth-me">GET api/auth/me</a>
                             </li>
                                                                         </ul>
                             </ul>
@@ -83,7 +83,7 @@
     </ul>
 
     <ul class="toc-footer" id="last-updated">
-        <li>Last updated: October 12, 2025</li>
+        <li>Last updated: October 14, 2025</li>
     </ul>
 </div>
 
@@ -96,21 +96,20 @@
 </aside>
 
         <h1 id="authenticating-requests">Authenticating requests</h1>
-<p>To authenticate requests, include an <strong><code>Authorization</code></strong> header with the value <strong><code>"Bearer {YOUR_AUTH_TOKEN}"</code></strong>.</p>
+<p>To authenticate requests, include a <strong><code>Cookie</code></strong> header with the value <strong><code>"Браузерные cookie (отправляются автоматически)"</code></strong>.</p>
 <p>All authenticated endpoints are marked with a <code>requires authentication</code> badge in the documentation below.</p>
-<p>This API uses Laravel Sanctum for authentication. <br><br><strong>For SPA/Web:</strong> Use cookie-based authentication by first calling the CSRF cookie endpoint, then login via Fortify. Subsequent requests will automatically include session cookies.<br><br><strong>For Mobile/API:</strong> Include a personal access token in the Authorization header as <code>Bearer {token}</code>. You can generate tokens via your user dashboard.</p>
+<p>Эта API использует Laravel Sanctum со stateful-сессиями. <br><br><strong>Для SPA/Web:</strong> сначала запросите CSRF-cookie (<code>/sanctum/csrf-cookie</code>), затем выполните вход (Fortify). После этого браузер будет автоматически отправлять session cookie — добавлять заголовки авторизации не требуется. В разделе Try It Out авторизация происходит через cookie.<br><br><strong>Для Mobile/API:</strong> используйте персональный токен доступа в заголовке Authorization как <code>Bearer {token}</code> (если ваш клиент работает без браузерных cookie).</p>
 
-        <h1 id="authentication">Authentication</h1>
+        <h1 id="endpoints">Endpoints</h1>
 
-    <p>Endpoints for managing user authentication</p>
+    
 
-                                <h2 id="authentication-GETapi-auth-me">Get authenticated user</h2>
+                                <h2 id="endpoints-GETapi-auth-me">GET api/auth/me</h2>
 
 <p>
-<small class="badge badge-darkred">requires authentication</small>
 </p>
 
-<p>Returns the currently authenticated user's information.</p>
+
 
 <span id="example-requests-GETapi-auth-me">
 <blockquote>Example request:</blockquote>
@@ -119,7 +118,6 @@
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
     --get "http://localhost:8080/api/auth/me" \
-    --header "Authorization: Bearer {YOUR_AUTH_TOKEN}" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
@@ -130,7 +128,6 @@
 );
 
 const headers = {
-    "Authorization": "Bearer {YOUR_AUTH_TOKEN}",
     "Content-Type": "application/json",
     "Accept": "application/json",
 };
@@ -144,23 +141,16 @@ fetch(url, {
 
 <span id="example-responses-GETapi-auth-me">
             <blockquote>
-            <p>Example response (200, success):</p>
+            <p>Example response (401):</p>
         </blockquote>
-                <pre>
-
-<code class="language-json" style="max-height: 300px;">{
-    &quot;id&quot;: 1,
-    &quot;name&quot;: &quot;John Doe&quot;,
-    &quot;email&quot;: &quot;john@example.com&quot;,
-    &quot;email_verified_at&quot;: &quot;2024-01-01T00:00:00.000000Z&quot;,
-    &quot;created_at&quot;: &quot;2024-01-01T00:00:00.000000Z&quot;,
-    &quot;updated_at&quot;: &quot;2024-01-01T00:00:00.000000Z&quot;
-}</code>
- </pre>
-            <blockquote>
-            <p>Example response (401, unauthenticated):</p>
-        </blockquote>
-                <pre>
+                <details class="annotation">
+            <summary style="cursor: pointer;">
+                <small onclick="textContent = parentElement.parentElement.open ? 'Show headers' : 'Hide headers'">Show headers</small>
+            </summary>
+            <pre><code class="language-http">cache-control: no-cache, private
+content-type: application/json
+access-control-allow-origin: *
+ </code></pre></details>         <pre>
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;message&quot;: &quot;Unauthenticated.&quot;
@@ -184,7 +174,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 </span>
 <form id="form-GETapi-auth-me" data-method="GET"
       data-path="api/auth/me"
-      data-authed="1"
+      data-authed="0"
       data-hasfiles="0"
       data-isarraybody="0"
       autocomplete="off"
@@ -214,17 +204,6 @@ You can check the Dev Tools console for debugging information.</code></pre>
             <b><code>api/auth/me</code></b>
         </p>
                 <h4 class="fancy-heading-panel"><b>Headers</b></h4>
-                                <div style="padding-left: 28px; clear: unset;">
-                <b style="line-height: 2;"><code>Authorization</code></b>&nbsp;&nbsp;
-&nbsp;
- &nbsp;
-                <input type="text" style="display: none"
-                              name="Authorization" class="auth-value"               data-endpoint="GETapi-auth-me"
-               value="Bearer {YOUR_AUTH_TOKEN}"
-               data-component="header">
-    <br>
-<p>Example: <code>Bearer {YOUR_AUTH_TOKEN}</code></p>
-            </div>
                                 <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
 &nbsp;

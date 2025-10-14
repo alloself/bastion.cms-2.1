@@ -107,10 +107,10 @@ return [
         // Where is the auth value meant to be sent in a request?
         // For Sanctum SPA: cookie-based authentication with CSRF protection
         // For Sanctum Token: bearer token authentication
-        'in' => AuthIn::BEARER->value,
+        'in' => AuthIn::HEADER->value,
 
         // The name of the auth parameter (e.g. token, key, apiKey) or header (e.g. Authorization, Api-Key).
-        'name' => 'Authorization',
+        'name' => 'Cookie',
 
         // The value of the parameter to be used by Scribe to authenticate response calls.
         // This will NOT be included in the generated documentation. If empty, Scribe will use a random value.
@@ -118,10 +118,10 @@ return [
 
         // Placeholder your users will see for the auth parameter in the example requests.
         // Set this to null if you want Scribe to use a random value as placeholder instead.
-        'placeholder' => '{YOUR_AUTH_TOKEN}',
+        'placeholder' => 'Браузерные cookie (отправляются автоматически)',
 
         // Any extra authentication-related info for your users. Markdown and HTML are supported.
-        'extra_info' => 'This API uses Laravel Sanctum for authentication. <br><br>**For SPA/Web:** Use cookie-based authentication by first calling the CSRF cookie endpoint, then login via Fortify. Subsequent requests will automatically include session cookies.<br><br>**For Mobile/API:** Include a personal access token in the Authorization header as `Bearer {token}`. You can generate tokens via your user dashboard.',
+        'extra_info' => 'Эта API использует Laravel Sanctum со stateful-сессиями. <br><br>**Для SPA/Web:** сначала запросите CSRF-cookie (`/sanctum/csrf-cookie`), затем выполните вход (Fortify). После этого браузер будет автоматически отправлять session cookie — добавлять заголовки авторизации не требуется. В разделе Try It Out авторизация происходит через cookie.<br><br>**Для Mobile/API:** используйте персональный токен доступа в заголовке Authorization как `Bearer {token}` (если ваш клиент работает без браузерных cookie).',
     ],
 
     // Example requests for each endpoint will be shown in each of these languages.

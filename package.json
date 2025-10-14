@@ -4,14 +4,34 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "dev:site": "vite --config vite.site.config.ts",
+        "dev:admin": "vite --config vite.admin.config.ts",
+        "build:site": "vite build --config vite.site.config.ts",
+        "build:admin": "vite build --config vite.admin.config.ts",
+        "dev:all": "concurrently -k -n site,admin -c yellow,cyan \"npm:dev:site\" \"npm:dev:admin\""
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.1.14",
-        "axios": "^1.12.2",
+        "@types/lodash": "^4.17.0",
+        "@vitejs/plugin-vue": "^6.0.1",
         "concurrently": "^9.2.1",
         "laravel-vite-plugin": "^2.0.1",
+        "postcss": "^8.5.6",
+        "postcss-nested": "^7.0.2",
         "tailwindcss": "^4.1.14",
-        "vite": "^7.1.9"
+        "vite": "^7.1.10",
+        "vite-plugin-vuetify": "^2.1.2"
+    },
+    "dependencies": {
+        "@mdi/font": "^7.4.47",
+        "@pinia/colada": "^0.17.6",
+        "axios": "^1.12.2",
+        "lodash": "^4.17.21",
+        "pinia": "^3.0.3",
+        "vue": "^3.5.22",
+        "vue-router": "^4.6.0",
+        "vuetify": "^3.10.5",
+        "zod": "^4.1.12"
     }
 }

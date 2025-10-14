@@ -7,15 +7,20 @@ export default defineConfig({
         host: 'localhost',
         port: 5173,
         strictPort: true,
-        hmr: {
-            host: 'localhost',
-        },
+        hmr: { host: 'localhost' },
     },
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js'],
+            input: ['resources/site/css/app.css', 'resources/site/js/main.ts'],
             refresh: true,
+            hotFile: 'storage/framework/vite.site.hot',
+            buildDirectory: 'build/site',
         }),
         tailwindcss(),
     ],
+    css: {
+        postcss: './postcss.site.config.ts',
+    },
 });
+
+
