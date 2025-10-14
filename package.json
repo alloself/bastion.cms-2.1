@@ -21,7 +21,8 @@
         "postcss-nested": "^7.0.2",
         "tailwindcss": "^4.1.14",
         "vite": "^7.1.10",
-        "vite-plugin-vuetify": "^2.1.2"
+        "vite-plugin-vuetify": "^2.1.2",
+        "sass": "^1.80.6"
     },
     "dependencies": {
         "@mdi/font": "^7.4.47",
@@ -32,6 +33,10 @@
         "vue": "^3.5.22",
         "vue-router": "^4.6.0",
         "vuetify": "^3.10.5",
-        "zod": "^4.1.12"
+        "zod": "^4.1.12",
+        "primevue": "^4.2.2",
+        "primeicons": "^7.0.0",
+        "@primeuix/themes": "^1.0.2",
+        "tailwindcss-primeui": "^0.6.1"
     }
 }

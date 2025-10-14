@@ -1,13 +1,14 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
+import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
     server: {
-        host: 'localhost',
+        host: '0.0.0.0',
         port: 5173,
         strictPort: true,
-        hmr: { host: 'localhost' },
+        hmr: { host: 'localhost', port: 5173 },
     },
     plugins: [
         laravel({
@@ -16,6 +17,14 @@ export default defineConfig({
             hotFile: 'storage/framework/vite.site.hot',
             buildDirectory: 'build/site',
         }),
+        vue({
+            template: {
+              transformAssetUrls: {
+                base: null,
+                includeAbsolute: false,
+              },
+            },
+          }),
         tailwindcss(),
     ],
     css: {

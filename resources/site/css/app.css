@@ -1,3 +1,8 @@
+@import "tailwindcss";
+@import "tailwindcss-primeui";
+
+/* Tailwind v4 + PrimeVue integration */
+
 /* Base styles for site */
 @import "tailwindcss";
 @import "tailwindcss/utilities";

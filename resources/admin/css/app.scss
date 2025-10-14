@@ -1,0 +1,9 @@
+// Admin SCSS entry (global styles)
+// Place your global variables, mixins and base styles here.
+
+// Example base reset minimal tweaks
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; }
+
+
