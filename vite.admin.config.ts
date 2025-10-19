@@ -1,4 +1,5 @@
 import { defineConfig } from "vite";
+import { fileURLToPath, URL } from "node:url";
 import laravel from "laravel-vite-plugin";
 import vue from "@vitejs/plugin-vue";
 import vuetify, { transformAssetUrls } from "vite-plugin-vuetify";
@@ -33,10 +34,10 @@ export default defineConfig({
     },
     resolve: {
         alias: {
-            "@": new URL("./resources", import.meta.url).pathname,
-            "@admin": new URL("./resources/admin", import.meta.url).pathname,
-            "@site": new URL("./resources/site", import.meta.url).pathname,
-            "@shared": new URL("./resources/shared", import.meta.url).pathname,
+            "@": fileURLToPath(new URL("./resources", import.meta.url)),
+            "@admin": fileURLToPath(new URL("./resources/admin", import.meta.url)),
+            "@site": fileURLToPath(new URL("./resources/site", import.meta.url)),
+            "@shared": fileURLToPath(new URL("./resources/shared", import.meta.url)),
         },
     },
     css: {

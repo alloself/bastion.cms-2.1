@@ -4,9 +4,13 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
+      args:
+        - PUID=${UID:-1000}
+        - PGID=${GID:-1000}
     container_name: bastion_cms_2_1-app
     restart: unless-stopped
     working_dir: /var/www
+    user: "${UID:-1000}:${GID:-1000}"
     volumes:
       - ./:/var/www
       - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
@@ -80,6 +84,7 @@ services:
     container_name: bastion_cms_2_1-node
     restart: unless-stopped
     working_dir: /var/www
+    user: "${UID:-1000}:${GID:-1000}"
     volumes:
       - ./:/var/www
     ports:

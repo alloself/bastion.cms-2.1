@@ -1,5 +1,8 @@
 FROM php:8.3-fpm-bookworm
 
+ARG PUID=1000
+ARG PGID=1000
+
 # Устанавливаем системные зависимости (принудительно включаем HTTPS-репозитории для Debian 12)
 RUN set -eux; \
     if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
@@ -43,15 +46,15 @@ RUN pecl install redis && docker-php-ext-enable redis
 # Устанавливаем Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Создаем пользователя для Laravel
-RUN groupadd -g 1000 www
-RUN useradd -u 1000 -ms /bin/bash -g www www
+# Создаем группу и пользователя с хостовыми UID/GID (по умолчанию 1000:1000)
+RUN groupadd -g ${PGID} www \
+ && useradd -u ${PUID} -ms /bin/bash -g www www
 
-# Копируем существующие права доступа приложения
-COPY --chown=www:www . /var/www
+# Копируем исходники и назначаем владельца
+COPY --chown=${PUID}:${PGID} . /var/www
 
-# Меняем текущего пользователя на www
-USER www
+# Меняем текущего пользователя на соответствующего PUID
+USER ${PUID}
 
 # Открываем порт 9000 и запускаем php-fpm сервер
 EXPOSE 9000

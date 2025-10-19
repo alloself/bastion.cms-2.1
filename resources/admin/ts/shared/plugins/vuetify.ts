@@ -1,5 +1,4 @@
 import "@mdi/font/css/materialdesignicons.css";
-import "vuetify/styles";
 import { type ThemeDefinition, createVuetify } from "vuetify";
 import {
     VTextField,
