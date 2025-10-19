@@ -1,4 +1,4 @@
-import { App as VueApp, Component, createApp } from 'vue';
+import { type App as VueApp, type Component, createApp } from 'vue';
 
 export type WidgetDefinition = {
     component: Component;

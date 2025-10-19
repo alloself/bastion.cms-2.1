@@ -28,6 +28,14 @@ export default defineConfig({
           }),
         tailwindcss(),
     ],
+    resolve: {
+        alias: {
+            '@': new URL('./resources', import.meta.url).pathname,
+            '@admin': new URL('./resources/admin', import.meta.url).pathname,
+            '@site': new URL('./resources/site', import.meta.url).pathname,
+            '@shared': new URL('./resources/shared', import.meta.url).pathname,
+        },
+    },
     css: {
         postcss: './postcss.site.config.ts',
     },
