@@ -6,9 +6,7 @@ export const routes: RouteRecordRaw[] = [
         path: "/",
         name: "Authenticated",
         component: () => import("@admin/ts/layouts/Authenticated.vue"),
-        children: [
-
-        ],
+        children: [],
     },
     {
         path: "/login",
