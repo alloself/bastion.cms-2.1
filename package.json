@@ -39,7 +39,6 @@
         "@primeuix/themes": "^1.2.5",
         "axios": "^1.12.2",
         "lodash": "^4.17.21",
-        "npm-check-updates": "^19.1.1",
         "pinia": "^3.0.3",
         "primeicons": "^7.0.0",
         "primevue": "^4.4.1",

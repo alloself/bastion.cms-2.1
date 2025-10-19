@@ -5,7 +5,7 @@ import { ref } from "vue";
 export const useAuthStore = defineStore("auth", () => {
     const user = ref<User | null>(null);
 
-    const login = async (email: string, password: string) => {};
+    const login = async () => {};
 
     return {
         user,
