@@ -4,6 +4,7 @@ import vue from '@vitejs/plugin-vue';
 import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify';
 
 export default defineConfig({
+    cacheDir: 'node_modules/.vite-admin',
     server: {
         host: '0.0.0.0',
         port: 5174,
