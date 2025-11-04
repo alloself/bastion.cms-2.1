@@ -55,7 +55,7 @@ export const handleAuthError = async (error: AxiosError) => {
             await userStore.logout();
         }
         router.push({ name: "Login" });
-        return;
+        return Promise.reject(error);
     }
 
     return Promise.reject(error);

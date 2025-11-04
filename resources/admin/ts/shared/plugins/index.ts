@@ -5,8 +5,8 @@ import vuetify from "./vuetify";
 import router from "@admin/ts/app/router";
 
 export const installPlugins = (app: App) => {
-    app.use(router);
     app.use(createPinia());
     app.use(PiniaColada, {});
+    app.use(router);
     app.use(vuetify);
 };
