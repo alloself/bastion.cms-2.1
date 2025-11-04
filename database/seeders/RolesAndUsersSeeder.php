@@ -20,7 +20,7 @@ class RolesAndUsersSeeder extends Seeder
         $root = User::firstOrCreate(
             ['email' => 'root@example.com'],
             [
-                'password' => 'root',
+                'password' => 'password',
             ]
         );
         $root->assignRole($rootRole);
@@ -28,7 +28,7 @@ class RolesAndUsersSeeder extends Seeder
         $editor = User::firstOrCreate(
             ['email' => 'editor@example.com'],
             [
-                'password' => 'editor',
+                'password' => 'password',
             ]
         );
         $editor->assignRole($editorRole);
@@ -36,7 +36,7 @@ class RolesAndUsersSeeder extends Seeder
         $basic = User::firstOrCreate(
             ['email' => 'user@example.com'],
             [
-                'password' => 'user',
+                'password' => 'password',
             ]
         );
         $basic->assignRole($userRole);

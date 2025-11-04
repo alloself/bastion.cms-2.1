@@ -1,8 +1,27 @@
 <?php
 
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
 
-Route::middleware('auth:sanctum')->get('auth/me', function (Request $request) {
-    return $request->user();
+$resources = [
+    'user' => UserController::class,
+
+];
+
+
+Route::prefix('admin')->middleware(['auth:sanctum', 'role:root'])->group(function () use ($resources) {
+    Route::get('me', [UserController::class, 'me']);
+
+    Route::apiResources($resources);
+
+    Route::prefix('destroy')->group(function () use ($resources) {
+        foreach ($resources as $route => $controller) {
+            Route::post($route, [$controller, 'deleteMany']);
+        }
+    });
+});
+
+
+Route::prefix('public')->group(function () {
+    Route::get('me', [UserController::class, 'me']);
 });

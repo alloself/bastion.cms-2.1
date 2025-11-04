@@ -1,14 +1,36 @@
 <template>
     <v-app>
-        <v-main>
-            <div class="pa-4">Admin UI готово</div>
-        </v-main>
+        <router-view v-slot="{ Component }">
+            <component :is="Component" />
+        </router-view>
+        <notification
+            v-for="(notification, index) in notifications"
+            :key="index"
+            :notification="notification"
+            :style="getOffsetStyle(index)"
+            @onCancel="notificationStore.closeAlert(index)"
+        >
+        </notification>
     </v-app>
-    <PiniaColadaDevtools />
+    <PiniaColadaDevtools v-if="isDev()" />
 </template>
 
 <script setup lang="ts">
 import { PiniaColadaDevtools } from "@pinia/colada-devtools";
+import { isDev } from "@admin/ts/shared/helpers";
+
+import Notification from "@admin/ts/features/notifications/components/Notification.vue";
+import { useNotificationsStore } from "@admin/ts/features/notifications/store/notificationsStore";
+import { storeToRefs } from "pinia";
+
+const notificationStore = useNotificationsStore();
+const { notifications } = storeToRefs(notificationStore);
+
+const getOffsetStyle = (index: number) => {
+    return {
+        transform: `translateY(${index * 64}px)`,
+    };
+};
 </script>
 
 <style scoped></style>
