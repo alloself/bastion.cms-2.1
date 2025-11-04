@@ -41,7 +41,7 @@ import {
 } from "@admin/ts/shared/forms/login";
 import BSmartForm from "@admin/ts/shared/components/BSmartForm.vue";
 import type { FormContext } from "vee-validate";
-import { ref } from "vue";
+import { onBeforeMount, ref } from "vue";
 import { useFormSubmit } from "@admin/ts/shared/composables/useFormSubmit";
 import { useUserStore } from "@admin/ts/entities/user/store";
 import { useRouter } from "vue-router";
@@ -80,4 +80,10 @@ const login = async () => {
 };
 
 const { handler } = useFormSubmit(login, form);
+
+onBeforeMount(async () => {
+    if (userStore.user) {
+        await router.push({ name: "Authenticated" });
+    }
+});
 </script>

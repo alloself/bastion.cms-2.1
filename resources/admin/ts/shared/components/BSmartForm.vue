@@ -24,6 +24,7 @@
                     v-slot="{ value, handleChange, errors }"
                 >
                     <component
+                        :loading="loading"
                         :is="schemeField.component"
                         :model-value="value"
                         :readonly="readonly || schemeField.readonly"
@@ -60,6 +61,7 @@ const {
     readonly = false,
     initialItems = {},
     layout,
+    loading = false,
 } = defineProps<ISmartFormProps<T, K>>();
 
 const emits = defineEmits<{
