@@ -7,7 +7,9 @@ export const routes: RouteRecordRaw[] = [
         name: routeNames.Authenticated,
         component: () => import("@admin/ts/layouts/Authenticated.vue"),
         meta: { requiresAuth: true },
-        children: [],
+        children: [
+            
+        ],
     },
     {
         path: "/login",

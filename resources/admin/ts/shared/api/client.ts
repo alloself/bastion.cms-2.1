@@ -1,5 +1,9 @@
 import axios from "axios";
-import { setupInterceptors, handleAuthError, handleErrorNotifications } from "./interceptors";
+import {
+    setupInterceptors,
+    handleAuthError,
+    handleUnprocessableEntityError,
+} from "./interceptors";
 
 export const client = axios.create({
     baseURL: `/`,
@@ -12,7 +16,10 @@ export const client = axios.create({
 });
 
 setupInterceptors(client, {
-    error: [handleAuthError, handleErrorNotifications],
+    error: [
+        handleAuthError,
+        handleUnprocessableEntityError,
+    ],
 });
 
 export const getCSRFToken = async () => {

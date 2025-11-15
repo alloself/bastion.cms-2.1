@@ -27,7 +27,7 @@ export const useUserStore = defineStore("user", () => {
 
     const isAuthenticated = computed(() => user.value !== null);
 
-    const getUser = async (): Promise<void> => {
+    const getUser = async () => {
         try {
             const state = await queryCache.refresh(meEntry);
             user.value = state?.data ?? null;

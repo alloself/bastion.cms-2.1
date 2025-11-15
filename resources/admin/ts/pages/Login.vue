@@ -75,7 +75,10 @@ const login = async () => {
             email: values.email,
             password: values.password,
         });
-        const redirectTo = typeof route.query.redirect === "string" ? route.query.redirect : undefined;
+        const redirectTo =
+            typeof route.query.redirect === "string"
+                ? route.query.redirect
+                : undefined;
         if (redirectTo) {
             await router.push(redirectTo);
             return;

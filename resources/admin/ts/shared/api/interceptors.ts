@@ -61,13 +61,21 @@ export const handleAuthError = async (error: AxiosError) => {
     return Promise.reject(error);
 };
 
-export const handleErrorNotifications = async (error: AxiosError) => {
+export const handleUnprocessableEntityError = async (error: AxiosError) => {
     const notificationsStore = useNotificationsStore();
 
-    notificationsStore.pushNotification({
-        content: error.message,
-        color: "error",
-    });
+    if (
+        error.response?.status === 422 &&
+        error.response?.data &&
+        typeof error.response?.data === "object" &&
+        "message" in error.response?.data
+    ) {
+        notificationsStore.pushNotification({
+            content: error.response?.data.message as string,
+            color: "error",
+        });
+        return Promise.reject(error);
+    }
 
     return Promise.reject(error);
 };
