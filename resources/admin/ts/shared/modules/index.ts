@@ -1,4 +1,8 @@
-import type { RouteLocation, RouteRecordRaw } from "vue-router";
+import type {
+    RouteLocation,
+    RouteLocationNormalizedLoaded,
+    RouteRecordRaw,
+} from "vue-router";
 import { toKebabCase } from "../helpers";
 import { capitalize } from "vue";
 
@@ -9,6 +13,7 @@ export interface IModule {
     to?: string;
     showInNavigation?: boolean;
     headers: Array<{ title: string; key: string }>;
+    getDetailTabTitle?: (payload: { id: string }) => string;
 }
 
 export const modules: IModule[] = [
@@ -27,8 +32,119 @@ export const modules: IModule[] = [
                 key: "link.url",
             },
         ],
+        getDetailTabTitle: ({ id }) => `Страница #${id}`,
+    },
+    {
+        key: "template",
+        title: "Шаблоны",
+        icon: "mdi-code-greater-than-or-equal",
+        showInNavigation: true,
+        headers: [
+            {
+                title: "Название",
+                key: "name",
+            },
+        ],
+        getDetailTabTitle: ({ id }) => `Шаблон #${id}`,
     },
 ];
+
+type ModuleRouteView = "list" | "create" | "detail";
+
+const moduleRouteSuffixes: Array<{ suffix: string; view: ModuleRouteView }> = [
+    { suffix: "List", view: "list" },
+    { suffix: "Create", view: "create" },
+    { suffix: "Detail", view: "detail" },
+];
+
+const getModuleRouteMatch = (
+    routeName: string | null
+): { module: IModule; view: ModuleRouteView } | null => {
+    if (!routeName) {
+        return null;
+    }
+    const suffixMatch = moduleRouteSuffixes.find(({ suffix }) =>
+        routeName.endsWith(suffix)
+    );
+    if (!suffixMatch) {
+        return null;
+    }
+    const moduleNamePart = routeName.slice(
+        0,
+        routeName.length - suffixMatch.suffix.length
+    );
+    if (!moduleNamePart) {
+        return null;
+    }
+    const moduleKey =
+        moduleNamePart.charAt(0).toLowerCase() + moduleNamePart.slice(1);
+    const matchedModule = modules.find(
+        (moduleCandidate) => moduleCandidate.key === moduleKey
+    );
+    if (!matchedModule) {
+        return null;
+    }
+    return {
+        module: matchedModule,
+        view: suffixMatch.view,
+    };
+};
+
+const extractModuleRouteId = (route: RouteLocationNormalizedLoaded) => {
+    const rawId = route.params?.id;
+    if (typeof rawId === "string") {
+        return rawId;
+    }
+    if (Array.isArray(rawId) && rawId.length > 0) {
+        const [firstValue] = rawId;
+        if (typeof firstValue === "string") {
+            return firstValue;
+        }
+    }
+    return null;
+};
+
+export const resolveModuleTabMeta = (
+    route: RouteLocationNormalizedLoaded
+): { title: string; icon?: string } => {
+    const routeName = route.name?.toString() ?? null;
+    const match = getModuleRouteMatch(routeName);
+    if (!match) {
+        return {
+            title: route.meta?.title?.toString() ?? route.fullPath,
+        };
+    }
+
+    if (match.view === "list") {
+        return {
+            title: match.module.title,
+            icon: match.module.icon,
+        };
+    }
+    if (match.view === "create") {
+        return {
+            title: `${match.module.title}: Создание`,
+            icon: match.module.icon,
+        };
+    }
+    const routeId = extractModuleRouteId(route);
+    if (!routeId) {
+        return {
+            title: `${match.module.title}: Создание`,
+            icon: match.module.icon,
+        };
+    }
+    if (match.module.getDetailTabTitle) {
+        return {
+            title: match.module.getDetailTabTitle({ id: routeId }),
+            icon: match.module.icon,
+        };
+    }
+    return {
+        title: `${match.module.title}: #${routeId}`,
+        icon: match.module.icon,
+    };
+};
 
 export const getModuleUrlPart = (key: string) => {
     return key
@@ -36,7 +152,6 @@ export const getModuleUrlPart = (key: string) => {
         .replace(/^-/, "")
         .toLowerCase();
 };
-
 
 export const createModulesRoutes = (array: IModule[]): RouteRecordRaw[] => {
     return array.reduce((acc, item) => {

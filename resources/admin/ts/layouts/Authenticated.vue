@@ -9,7 +9,7 @@
                     :prepend-icon="item.icon"
                     link
                     :title="item.title"
-                    :to="{ name: item.to }"
+                    @click="handleNavigationItemClick(item)"
                 ></VListItem>
             </VList>
         </VNavigationDrawer>
@@ -62,9 +62,11 @@
             </template>
         </VAppBar>
         <VMain class="d-flex align-center justify-center">
-            <RouterView v-slot="{ Component, route }">
-                <Component :is="Component" :key="route.name" />
-            </RouterView>
+            <Screen
+                v-for="screen in screens.values()"
+                :key="screen.id"
+                :screen="screen"
+            />
         </VMain>
     </VLayout>
 </template>
@@ -78,11 +80,14 @@ import { useUserStore } from "../entities/user";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import BLogo from "../shared/components/BLogo.vue";
+import Screen from "../features/screen/components/Screen.vue";
+import { useScreenStore } from "../features/screen/store";
 
 const { showNavigationDrawer, toggle } = useNavigation();
 const userStore = useUserStore();
 const router = useRouter();
-
+const screenStore = useScreenStore();
+const { screens } = storeToRefs(screenStore);
 const { user } = storeToRefs(userStore);
 
 const userMenu = ref(false);
@@ -98,6 +103,14 @@ const items = computed(() => {
     return array;
 });
 
+const handleNavigationItemClick = async (item: IModule) => {
+    if (!item.to) {
+        return;
+    }
+    await router.push({ name: item.to });
+    screenStore.setActiveScreenTabRoute(router.currentRoute.value);
+};
+
 const onLogout = () => {
     userStore.logout();
     router.push({ name: "Login" });
@@ -110,6 +123,11 @@ const slots = defineSlots<{
 const HTMLDOMElement = ref<HTMLHtmlElement | null>(null);
 
 onMounted(() => {
+    if (screenStore.screens.size === 0) {
+        const screen = screenStore.addScreen();
+        screenStore.openRouteTab(screen, router.currentRoute.value);
+    }
+
     HTMLDOMElement.value = document.querySelector("html");
     if (HTMLDOMElement.value) {
         HTMLDOMElement.value.style.overflow = "hidden";
