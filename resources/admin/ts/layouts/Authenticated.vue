@@ -107,17 +107,17 @@ const slots = defineSlots<{
     extension: unknown;
 }>();
 
-let HTMLDOMElement: HTMLHtmlElement | null;
+const HTMLDOMElement = ref<HTMLHtmlElement | null>(null);
 
 onMounted(() => {
-    HTMLDOMElement = document.querySelector("html");
-    if (HTMLDOMElement) {
-        HTMLDOMElement.style.overflow = "hidden";
+    HTMLDOMElement.value = document.querySelector("html");
+    if (HTMLDOMElement.value) {
+        HTMLDOMElement.value.style.overflow = "hidden";
     }
 });
 onBeforeUnmount(() => {
-    if (HTMLDOMElement) {
-        HTMLDOMElement.style.overflow = "auto";
+    if (HTMLDOMElement.value) {
+        HTMLDOMElement.value.style.overflow = "auto";
     }
 });
 </script>
