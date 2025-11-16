@@ -1,5 +1,5 @@
 <template>
-    <v-snackbar
+    <VSnackbar
         :color="notification.color"
         position="sticky"
         location="top right"
@@ -10,7 +10,7 @@
             <v-btn icon="mdi-close" variant="text" @click="emits('onCancel', notification)">
             </v-btn>
         </template>
-    </v-snackbar>
+    </VSnackbar>
 </template>
 
 <script setup lang="ts">

@@ -23,7 +23,7 @@
                     :validate-on-input="false"
                     v-slot="{ value, handleChange, errors }"
                 >
-                    <component
+                    <Component
                         :loading="loading"
                         :is="schemeField.component"
                         :model-value="value"
@@ -33,7 +33,7 @@
                         v-bind="schemeField.props"
                         v-on="schemeField.events"
                         class="mb-1"
-                    ></component>
+                    ></Component>
                 </Field>
             </div>
         </slot>

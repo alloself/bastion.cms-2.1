@@ -1,5 +1,7 @@
 import { type RouteRecordRaw } from "vue-router";
 import { routeNames } from "@admin/ts/app/router/routeNames";
+import { createModulesRoutes } from "@admin/ts/shared/modules";
+import { modules } from "@admin/ts/shared/modules";
 
 export const routes: RouteRecordRaw[] = [
     {
@@ -7,9 +9,7 @@ export const routes: RouteRecordRaw[] = [
         name: routeNames.Authenticated,
         component: () => import("@admin/ts/layouts/Authenticated.vue"),
         meta: { requiresAuth: true },
-        children: [
-            
-        ],
+        children: [...createModulesRoutes(modules)],
     },
     {
         path: "/login",
