@@ -61,12 +61,13 @@
                 <slot name="extension"></slot>
             </template>
         </VAppBar>
-        <VMain class="d-flex align-center justify-center">
+        <VMain class="d-flex">
             <Screen
-                v-for="(screen, index) in screens.values()"
+                v-for="(screen, index) in screenArray"
                 :key="screen.id"
                 :screen="screen"
-                :is-last="index === screens.size - 1"
+                :is-last="index === screenArray.length - 1"
+                :next-screen="screenArray[index + 1]"
             />
         </VMain>
     </VLayout>
@@ -92,6 +93,10 @@ const { screens } = storeToRefs(screenStore);
 const { user } = storeToRefs(userStore);
 
 const userMenu = ref(false);
+
+const screenArray = computed(() => {
+    return Array.from(screens.value.values());
+});
 
 const items = computed(() => {
     const array = sortBy(modules, ["title"]).reduce((acc, item) => {
@@ -125,7 +130,7 @@ const HTMLDOMElement = ref<HTMLHtmlElement | null>(null);
 
 onMounted(() => {
     if (screenStore.screens.size === 0) {
-    const screen = screenStore.addScreen();
+        const screen = screenStore.addScreen();
         screenStore.openRouteTab(screen, router.currentRoute.value);
     }
     

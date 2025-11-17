@@ -13,4 +13,5 @@ export interface IScreen {
     id: string;
     tabs: Map<TTabId, ITab>;
     activeTabId: TTabId | null;
+    width?: number;
 }
