@@ -63,9 +63,10 @@
         </VAppBar>
         <VMain class="d-flex align-center justify-center">
             <Screen
-                v-for="screen in screens.values()"
+                v-for="(screen, index) in screens.values()"
                 :key="screen.id"
                 :screen="screen"
+                :is-last="index === screens.size - 1"
             />
         </VMain>
     </VLayout>
@@ -124,10 +125,10 @@ const HTMLDOMElement = ref<HTMLHtmlElement | null>(null);
 
 onMounted(() => {
     if (screenStore.screens.size === 0) {
-        const screen = screenStore.addScreen();
+    const screen = screenStore.addScreen();
         screenStore.openRouteTab(screen, router.currentRoute.value);
     }
-
+    
     HTMLDOMElement.value = document.querySelector("html");
     if (HTMLDOMElement.value) {
         HTMLDOMElement.value.style.overflow = "hidden";

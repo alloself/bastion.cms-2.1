@@ -64,7 +64,7 @@
             </KeepAlive>
         </RouterView>
     </VCard>
-    <VDivider vertical class="divider"></VDivider>
+    <VDivider vertical class="divider" v-if="!isLast"></VDivider>
 </template>
 
 <script setup lang="ts">
@@ -73,8 +73,9 @@ import { useScreenStore } from "../store";
 import type { IScreen, ITab, TTabId } from "../types";
 import { useRouter } from "vue-router";
 
-const { screen } = defineProps<{
+const { screen, isLast } = defineProps<{
     screen: IScreen;
+    isLast: boolean;
 }>();
 
 const screenStore = useScreenStore();
