@@ -1,7 +1,7 @@
 import { type MaybeRefOrGetter, toValue, ref } from "vue";
 import { useMouse, useEventListener } from "@vueuse/core";
-import { useScreenStore } from "../../features/screen/store";
-import type { IScreen } from "../../features/screen/types";
+import { useScreenStore } from "@admin/ts/features/screen/store";
+import type { IScreen } from "@admin/ts/features/screen/types";
 
 interface ResizerOptions {
     onDragStart?: () => void;
@@ -24,7 +24,7 @@ export const useScreenResizer = (
     const handleMouseDown = (event: MouseEvent) => {
         event.preventDefault();
         event.stopPropagation();
-        
+
         const leftScreenValue = toValue(leftScreen);
         const rightScreenValue = toValue(rightScreen);
 
@@ -33,7 +33,7 @@ export const useScreenResizer = (
         }
 
         const dividerElement = (event.currentTarget || event.target) as HTMLElement;
-        
+
         let container: HTMLElement | null = null;
         if (dividerElement) {
             container = dividerElement.closest("main") as HTMLElement;
@@ -44,7 +44,7 @@ export const useScreenResizer = (
         if (!container) {
             container = document.querySelector(".v-main") as HTMLElement;
         }
-        
+
         if (!container) {
             return;
         }
@@ -54,7 +54,7 @@ export const useScreenResizer = (
         initialLeftWidth.value = screenStore.getScreenWidth(leftScreenValue.id);
         initialRightWidth.value = screenStore.getScreenWidth(rightScreenValue.id);
         isDragging.value = true;
-        
+
         options?.onDragStart?.();
         document.body.style.cursor = "col-resize";
         document.body.style.userSelect = "none";
@@ -101,4 +101,5 @@ export const useScreenResizer = (
         handleMouseDown,
     };
 };
+
 

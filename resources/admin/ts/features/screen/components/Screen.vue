@@ -23,7 +23,7 @@
                         :color="isSelected ? 'primary' : ''"
                         :prepend-icon="tab.icon"
                         size="small"
-                        @click="onTabClick(toggle)"
+                        @click.stop="onTabClick(toggle, tab)"
                         :closable="!isTabCloseDisabled"
                         @click:close.prevent="onCloseTabClick(tab)"
                         label
@@ -55,15 +55,14 @@
             />
         </VCardTitle>
         <VDivider />
-        <RouterView v-slot="{ Component, route }">
-            <KeepAlive>
-                <Component
-                    :is="Component"
-                    :key="route.fullPath"
-                    v-if="isActiveTab(route.fullPath)"
-                />
-            </KeepAlive>
-        </RouterView>
+        <KeepAlive>
+            <component
+                v-if="activeTabComponent"
+                :is="activeTabComponent"
+                :key="activeTab?.id"
+                v-bind="activeTabProps"
+            />
+        </KeepAlive>
     </VCard>
     <div
         v-if="!isLast && nextScreen"
@@ -77,10 +76,10 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { useScreenStore } from "../store";
-import type { IScreen, ITab, TTabId } from "../types";
+import { useScreenStore } from "@admin/ts/features/screen";
+import type { IScreen, ITab, TTabId } from "@admin/ts/features/screen";
 import { useRouter } from "vue-router";
-import { useScreenResizer } from "../../../shared/composables/useScreenResizer";
+import { useScreenResizer } from "@admin/ts/features/screen/composables/useScreenResizer";
 
 const { screen, isLast, nextScreen } = defineProps<{
     screen: IScreen;
@@ -103,11 +102,14 @@ const resizer = computed(() => {
     }
     const leftScreenRef = screen;
     const rightScreenRef = nextScreen;
-    
-    if (!screenStore.screens.has(leftScreenRef.id) || !screenStore.screens.has(rightScreenRef.id)) {
+
+    if (
+        !screenStore.screens.has(leftScreenRef.id) ||
+        !screenStore.screens.has(rightScreenRef.id)
+    ) {
         return null;
     }
-    
+
     return useScreenResizer(leftScreenRef, rightScreenRef, {
         onDragStart: () => {
             isDragging.value = true;
@@ -141,8 +143,8 @@ const isTabToggleDisabled = computed(() => {
     return screen.tabs.size === 1;
 });
 
-const onTabClick = (toggle: () => void) => {
-    if (isTabToggleDisabled.value && screen.activeTabId !== null) {
+const onTabClick = (toggle: () => void, tab: ITab) => {
+    if (isTabToggleDisabled.value || screen.activeTabId === tab.id) {
         return;
     }
     toggle();
@@ -168,14 +170,7 @@ const handleActivateScreen = () => {
     screenStore.setActiveScreen(screen.id);
 };
 
-const getTabRoute = (tab: ITab) => {
-    if (typeof tab.route === "string") {
-        return tab.route;
-    }
-    return router.resolve(tab.route).fullPath;
-};
-
-const activeTabRoute = computed(() => {
+const activeTab = computed(() => {
     const activeTabId = screen.activeTabId;
     if (!activeTabId) {
         return null;
@@ -184,15 +179,65 @@ const activeTabRoute = computed(() => {
     if (!tab) {
         return null;
     }
-    return getTabRoute(tab);
+    return tab;
 });
 
-const isActiveTab = (fullPath: string) => {
-    if (!activeTabRoute.value) {
-        return false;
+const activeTabRouteLocation = computed(() => {
+    if (!activeTab.value) {
+        return null;
     }
-    return activeTabRoute.value === fullPath;
-};
+    return router.resolve(activeTab.value.route);
+});
+
+const activeMatchedRecord = computed(() => {
+    const tabRouteLocation = activeTabRouteLocation.value;
+    if (!tabRouteLocation) {
+        return null;
+    }
+    const matchedRecords = tabRouteLocation.matched;
+    if (matchedRecords.length === 0) {
+        return null;
+    }
+    return matchedRecords[matchedRecords.length - 1];
+});
+
+const activeTabComponent = computed(() => {
+    const record = activeMatchedRecord.value;
+    if (!record) {
+        return null;
+    }
+    const components = record.components;
+    if (!components) {
+        return null;
+    }
+    const componentForView = components.default;
+    if (!componentForView) {
+        return null;
+    }
+    return componentForView;
+});
+
+const activeTabProps = computed(() => {
+    const record = activeMatchedRecord.value;
+    const tabRouteLocation = activeTabRouteLocation.value;
+    if (!record || !tabRouteLocation) {
+        return {};
+    }
+
+    if (!record.props.default) {
+        return {};
+    }
+    if (typeof record.props.default === "boolean") {
+        if (!record.props.default) {
+            return {};
+        }
+        return tabRouteLocation.params;
+    }
+    if (typeof record.props.default === "object") {
+        return record.props.default;
+    }
+    return {};
+});
 </script>
 
 <style scoped>
@@ -212,11 +257,6 @@ const isActiveTab = (fullPath: string) => {
     background-color: transparent;
     transition: background-color 0.2s ease;
     z-index: 1;
-}
-
-.screen-divider:hover,
-.screen-divider.is-dragging {
-    background-color: rgba(var(--v-theme-primary), 0.1);
 }
 
 .divider-line {

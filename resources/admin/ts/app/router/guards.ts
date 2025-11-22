@@ -1,6 +1,9 @@
-import { useUserStore } from "@admin/ts/entities/user";
 import type { RouteLocationNormalized, Router } from "vue-router";
-import { routeNames } from "@admin/ts/app/router/routeNames";
+import {
+    ensureAuthUserLoaded,
+    resolveLoginRouteGuard,
+    resolveProtectedRouteGuard,
+} from "@admin/ts/features/auth";
 
 let routerInstance: Router | null = null;
 
@@ -29,51 +32,21 @@ const isSafeRedirectPath = (value: unknown): value is string => {
     return routerInstance.resolve(value).matched.length > 0;
 };
 
-let authChecked = false;
-
 export const guards = [
     {
         handler: async () => {
-            if (authChecked) return true;
-            const userStore = useUserStore();
-            try {
-                await userStore.getUser();
-            } finally {
-                authChecked = true;
-            }
+            await ensureAuthUserLoaded();
             return true;
         },
     },
     {
         handler: async (to: RouteLocationNormalized) => {
-            const userStore = useUserStore();
-
-            if (to?.name !== routeNames.Login) {
-                return true;
-            }
-
-            if (userStore.isAuthenticated) {
-                const redirect = to.query?.redirect;
-                if (isSafeRedirectPath(redirect)) return redirect;
-                return { name: routeNames.Authenticated };
-            }
-
-            return true;
+            return resolveLoginRouteGuard(to, isSafeRedirectPath);
         },
     },
     {
         handler: async (to: RouteLocationNormalized) => {
-            if (to?.meta?.requiresAuth !== true) {
-                return true;
-            }
-
-            const userStore = useUserStore();
-
-            if (userStore.isAuthenticated) {
-                return true;
-            }
-
-            return { name: routeNames.Login, query: { redirect: to.fullPath } };
+            return resolveProtectedRouteGuard(to);
         },
     },
 ];

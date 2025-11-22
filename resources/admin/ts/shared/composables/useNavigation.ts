@@ -1,6 +1,6 @@
 import { ref } from "vue";
 
-const showNavigationDrawer = ref(false);
+const showNavigationDrawer = ref(true);
 
 export const useNavigation = () => {
     const toggle = () => {

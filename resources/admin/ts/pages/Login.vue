@@ -43,17 +43,13 @@ import BSmartForm from "@admin/ts/shared/components/BSmartForm.vue";
 import type { FormContext } from "vee-validate";
 import { ref } from "vue";
 import { useFormSubmit } from "@admin/ts/shared/composables/useFormSubmit";
-import { useUserStore } from "@admin/ts/entities/user";
-import { useRoute, useRouter } from "vue-router";
-import { routeNames } from "@admin/ts/app/router/routeNames";
+import { useAuth } from "@admin/ts/features/auth";
 
 const form = ref<FormContext<LoginFormValues>>();
 const loading = ref(false);
-const router = useRouter();
-const route = useRoute();
-const userStore = useUserStore();
 
 const { fields } = useLoginFormFields();
+const { login } = useAuth();
 
 const initialValues =
     import.meta.env.MODE === "development"
@@ -63,7 +59,7 @@ const initialValues =
           }
         : {};
 
-const login = async () => {
+const handleLogin = async () => {
     if (!form.value) {
         return;
     }
@@ -71,23 +67,14 @@ const login = async () => {
     loading.value = true;
     try {
         const values = form.value.values;
-        await userStore.login({
+        await login({
             email: values.email,
             password: values.password,
         });
-        const redirectTo =
-            typeof route.query.redirect === "string"
-                ? route.query.redirect
-                : undefined;
-        if (redirectTo) {
-            await router.push(redirectTo);
-            return;
-        }
-        await router.push({ name: routeNames.Authenticated });
     } finally {
         loading.value = false;
     }
 };
 
-const { handler } = useFormSubmit(login, form);
+const { handler } = useFormSubmit(handleLogin, form);
 </script>

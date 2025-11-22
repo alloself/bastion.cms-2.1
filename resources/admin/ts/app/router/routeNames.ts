@@ -1,7 +1,2 @@
-export const routeNames = {
-    Authenticated: "Authenticated",
-    Login: "Login",
-    NotFound: "NotFound",
-};
-
+export { routeNames } from "@admin/ts/shared/router/routeNames";
 

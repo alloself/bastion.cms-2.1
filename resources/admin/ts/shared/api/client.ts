@@ -1,9 +1,8 @@
 import axios from "axios";
 import {
     setupInterceptors,
-    handleAuthError,
-    handleUnprocessableEntityError,
-} from "./interceptors";
+    type InterceptorHandlers,
+} from "@admin/ts/shared/api/interceptors";
 
 export const client = axios.create({
     baseURL: `/`,
@@ -15,12 +14,9 @@ export const client = axios.create({
     },
 });
 
-setupInterceptors(client, {
-    error: [
-        handleAuthError,
-        handleUnprocessableEntityError,
-    ],
-});
+export const configureClient = (handlers: InterceptorHandlers): void => {
+    setupInterceptors(client, handlers);
+};
 
 export const getCSRFToken = async () => {
     await client.get("/sanctum/csrf-cookie");

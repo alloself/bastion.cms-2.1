@@ -2,8 +2,8 @@ import { defineStore } from "pinia";
 import { reactive, ref, watch } from "vue";
 import type { RouteLocationNormalizedLoaded } from "vue-router";
 import { useLocalStorage } from "@vueuse/core";
-import { resolveModuleTabMeta } from "../../shared/modules";
-import type { IScreen, ITab, TTabId } from "./types";
+import { resolveModuleTabMeta } from "@admin/ts/shared/modules";
+import type { IScreen, ITab, TTabId } from "@admin/ts/features/screen/types";
 
 type SerializableScreen = Omit<IScreen, "tabs"> & {
     tabs: ITab[];

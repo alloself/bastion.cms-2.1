@@ -1,5 +1,5 @@
 import { type RouteRecordRaw } from "vue-router";
-import { routeNames } from "@admin/ts/app/router/routeNames";
+import { routeNames } from "@admin/ts/shared/router/routeNames";
 import { createModulesRoutes } from "@admin/ts/shared/modules";
 import { modules } from "@admin/ts/shared/modules";
 

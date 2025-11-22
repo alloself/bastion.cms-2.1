@@ -3,7 +3,7 @@ import type {
     RouteLocationNormalizedLoaded,
     RouteRecordRaw,
 } from "vue-router";
-import { toKebabCase } from "../helpers";
+import { toKebabCase } from "@admin/ts/shared/helpers";
 import { capitalize } from "vue";
 
 export interface IModule {

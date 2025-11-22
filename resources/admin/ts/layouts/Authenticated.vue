@@ -1,19 +1,45 @@
 <template>
     <VLayout>
-        <VNavigationDrawer v-model="showNavigationDrawer">
+        <VNavigationDrawer
+            app
+            v-model="showNavigationDrawer"
+            :rail="railMode"
+            mobile-breakpoint="sm"
+        >
             <VList density="compact" nav>
-                <VListItem
-                    nav
+                <VTooltip
                     v-for="item in items"
                     :key="item.key"
-                    :prepend-icon="item.icon"
-                    link
-                    :title="item.title"
-                    @click="handleNavigationItemClick(item)"
-                ></VListItem>
+                    :disabled="!railMode"
+                    location="right"
+                >
+                    <template #activator="{ props }">
+                        <VListItem
+                            nav
+                            v-bind="props"
+                            :prepend-icon="item.icon"
+                            link
+                            :title="item.title"
+                            @click="handleNavigationItemClick(item)"
+                        ></VListItem>
+                    </template>
+                    <span>{{ item.title }}</span>
+                </VTooltip>
             </VList>
+            <template #append>
+                <VList density="compact" nav>
+                    <VListItem
+                        nav
+                        :prepend-icon="
+                            railMode ? 'mdi-chevron-right' : 'mdi-chevron-left'
+                        "
+                        @click="toggleRailMode"
+                    />
+                </VList>
+            </template>
         </VNavigationDrawer>
         <VAppBar
+            app
             order="-1"
             :elevation="0"
             :border="true"
@@ -75,25 +101,26 @@
 
 <script lang="ts" setup>
 import { capitalize, computed, onBeforeUnmount, onMounted, ref } from "vue";
-import { useNavigation } from "../shared/composables/useNavigation";
-import { modules, type IModule } from "../shared/modules";
+import { useNavigation } from "@admin/ts/shared/composables/useNavigation";
+import { modules, type IModule } from "@admin/ts/shared/modules";
 import { sortBy } from "lodash";
-import { useUserStore } from "../entities/user";
+import { useUserStore } from "@admin/ts/entities/user";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
-import BLogo from "../shared/components/BLogo.vue";
-import Screen from "../features/screen/components/Screen.vue";
-import { useScreenStore } from "../features/screen/store";
+import BLogo from "@admin/ts/shared/components/BLogo.vue";
+import { Screen, useScreenStore } from "@admin/ts/features/screen";
+import { useAuth } from "@admin/ts/features/auth";
 
 const { showNavigationDrawer, toggle } = useNavigation();
 const userStore = useUserStore();
 const router = useRouter();
 const screenStore = useScreenStore();
+const { logout } = useAuth();
 const { screens } = storeToRefs(screenStore);
 const { user } = storeToRefs(userStore);
 
 const userMenu = ref(false);
-
+const railMode = ref(true);
 const screenArray = computed(() => {
     return Array.from(screens.value.values());
 });
@@ -117,9 +144,12 @@ const handleNavigationItemClick = async (item: IModule) => {
     screenStore.setActiveScreenTabRoute(router.currentRoute.value);
 };
 
-const onLogout = () => {
-    userStore.logout();
-    router.push({ name: "Login" });
+const onLogout = async () => {
+    await logout();
+};
+
+const toggleRailMode = () => {
+    railMode.value = !railMode.value;
 };
 
 const slots = defineSlots<{
@@ -133,7 +163,7 @@ onMounted(() => {
         const screen = screenStore.addScreen();
         screenStore.openRouteTab(screen, router.currentRoute.value);
     }
-    
+
     HTMLDOMElement.value = document.querySelector("html");
     if (HTMLDOMElement.value) {
         HTMLDOMElement.value.style.overflow = "hidden";

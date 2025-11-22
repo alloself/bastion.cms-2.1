@@ -1,7 +1,7 @@
 import type { User } from "@shared/types/models";
 import { defineStore } from "pinia";
 import { ref, computed, watch } from "vue";
-import type { LoginFormValues } from "@/admin/ts/shared/forms/login";
+import type { LoginFormValues } from "@admin/ts/shared/forms/login";
 import { useQueryCache } from "@pinia/colada";
 import {
     userMeQuery,
@@ -9,7 +9,6 @@ import {
     logout as apiLogout,
 } from "@admin/ts/entities/user/api";
 import { userQueryKeys } from "@admin/ts/entities/user/const";
-import { useNotificationsStore } from "@admin/ts/features/notifications/store/notificationsStore";
 import { isAxiosError } from "axios";
 
 export const useUserStore = defineStore("user", () => {
@@ -51,22 +50,7 @@ export const useUserStore = defineStore("user", () => {
             if (status === 401 || status === 419) {
                 await queryCache.cancelQueries({ key: [...userQueryKeys.me] });
                 await queryCache.remove(meEntry);
-                return;
             }
-
-            const notifications = useNotificationsStore();
-            const message = isAxiosError(e)
-                ? e.message
-                : e instanceof Error
-                ? e.message
-                : undefined;
-            notifications.pushNotification({
-                content:
-                    typeof message === "string"
-                        ? message
-                        : "Не удалось выполнить выход",
-                color: "error",
-            });
         }
     };
 

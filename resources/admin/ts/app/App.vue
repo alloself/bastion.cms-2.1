@@ -19,8 +19,7 @@
 import { PiniaColadaDevtools } from "@pinia/colada-devtools";
 import { isDev } from "@admin/ts/shared/helpers";
 
-import Notification from "@admin/ts/features/notifications/components/Notification.vue";
-import { useNotificationsStore } from "@admin/ts/features/notifications/store/notificationsStore";
+import { Notification, useNotificationsStore } from "@admin/ts/features/notifications";
 import { storeToRefs } from "pinia";
 
 const notificationStore = useNotificationsStore();
