@@ -4,7 +4,7 @@ import type {
     RouteRecordRaw,
 } from "vue-router";
 import { toKebabCase } from "@admin/ts/shared/helpers";
-import { capitalize, reactive } from "vue";
+import { capitalize, reactive, ref } from "vue";
 import { defineStore } from "pinia";
 
 export interface IModule {
@@ -204,9 +204,7 @@ export const moduleStoresRegistry = reactive(
 
 export const createModuleStore = (module: IModule) => {
     const store = defineStore(`${module.key}Store`, () => {
-        return {
-            module,
-        };
+        return {};
     });
     moduleStoresRegistry.set(module.key, store);
 };
