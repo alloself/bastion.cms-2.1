@@ -76,8 +76,27 @@ export const useScreenResizer = (
         const deltaX = mouseX.value - startX.value;
         const deltaPercent = (deltaX / containerWidth) * 100;
 
-        const newLeftWidth = initialLeftWidth.value + deltaPercent;
-        const newRightWidth = initialRightWidth.value - deltaPercent;
+        const minWidthPixels = 368;
+        const minWidthPercent = (minWidthPixels / containerWidth) * 100;
+        const totalPairWidth = initialLeftWidth.value + initialRightWidth.value;
+
+        let newLeftWidth = initialLeftWidth.value + deltaPercent;
+        let newRightWidth = initialRightWidth.value - deltaPercent;
+
+        if (minWidthPercent * 2 <= totalPairWidth) {
+            const minLeftWidth = minWidthPercent;
+            const minRightWidth = minWidthPercent;
+            const maxLeftWidth = totalPairWidth - minRightWidth;
+
+            if (newLeftWidth < minLeftWidth) {
+                newLeftWidth = minLeftWidth;
+            }
+            if (newLeftWidth > maxLeftWidth) {
+                newLeftWidth = maxLeftWidth;
+            }
+
+            newRightWidth = totalPairWidth - newLeftWidth;
+        }
 
         if (newLeftWidth > 0 && newRightWidth > 0) {
             screenStore.setScreenWidth(leftScreenValue.id, newLeftWidth, false);

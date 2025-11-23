@@ -55,14 +55,13 @@
             />
         </VCardTitle>
         <VDivider />
-        <KeepAlive>
-            <component
-                v-if="activeTabComponent"
-                :is="activeTabComponent"
-                :key="activeTab?.id"
-                v-bind="activeTabProps"
-            />
-        </KeepAlive>
+
+        <component
+            v-if="activeTabComponent && activeTab"
+            :is="activeTabComponent"
+            :key="activeTab.id"
+            v-bind="activeTabProps"
+        />
     </VCard>
     <div
         v-if="!isLast && nextScreen"
@@ -75,7 +74,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, defineAsyncComponent, ref } from "vue";
+import type { AsyncComponentLoader, Component } from "vue";
 import { useScreenStore } from "@admin/ts/features/screen";
 import type { IScreen, ITab, TTabId } from "@admin/ts/features/screen";
 import { useRouter } from "vue-router";
@@ -143,11 +143,18 @@ const isTabToggleDisabled = computed(() => {
     return screen.tabs.size === 1;
 });
 
-const onTabClick = (toggle: () => void, tab: ITab) => {
-    if (isTabToggleDisabled.value || screen.activeTabId === tab.id) {
+const onTabClick = async (toggle: () => void, tab: ITab) => {
+    if (
+        isTabToggleDisabled.value ||
+        screen.activeTabId === tab.id ||
+        !tab.route
+    ) {
         return;
     }
     toggle();
+
+    await router.push(tab.route);
+    screenStore.setActiveScreenTabRoute(router.currentRoute.value);
 };
 
 const onAddTabClick = () => {
@@ -171,11 +178,10 @@ const handleActivateScreen = () => {
 };
 
 const activeTab = computed(() => {
-    const activeTabId = screen.activeTabId;
-    if (!activeTabId) {
+    if (!screen.activeTabId) {
         return null;
     }
-    const tab = screen.tabs.get(activeTabId);
+    const tab = screen.tabs.get(screen.activeTabId);
     if (!tab) {
         return null;
     }
@@ -190,6 +196,9 @@ const activeTabRouteLocation = computed(() => {
 });
 
 const activeMatchedRecord = computed(() => {
+    if (!activeTab.value) {
+        return null;
+    }
     const tabRouteLocation = activeTabRouteLocation.value;
     if (!tabRouteLocation) {
         return null;
@@ -201,41 +210,54 @@ const activeMatchedRecord = computed(() => {
     return matchedRecords[matchedRecords.length - 1];
 });
 
-const activeTabComponent = computed(() => {
-    const record = activeMatchedRecord.value;
-    if (!record) {
-        return null;
-    }
-    const components = record.components;
-    if (!components) {
-        return null;
-    }
-    const componentForView = components.default;
+const isAsyncComponentLoader = (
+    value: unknown
+): value is AsyncComponentLoader => {
+    return typeof value === "function";
+};
+
+const activeTabComponent = computed<Component | null>(() => {
+    const matchedRecord = activeMatchedRecord.value;
+    const componentsForRecord = matchedRecord?.components;
+    const componentForView = componentsForRecord?.default;
+
     if (!componentForView) {
         return null;
     }
+
+    if (isAsyncComponentLoader(componentForView)) {
+        return defineAsyncComponent(componentForView);
+    }
+
     return componentForView;
 });
 
-const activeTabProps = computed(() => {
-    const record = activeMatchedRecord.value;
-    const tabRouteLocation = activeTabRouteLocation.value;
-    if (!record || !tabRouteLocation) {
+const activeTabProps = computed<Record<string, unknown>>(() => {
+    const matchedRecord = activeMatchedRecord.value;
+    const routeLocation = activeTabRouteLocation.value;
+    const propsForRecord = matchedRecord?.props;
+
+    if (!matchedRecord || !routeLocation || !propsForRecord) {
         return {};
     }
 
-    if (!record.props.default) {
+    const propsForView = propsForRecord.default;
+
+    if (!propsForView) {
         return {};
     }
-    if (typeof record.props.default === "boolean") {
-        if (!record.props.default) {
+
+    if (typeof propsForView === "boolean") {
+        if (!propsForView) {
             return {};
         }
-        return tabRouteLocation.params;
+        return routeLocation.params;
     }
-    if (typeof record.props.default === "object") {
-        return record.props.default;
+
+    if (typeof propsForView === "object") {
+        return propsForView;
     }
+
     return {};
 });
 </script>

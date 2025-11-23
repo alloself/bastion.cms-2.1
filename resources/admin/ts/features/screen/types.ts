@@ -15,3 +15,4 @@ export interface IScreen {
     activeTabId: TTabId | null;
     width?: number;
 }
+
