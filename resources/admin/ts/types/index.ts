@@ -46,3 +46,25 @@ export interface ISmartFormProps<
 export interface IBaseEntity extends Record<string, unknown> {
     id: string;
 }
+
+export interface IServerDataList<T> {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    data: T[];
+    sortBy?: Array<Record<string, string>>;
+    search?: string;
+}
+
+export interface ITableProps {
+    page: number;
+    itemsPerPage: number;
+    sortBy: ISortBy[];
+    search: string;
+}
+
+export interface ISortBy {
+    key: string;
+    order: "asc" | "desc";
+}
