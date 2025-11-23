@@ -44,7 +44,7 @@ export interface ISmartFormProps<
 }
 
 export interface IBaseEntity extends Record<string, unknown> {
-    id: string;
+    id?: string;
 }
 
 export interface IServerDataList<T> {
