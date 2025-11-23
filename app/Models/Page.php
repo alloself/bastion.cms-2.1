@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
-class Page extends Model
+class Page extends BaseCRUDModel
 {
     protected $fillable = ['index', 'meta', 'parent_id', 'template_id'];
+
+
 }
