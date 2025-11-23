@@ -56,11 +56,12 @@
         </VCardTitle>
         <VDivider />
 
-        <component
+        <BKeepAlive
             v-if="activeTabComponent && activeTab"
-            :is="activeTabComponent"
-            :key="activeTab.id"
-            v-bind="activeTabProps"
+            ref="keepAliveRef"
+            :active-key="activeTab.id"
+            :component="activeTabComponent"
+            :component-props="activeTabProps"
         />
     </VCard>
     <div
@@ -74,12 +75,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref } from "vue";
+import { computed, defineAsyncComponent, ref, useTemplateRef } from "vue";
 import type { AsyncComponentLoader, Component } from "vue";
 import { useScreenStore } from "@admin/ts/features/screen";
 import type { IScreen, ITab, TTabId } from "@admin/ts/features/screen";
 import { useRouter } from "vue-router";
 import { useScreenResizer } from "@admin/ts/features/screen/composables/useScreenResizer";
+import BKeepAlive from "@admin/ts/shared/components/BKeepAlive.vue";
 
 const { screen, isLast, nextScreen } = defineProps<{
     screen: IScreen;
@@ -89,6 +91,8 @@ const { screen, isLast, nextScreen } = defineProps<{
 
 const screenStore = useScreenStore();
 const router = useRouter();
+
+const keepAliveRef = useTemplateRef<InstanceType<typeof BKeepAlive>>("keepAliveRef");
 
 const screenWidth = computed(() => {
     return screenStore.getScreenWidth(screen.id);
@@ -170,6 +174,7 @@ const onRemoveScreen = () => {
 };
 
 const onCloseTabClick = (tab: ITab) => {
+    keepAliveRef.value?.removeEntry(tab.id);
     screenStore.closeTab(screen, tab.id);
 };
 
