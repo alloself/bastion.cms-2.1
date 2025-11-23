@@ -56,11 +56,11 @@
         </VCardTitle>
         <VDivider />
 
-        <component
-            v-if="activeTabComponent && activeTab"
-            :is="activeTabComponent"
-            :key="activeTab.id"
-            v-bind="activeTabProps"
+        <BKeepAlive
+            ref="keepAliveRef"
+            :active-key="activeTabIdForKeepAlive"
+            :component="activeTabComponent"
+            :component-props="activeTabProps"
         />
     </VCard>
     <div
@@ -74,12 +74,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref } from "vue";
+import { computed, defineAsyncComponent, ref, useTemplateRef } from "vue";
 import type { AsyncComponentLoader, Component } from "vue";
 import { useScreenStore } from "@admin/ts/features/screen";
 import type { IScreen, ITab, TTabId } from "@admin/ts/features/screen";
 import { useRouter } from "vue-router";
 import { useScreenResizer } from "@admin/ts/features/screen/composables/useScreenResizer";
+import BKeepAlive from "@admin/ts/shared/components/BKeepAlive.vue";
 
 const { screen, isLast, nextScreen } = defineProps<{
     screen: IScreen;
@@ -95,6 +96,9 @@ const screenWidth = computed(() => {
 });
 
 const isDragging = ref(false);
+
+const keepAliveRef =
+    useTemplateRef<InstanceType<typeof BKeepAlive>>("keepAliveRef");
 
 const resizer = computed(() => {
     if (!nextScreen) {
@@ -171,6 +175,11 @@ const onRemoveScreen = () => {
 
 const onCloseTabClick = (tab: ITab) => {
     screenStore.closeTab(screen, tab.id);
+
+    const keepAliveInstance = keepAliveRef.value;
+    if (keepAliveInstance) {
+        keepAliveInstance.removeEntry(tab.id);
+    }
 };
 
 const handleActivateScreen = () => {
@@ -186,6 +195,14 @@ const activeTab = computed(() => {
         return null;
     }
     return tab;
+});
+
+const activeTabIdForKeepAlive = computed<TTabId | null>(() => {
+    const tab = activeTab.value;
+    if (!tab) {
+        return null;
+    }
+    return tab.id;
 });
 
 const activeTabRouteLocation = computed(() => {
