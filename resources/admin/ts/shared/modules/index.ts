@@ -6,6 +6,8 @@ import type {
 import { toKebabCase } from "@admin/ts/shared/helpers";
 import { capitalize, reactive, ref } from "vue";
 import { defineStore } from "pinia";
+import type { IBaseEntity, IServerDataList } from "../../types";
+import { useQueryCache } from "@pinia/colada";
 
 export interface IModule {
     key: string;
@@ -204,8 +206,16 @@ export const moduleStoresRegistry = reactive(
 
 export const createModuleStore = (module: IModule) => {
     const store = defineStore(`${module.key}Store`, () => {
-        return {};
+        const queryCache = useQueryCache();
+
+        const list = ref<IServerDataList<IBaseEntity> | null>(null);
+        const entity = ref<IBaseEntity | null>(null);
+        return {
+            list,
+            entity,
+        };
     });
+
     moduleStoresRegistry.set(module.key, store);
 };
 
