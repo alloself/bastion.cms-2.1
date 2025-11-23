@@ -4,7 +4,8 @@ import type {
     RouteRecordRaw,
 } from "vue-router";
 import { toKebabCase } from "@admin/ts/shared/helpers";
-import { capitalize } from "vue";
+import { capitalize, reactive } from "vue";
+import { defineStore } from "pinia";
 
 export interface IModule {
     key: string;
@@ -104,9 +105,7 @@ const extractModuleRouteId = (route: RouteLocationNormalizedLoaded) => {
     return null;
 };
 
-export const resolveModuleTabMeta = (
-    route: RouteLocationNormalizedLoaded
-): { title: string; icon?: string } => {
+export const resolveModuleTabMeta = (route: RouteLocationNormalizedLoaded) => {
     const routeName = route.name?.toString() ?? null;
     const match = getModuleRouteMatch(routeName);
     if (!match) {
@@ -197,4 +196,21 @@ export const createModulesRoutes = (array: IModule[]): RouteRecordRaw[] => {
 
         return acc;
     }, [] as RouteRecordRaw[]);
+};
+
+export const moduleStoresRegistry = reactive(
+    new Map<IModule["key"], ReturnType<typeof defineStore>>()
+);
+
+export const createModuleStore = (module: IModule) => {
+    const store = defineStore(`${module.key}Store`, () => {
+        return {
+            module,
+        };
+    });
+    moduleStoresRegistry.set(module.key, store);
+};
+
+export const createModuleStores = (modules: IModule[]) => {
+    return modules.forEach(createModuleStore);
 };

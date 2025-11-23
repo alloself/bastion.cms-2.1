@@ -20,7 +20,7 @@
                             :prepend-icon="item.icon"
                             link
                             :title="item.title"
-                            @click="handleNavigationItemClick(item)"
+                            @click="handleNavigationItemClick($event, item)"
                         ></VListItem>
                     </template>
                     <span>{{ item.title }}</span>
@@ -136,11 +136,30 @@ const items = computed(() => {
     return array;
 });
 
-const handleNavigationItemClick = async (item: IModule) => {
+const handleNavigationItemClick = async (
+    event: MouseEvent | KeyboardEvent,
+    item: IModule
+) => {
     if (!item.to) {
         return;
     }
+
     await router.push({ name: item.to });
+
+    if (event.ctrlKey || event.metaKey) {
+        const activeScreenId = screenStore.activeScreenId;
+
+        let targetScreen =
+            (activeScreenId && screenStore.screens.get(activeScreenId)) ||
+            Array.from(screenStore.screens.values())[0] ||
+            null;
+
+        if (targetScreen) {
+            screenStore.openRouteTab(targetScreen, router.currentRoute.value);
+            return;
+        }
+    }
+
     screenStore.setActiveScreenTabRoute(router.currentRoute.value);
 };
 

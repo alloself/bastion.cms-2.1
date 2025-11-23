@@ -2,14 +2,12 @@ import { createApp } from "vue";
 import { installPlugins } from "@admin/ts/shared/plugins";
 
 import App from "@admin/ts/app/App.vue";
-import {
-    configureClient,
-    getCSRFToken,
-} from "@admin/ts/shared/api/client";
+import { configureClient, getCSRFToken } from "@admin/ts/shared/api/client";
 import {
     handleAuthError,
     handleUnprocessableEntityError,
 } from "@admin/ts/app/api/interceptors";
+import { createModuleStores, modules } from "./shared/modules";
 
 const bootstrapAdminApp = async () => {
     const container = document.getElementById("admin-app");
@@ -26,6 +24,8 @@ const bootstrapAdminApp = async () => {
     const app = createApp(App);
 
     installPlugins(app);
+
+    createModuleStores(modules);
 
     app.mount(container);
 };

@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, shallowRef, watch, type Component } from "vue";
+import { computed, reactive, watch, markRaw, type Component } from "vue";
 
 export interface CachedView {
     component: Component;
@@ -22,10 +22,10 @@ const { activeKey, component, componentProps } = defineProps<{
     componentProps?: Record<string, unknown>;
 }>();
 
-const cache = shallowRef(new Map<string | number, CachedView>());
+const cache = reactive(new Map<string | number, CachedView>());
 
 const cachedEntries = computed(() => {
-    return Array.from(cache.value.entries());
+    return Array.from(cache.entries());
 });
 
 const normalizeProps = (
@@ -50,21 +50,21 @@ watch(
 
         const resolvedProps = normalizeProps(nextState.componentProps);
 
-        if (!cache.value.has(nextState.activeKey)) {
-            cache.value.set(nextState.activeKey, {
-                component: nextState.component,
+        if (!cache.has(nextState.activeKey)) {
+            cache.set(nextState.activeKey, {
+                component: markRaw(nextState.component),
                 props: resolvedProps,
             });
             return;
         }
 
-        const cachedView = cache.value.get(nextState.activeKey);
+        const cachedView = cache.get(nextState.activeKey);
 
         if (!cachedView) {
             return;
         }
 
-        cache.value.set(nextState.activeKey, {
+        cache.set(nextState.activeKey, {
             component: cachedView.component,
             props: resolvedProps,
         });
@@ -73,10 +73,10 @@ watch(
 );
 
 const removeEntry = (key: string | number) => {
-    if (!cache.value.has(key)) {
+    if (!cache.has(key)) {
         return;
     }
-    cache.value.delete(key);
+    cache.delete(key);
 };
 
 defineExpose({
