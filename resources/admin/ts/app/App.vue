@@ -1,5 +1,5 @@
 <template>
-    <v-app>
+    <VApp>
         <router-view v-slot="{ Component }">
             <component :is="Component" />
         </router-view>
@@ -11,7 +11,7 @@
             @onCancel="notificationStore.closeAlert(index)"
         >
         </notification>
-    </v-app>
+    </VApp>
     <PiniaColadaDevtools v-if="isDev()" />
 </template>
 

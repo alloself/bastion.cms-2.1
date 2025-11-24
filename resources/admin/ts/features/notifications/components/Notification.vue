@@ -7,8 +7,8 @@
     >
         {{ notification.content }}
         <template v-slot:actions>
-            <v-btn icon="mdi-close" variant="text" @click="emits('onCancel', notification)">
-            </v-btn>
+            <VBtn icon="mdi-close" variant="text" @click="emits('onCancel', notification)">
+            </VBtn>
         </template>
     </VSnackbar>
 </template>

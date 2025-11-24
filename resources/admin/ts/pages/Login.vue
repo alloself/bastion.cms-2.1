@@ -1,36 +1,36 @@
 <template>
-    <v-container class="fill-height" fluid>
-        <v-row
+    <VContainer class="fill-height" fluid>
+        <VRow
             :align="'center'"
             justify="center"
             no-gutters
             class="fill-height"
         >
-            <v-col cols="12" sm="8" md="4">
-                <v-card class="elevation-12" @keyup.enter="handler">
-                    <v-toolbar dark flat>
+            <VCol cols="12" sm="8" md="4">
+                <VCard class="elevation-12" @keyup.enter="handler">
+                    <VToolbar dark flat>
                         <BLogo />
-                        <v-toolbar-title>Вход</v-toolbar-title>
-                        <v-spacer></v-spacer>
-                    </v-toolbar>
-                    <v-card-text class="pa-0">
+                        <VToolbarTitle>Вход</VToolbarTitle>
+                        <VSpacer></VSpacer>
+                    </VToolbar>
+                    <VCardText class="pa-0">
                         <b-smart-form
                             :loading="loading"
                             :fields="fields"
                             :initial-values="initialValues"
                             v-model:form="form"
                         ></b-smart-form>
-                    </v-card-text>
-                    <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn depressed @click="handler" :loading="loading"
-                            >Вход</v-btn
+                    </VCardText>
+                    <VCardActions>
+                        <VSpacer></VSpacer>
+                        <VBtn depressed @click="handler" :loading="loading"
+                            >Вход</VBtn
                         >
-                    </v-card-actions>
-                </v-card>
-            </v-col>
-        </v-row>
-    </v-container>
+                    </VCardActions>
+                </VCard>
+            </VCol>
+        </VRow>
+    </VContainer>
 </template>
 
 <script setup lang="ts">
