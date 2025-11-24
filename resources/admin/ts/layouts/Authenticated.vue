@@ -20,6 +20,7 @@
                             :prepend-icon="item.icon"
                             link
                             :title="item.title"
+                            :active="isItemActive(item)"
                             @click="handleNavigationItemClick($event, item)"
                         ></VListItem>
                     </template>
@@ -106,7 +107,7 @@ import { modules, type IModule } from "@admin/ts/shared/modules";
 import { sortBy } from "lodash";
 import { useUserStore } from "@admin/ts/entities/user";
 import { storeToRefs } from "pinia";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import BLogo from "@admin/ts/shared/components/BLogo.vue";
 import { Screen, useScreenStore } from "@admin/ts/features/screen";
 import { useAuth } from "@admin/ts/features/auth";
@@ -114,6 +115,7 @@ import { useAuth } from "@admin/ts/features/auth";
 const { showNavigationDrawer, toggle } = useNavigation();
 const userStore = useUserStore();
 const router = useRouter();
+const route = useRoute();
 const screenStore = useScreenStore();
 const { logout } = useAuth();
 const { screens } = storeToRefs(screenStore);
@@ -135,6 +137,23 @@ const items = computed(() => {
 
     return array;
 });
+
+const isItemActive = (item: IModule) => {
+    if (!item.to) {
+        return false;
+    }
+
+    const currentRouteName = route.name?.toString();
+    if (!currentRouteName) {
+        return false;
+    }
+
+    const moduleName = capitalize(item.key);
+    return (
+        currentRouteName === item.to ||
+        currentRouteName.startsWith(moduleName)
+    );
+};
 
 const handleNavigationItemClick = async (
     event: MouseEvent | KeyboardEvent,
