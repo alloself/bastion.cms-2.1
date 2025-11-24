@@ -48,13 +48,28 @@ export interface IBaseEntity extends Record<string, unknown> {
 }
 
 export interface IServerDataList<T> {
-    current_page: number;
-    last_page: number;
-    per_page: number;
-    total: number;
     data: T[];
-    sortBy?: Array<Record<string, string>>;
-    search?: string;
+    links: {
+        first: string | null;
+        last: string | null;
+        prev: string | null;
+        next: string | null;
+    };
+    meta: {
+        current_page: number;
+        from: number | null;
+        last_page: number;
+        links: Array<{
+            url: string | null;
+            label: string;
+            page: number | null;
+            active: boolean;
+        }>;
+        path: string;
+        per_page: number;
+        to: number | null;
+        total: number;
+    };
 }
 
 export interface ITableProps {

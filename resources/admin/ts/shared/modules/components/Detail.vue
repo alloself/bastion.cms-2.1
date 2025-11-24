@@ -13,7 +13,6 @@ const { module } = defineProps<{
 }>();
 
 </script>
-
 <style scoped>
 
 </style>
