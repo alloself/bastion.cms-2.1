@@ -1,6 +1,6 @@
 import type { User } from "@shared/types/models";
 import { defineStore } from "pinia";
-import { ref, computed, watch } from "vue";
+import { ref, computed } from "vue";
 import type { LoginFormValues } from "@admin/ts/shared/forms/login";
 import { useQueryCache } from "@pinia/colada";
 import {
@@ -15,14 +15,6 @@ export const useUserStore = defineStore("user", () => {
     const user = ref<User | null>(null);
     const queryCache = useQueryCache();
     const meEntry = queryCache.ensure(userMeQuery);
-
-    watch(
-        () => meEntry.state.value.data,
-        (newUser) => {
-            user.value = newUser ?? null;
-        },
-        { immediate: true }
-    );
 
     const isAuthenticated = computed(() => user.value !== null);
 

@@ -6,7 +6,7 @@ import type {
 import { toKebabCase } from "@admin/ts/shared/helpers";
 import { capitalize, reactive, ref } from "vue";
 import { defineStore } from "pinia";
-import type { IBaseEntity, IServerDataList } from "../../types";
+import type { IBaseEntity, IServerDataList, ISortBy, ITableProps } from "../../types";
 import { useQueryCache } from "@pinia/colada";
 
 export interface IModule {
@@ -204,12 +204,44 @@ export const moduleStoresRegistry = reactive(
     new Map<IModule["key"], ReturnType<typeof defineStore>>()
 );
 
+interface IModuleListQueryParams {
+    page: number;
+    per_page: number;
+    sortBy?: ISortBy[];
+    search?: string;
+}
+
+const buildModuleListQueryParams = (
+    tableProps: ITableProps
+): IModuleListQueryParams => {
+    const params: IModuleListQueryParams = {
+        page: tableProps.page,
+        per_page: tableProps.itemsPerPage,
+    };
+
+    if (tableProps.sortBy.length > 0) {
+        params.sortBy = tableProps.sortBy;
+    }
+
+    if (tableProps.search.trim() !== "") {
+        params.search = tableProps.search;
+    }
+
+    return params;
+};
+
+const getModuleBaseUrl = (module: IModule) => {
+    return `/api/admin/${getModuleUrlPart(module.key)}`;
+};
+
+
 export const createModuleStore = (module: IModule) => {
     const store = defineStore(`${module.key}Store`, () => {
         const queryCache = useQueryCache();
 
         const list = ref<IServerDataList<IBaseEntity> | null>(null);
         const entity = ref<IBaseEntity | null>(null);
+        
         return {
             list,
             entity,
