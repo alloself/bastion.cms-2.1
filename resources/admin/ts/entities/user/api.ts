@@ -4,16 +4,16 @@ import { defineQueryOptions } from "@pinia/colada";
 import { userQueryKeys } from "@admin/ts/entities/user/const";
 import type { LoginFormValues } from "@admin/ts/shared/forms/login";
 
-export const getMe = async (): Promise<User> => {
+export const getMe = async () => {
     const { data } = await client.get<User>("/api/admin/me");
     return data;
 };
 
-export const login = async (payload: LoginFormValues): Promise<void> => {
+export const login = async (payload: LoginFormValues) => {
     await client.post("/login", payload);
 };
 
-export const logout = async (): Promise<void> => {
+export const logout = async () => {
     await client.post("/logout");
 };
 

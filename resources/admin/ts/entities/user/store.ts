@@ -34,14 +34,15 @@ export const useUserStore = defineStore("user", () => {
             await queryCache.cancelQueries({ key: [...userQueryKeys.me] });
             await queryCache.remove(meEntry);
         } catch (e: unknown) {
-            let status: number | undefined;
             if (isAxiosError(e)) {
-                status = e.response?.status;
-            }
+                const status = e.response?.status;
 
-            if (status === 401 || status === 419) {
-                await queryCache.cancelQueries({ key: [...userQueryKeys.me] });
-                await queryCache.remove(meEntry);
+                if (status === 401 || status === 419) {
+                    await queryCache.cancelQueries({
+                        key: [...userQueryKeys.me],
+                    });
+                    await queryCache.remove(meEntry);
+                }
             }
         }
     };
