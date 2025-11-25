@@ -74,7 +74,7 @@ export const deleteModuleEntity = async (baseUrl: string, id: string) => {
 export const deleteModuleEntities = async (
     baseUrl: string,
     ids: string[]
-): Promise<IDeleteBatchResponse> => {
+) => {
     const { data } = await client.post<IDeleteBatchResponse>(
         `${baseUrl}/delete-many`,
         { ids }
