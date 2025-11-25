@@ -8,6 +8,11 @@ export interface IModuleListQueryParams {
     search?: string;
 }
 
+export interface IDeleteBatchResponse {
+    deleted: number;
+    requested: number;
+}
+
 const buildQueryString = (params: IModuleListQueryParams) => {
     const searchParams = new URLSearchParams();
     searchParams.set("page", params.page.toString());
@@ -63,5 +68,17 @@ export const updateModuleEntity = async <T extends IBaseEntity>(
 
 export const deleteModuleEntity = async (baseUrl: string, id: string) => {
     await client.delete(`${baseUrl}/${id}`);
+};
+
+
+export const deleteModuleEntities = async (
+    baseUrl: string,
+    ids: string[]
+): Promise<IDeleteBatchResponse> => {
+    const { data } = await client.post<IDeleteBatchResponse>(
+        `${baseUrl}/delete-many`,
+        { ids }
+    );
+    return data;
 };
 

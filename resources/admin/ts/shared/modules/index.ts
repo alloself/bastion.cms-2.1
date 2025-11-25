@@ -6,8 +6,14 @@ import type {
 import { toKebabCase } from "@admin/ts/shared/helpers";
 import { capitalize, reactive, ref } from "vue";
 import { defineStore } from "pinia";
-import type { IBaseEntity, IServerDataList, ISortBy, ITableProps } from "../../types";
+import type {
+    IBaseEntity,
+    IModuleListParams,
+    IServerDataList,
+    ITableHeader,
+} from "../../types";
 import { useQueryCache } from "@pinia/colada";
+import type { IModuleListQueryParams } from "./api";
 
 export interface IModule {
     key: string;
@@ -15,7 +21,7 @@ export interface IModule {
     icon?: string;
     to?: string;
     showInNavigation?: boolean;
-    headers: Array<{ title: string; key: string }>;
+    headers: ITableHeader[];
     getDetailTabTitle?: (payload: { id: string }) => string;
 }
 
@@ -201,47 +207,46 @@ export const createModulesRoutes = (array: IModule[]): RouteRecordRaw[] => {
 };
 
 export const moduleStoresRegistry = reactive(
-    new Map<IModule["key"], ReturnType<typeof defineStore>>()
+    new Map<IModule["key"], ReturnType<typeof createModuleStore>>()
 );
 
-interface IModuleListQueryParams {
-    page: number;
-    per_page: number;
-    sortBy?: ISortBy[];
-    search?: string;
-}
-
-const buildModuleListQueryParams = (
-    tableProps: ITableProps
-): IModuleListQueryParams => {
-    const params: IModuleListQueryParams = {
-        page: tableProps.page,
-        per_page: tableProps.itemsPerPage,
+const buildModuleListQueryParams = (params: IModuleListParams) => {
+    const queryParams: IModuleListQueryParams = {
+        page: params.page,
+        per_page: params.perPage,
     };
 
-    if (tableProps.sortBy.length > 0) {
-        params.sortBy = tableProps.sortBy;
+    if (params.sortBy.length > 0) {
+        queryParams.sortBy = params.sortBy;
     }
 
-    if (tableProps.search.trim() !== "") {
-        params.search = tableProps.search;
+    if (params.search.trim() !== "") {
+        queryParams.search = params.search;
     }
 
-    return params;
+    return queryParams;
 };
 
 const getModuleBaseUrl = (module: IModule) => {
     return `/api/admin/${getModuleUrlPart(module.key)}`;
 };
 
+const createDefaultListParams = (): IModuleListParams => ({
+    page: 1,
+    perPage: 15,
+    sortBy: [],
+    search: "",
+});
 
 export const createModuleStore = (module: IModule) => {
+    const baseUrl = getModuleBaseUrl(module);
+
     const store = defineStore(`${module.key}Store`, () => {
         const queryCache = useQueryCache();
 
         const list = ref<IServerDataList<IBaseEntity> | null>(null);
         const entity = ref<IBaseEntity | null>(null);
-        
+
         return {
             list,
             entity,
@@ -249,6 +254,7 @@ export const createModuleStore = (module: IModule) => {
     });
 
     moduleStoresRegistry.set(module.key, store);
+    return store;
 };
 
 export const createModuleStores = (modules: IModule[]) => {
