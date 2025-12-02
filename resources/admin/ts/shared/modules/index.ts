@@ -12,7 +12,6 @@ import type {
     IServerDataList,
     ITableHeader,
 } from "../../types";
-import { useQueryCache } from "@pinia/colada";
 import type { IModuleListQueryParams } from "./api";
 
 export interface IModule {
@@ -242,7 +241,7 @@ export const createModuleStore = (module: IModule) => {
     const baseUrl = getModuleBaseUrl(module);
 
     const store = defineStore(`${module.key}Store`, () => {
-        const queryCache = useQueryCache();
+     
 
         const list = ref<IServerDataList<IBaseEntity> | null>(null);
         const entity = ref<IBaseEntity | null>(null);

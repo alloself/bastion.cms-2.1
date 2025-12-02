@@ -18,7 +18,7 @@
         "prebuild:admin": "npm run type-check:admin"
     },
     "devDependencies": {
-        "@pinia/colada-devtools": "^0.1.8",
+        "@pinia/colada-devtools": "^0.1.9",
         "@tailwindcss/vite": "^4.1.17",
         "@types/lodash": "^4.17.20",
         "@types/node": "^24.10.1",
@@ -37,7 +37,7 @@
     },
     "dependencies": {
         "@mdi/font": "^7.4.47",
-        "@pinia/colada": "^0.17.8",
+        "@pinia/colada": "^0.18.0",
         "@primeuix/themes": "^1.2.5",
         "@vueuse/core": "^14.0.0",
         "axios": "^1.13.2",
