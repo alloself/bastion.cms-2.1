@@ -20,6 +20,7 @@ export interface IModule {
     icon?: string;
     to?: string;
     showInNavigation?: boolean;
+    isDefault?: boolean;
     headers: ITableHeader[];
     getDetailTabTitle?: (payload: { id: string }) => string;
 }
@@ -30,6 +31,7 @@ export const modules: IModule[] = [
         title: "Страницы",
         icon: "mdi-file",
         showInNavigation: true,
+        isDefault: true,
         headers: [
             {
                 title: "Заголовок",
@@ -112,10 +114,38 @@ const extractModuleRouteId = (route: RouteLocationNormalizedLoaded) => {
     return null;
 };
 
+const getDefaultModule = (): IModule | undefined => {
+    const explicitDefault = modules.find(
+        (moduleCandidate) => moduleCandidate.isDefault
+    );
+    if (explicitDefault) {
+        return explicitDefault;
+    }
+
+    const firstNavigable = modules.find(
+        (moduleCandidate) => moduleCandidate.showInNavigation
+    );
+    if (firstNavigable) {
+        return firstNavigable;
+    }
+
+    return modules[0];
+};
+
 export const resolveModuleTabMeta = (route: RouteLocationNormalizedLoaded) => {
     const routeName = route.name?.toString() ?? null;
     const match = getModuleRouteMatch(routeName);
     if (!match) {
+        if (route.path === "/" || route.fullPath === "/") {
+            const defaultModule = getDefaultModule();
+            if (defaultModule) {
+                return {
+                    title: defaultModule.title,
+                    icon: defaultModule.icon,
+                };
+            }
+        }
+
         return {
             title: route.meta?.title?.toString() ?? route.fullPath,
         };
@@ -172,7 +202,7 @@ export const createModulesRoutes = (array: IModule[]): RouteRecordRaw[] => {
                 component: () =>
                     import(`@admin/ts/shared/modules/components/List.vue`),
             } as RouteRecordRaw;
-            if (item.key === "page") {
+            if (item.isDefault) {
                 listRoute.alias = "/";
             }
             routes.push(listRoute);
