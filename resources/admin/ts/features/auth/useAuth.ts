@@ -16,8 +16,7 @@ export const ensureAuthUserLoaded = async () => {
     }
 
     if (authUserLoadPromise) {
-        await authUserLoadPromise;
-        return;
+        return authUserLoadPromise;
     }
 
     const userStore = useUserStore();
