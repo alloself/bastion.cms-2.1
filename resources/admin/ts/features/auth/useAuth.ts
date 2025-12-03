@@ -8,17 +8,26 @@ import { useNotificationsStore } from "@admin/ts/features/notifications";
 import { isAxiosError } from "axios";
 
 let isAuthUserLoaded = false;
+let authUserLoadPromise: Promise<void> | null = null;
 
 export const ensureAuthUserLoaded = async () => {
     if (isAuthUserLoaded) {
         return;
     }
-    const userStore = useUserStore();
-    try {
-        await userStore.getUser();
-    } finally {
-        isAuthUserLoaded = true;
+
+    if (authUserLoadPromise) {
+        await authUserLoadPromise;
+        return;
     }
+
+    const userStore = useUserStore();
+
+    authUserLoadPromise = userStore.getUser().finally(() => {
+        isAuthUserLoaded = true;
+        authUserLoadPromise = null;
+    });
+
+    await authUserLoadPromise;
 };
 
 export const isUserAuthenticated = () => {
