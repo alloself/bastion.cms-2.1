@@ -7,7 +7,6 @@ import {
     handleAuthError,
     handleUnprocessableEntityError,
 } from "@admin/ts/app/api/interceptors";
-import { createModuleStores, modules } from "./shared/modules";
 
 const bootstrapAdminApp = async () => {
     const container = document.getElementById("admin-app");
@@ -24,8 +23,6 @@ const bootstrapAdminApp = async () => {
     const app = createApp(App);
 
     installPlugins(app);
-
-    createModuleStores(modules);
 
     app.mount(container);
 };
