@@ -16,10 +16,12 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'role:root'])->group(functio
 
     Route::apiResources($resources);
 
-    Route::prefix('destroy')->group(function () use ($resources) {
-        foreach ($resources as $route => $controller) {
-            Route::post($route, [$controller, 'deleteMany']);
-        }
+    Route::prefix('batch')->group(function () use ($resources) {
+        Route::prefix('delete')->group(function () use ($resources) {   
+            foreach ($resources as $route => $controller) {
+                Route::delete($route, [$controller, 'deleteMany']);
+            }
+        });
     });
 });
 

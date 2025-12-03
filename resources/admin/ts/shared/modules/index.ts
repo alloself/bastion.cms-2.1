@@ -4,15 +4,10 @@ import type {
     RouteRecordRaw,
 } from "vue-router";
 import { toKebabCase } from "@admin/ts/shared/helpers";
-import { capitalize, reactive, ref } from "vue";
-import { defineStore } from "pinia";
+import { capitalize } from "vue";
 import type {
-    IBaseEntity,
-    IModuleListParams,
-    IServerDataList,
     ITableHeader,
 } from "../../types";
-import type { IModuleListQueryParams } from "./api";
 
 export interface IModule {
     key: string;
@@ -235,57 +230,7 @@ export const createModulesRoutes = (array: IModule[]): RouteRecordRaw[] => {
     }, [] as RouteRecordRaw[]);
 };
 
-export const moduleStoresRegistry = reactive(
-    new Map<IModule["key"], ReturnType<typeof createModuleStore>>()
-);
 
-const buildModuleListQueryParams = (params: IModuleListParams) => {
-    const queryParams: IModuleListQueryParams = {
-        page: params.page,
-        per_page: params.perPage,
-    };
-
-    if (params.sortBy.length > 0) {
-        queryParams.sortBy = params.sortBy;
-    }
-
-    if (params.search.trim() !== "") {
-        queryParams.search = params.search;
-    }
-
-    return queryParams;
-};
-
-const getModuleBaseUrl = (module: IModule) => {
+export const getModuleBaseUrl = (module: IModule) => {
     return `/api/admin/${getModuleUrlPart(module.key)}`;
-};
-
-const createDefaultListParams = (): IModuleListParams => ({
-    page: 1,
-    perPage: 15,
-    sortBy: [],
-    search: "",
-});
-
-export const createModuleStore = (module: IModule) => {
-    const baseUrl = getModuleBaseUrl(module);
-
-    const store = defineStore(`${module.key}Store`, () => {
-     
-
-        const list = ref<IServerDataList<IBaseEntity> | null>(null);
-        const entity = ref<IBaseEntity | null>(null);
-
-        return {
-            list,
-            entity,
-        };
-    });
-
-    moduleStoresRegistry.set(module.key, store);
-    return store;
-};
-
-export const createModuleStores = (modules: IModule[]) => {
-    return modules.forEach(createModuleStore);
 };

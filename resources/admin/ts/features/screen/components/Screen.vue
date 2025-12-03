@@ -170,8 +170,17 @@ const onRemoveScreen = () => {
     screenStore.removeScreen(screen.id);
 };
 
-const onCloseTabClick = (tab: ITab) => {
+const onCloseTabClick = async (tab: ITab) => {
+    const wasActiveTab = screen.activeTabId === tab.id;
     screenStore.closeTab(screen, tab.id);
+    
+    if (wasActiveTab && screen.activeTabId) {
+        const newActiveTab = screen.tabs.get(screen.activeTabId);
+        if (newActiveTab?.route) {
+            await router.push(newActiveTab.route);
+            screenStore.setActiveScreenTabRoute(router.currentRoute.value);
+        }
+    }
 };
 
 const handleActivateScreen = () => {
