@@ -1,5 +1,4 @@
 services:
-  # PHP-FPM сервис
   app:
     build:
       context: .
@@ -15,18 +14,18 @@ services:
       - ./:/var/www
       - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
     environment:
-      DB_CONNECTION: mysql
-      DB_HOST: mysql
-      DB_PORT: 3306
-      DB_DATABASE: bastion_cms_2_1
-      DB_USERNAME: laravel_user
-      DB_PASSWORD: laravel_password
+      DB_CONNECTION: ${DB_CONNECTION}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
     networks:
       - bastion_cms_2_1
     depends_on:
       - mysql
+      - redis
 
-  # Nginx веб-сервер
   nginx:
     image: nginx:alpine
     container_name: bastion_cms_2_1-nginx
@@ -42,16 +41,15 @@ services:
     depends_on:
       - app
 
-  # MySQL база данных
   mysql:
     image: mysql:8.0
     container_name: bastion_cms_2_1-mysql
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: bastion_cms_2_1
-      MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_USER: laravel_user
-      MYSQL_PASSWORD: laravel_password
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
       - "3306:3306"
     volumes:
@@ -60,17 +58,16 @@ services:
     networks:
       - bastion_cms_2_1
 
-  # phpMyAdmin для управления БД
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     container_name: bastion_cms_2_1-phpmyadmin
     restart: unless-stopped
     environment:
-      PMA_HOST: mysql
-      PMA_PORT: 3306
-      PMA_USER: root
-      PMA_PASSWORD: root_password
-      MYSQL_ROOT_PASSWORD: root_password
+      PMA_HOST: ${PMA_HOST}
+      PMA_PORT: ${PMA_PORT}
+      PMA_USER: ${PMA_USER}
+      PMA_PASSWORD: ${PMA_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     ports:
       - "8081:80"
     networks:
@@ -78,7 +75,6 @@ services:
     depends_on:
       - mysql
 
-  # Node.js для frontend разработки
   node:
     image: node:23-alpine
     container_name: bastion_cms_2_1-node
@@ -93,13 +89,12 @@ services:
     networks:
       - bastion_cms_2_1
     environment:
-      - CHOKIDAR_USEPOLLING=1
-      - WATCHPACK_POLLING=true
+      CHOKIDAR_USEPOLLING: ${CHOKIDAR_USEPOLLING}
+      WATCHPACK_POLLING: ${WATCHPACK_POLLING}
     command: sh -c "npm install && npm run dev:all -- --host 0.0.0.0"
 
-  # Redis для кеширования и очередей
   redis:
-    image: redis:7-alpine
+    image: redis:7.4.3-alpine
     container_name: bastion_cms_2_1-redis
     restart: unless-stopped
     ports:
@@ -113,4 +108,4 @@ networks:
 
 volumes:
   mysql_data:
-    driver: local 
+    driver: local
