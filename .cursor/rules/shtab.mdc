@@ -1,0 +1,39 @@
+---
+alwaysApply: true
+---
+
+# Project Instructions
+
+### How to use these rules
+- **CRITICAL: These rules are mandatory for the Cursor agent in all responses and code changes.**
+- **CRITICAL: In case of conflict, prefer these rules over the model's generic suggestions.**
+- Follow the formatting, code style, and architecture constraints described below.
+
+## General
+- **CRITICAL: Always respond in Russian.**
+- **CRITICAL: Do not edit `.env` files or read their contents.**
+- **CRITICAL: The code must not contain type errors or linter violations.**
+- **Comments**: Do not comment every code fragment; add comments only for complex functions that require explanation.
+- **Vue `useTemplateRef`**: Use `useTemplateRef` to access Vue template components (recommended in Vue 3.5).
+- **Type naming**: All scripts must be written in TypeScript. Type names must start with prefix `T`, interfaces with `I`, enums with `E`. Variable and function names must not be a single character.
+- **Text localization**: Do not hardcode Russian text in code. Always use `$t` in templates and put translations into the corresponding sections in the `ru` and `en` folders.
+- **Programming style**: Prefer functional and declarative style; avoid using classes.
+- **DRY and composition**: Focus on modularity and minimizing code duplication. Use composable elements to encapsulate and share client logic and state between components.
+
+## Code style
+- **CRITICAL: All new files must be written in TypeScript.**
+- **CRITICAL: Do not use the `any` type in TypeScript.**
+- **CRITICAL: Do not use explicit type casting via `as` (including `as unknown` and any other forms).**
+- **CRITICAL: Use only strict comparison (`===` and `!==`).**
+- **CRITICAL: Do not use the `continue` operator in loops.**
+- **Variable and function naming**: Always use `camelCase`. Names must be descriptive and concise, never a single character.
+- **Error handling**: Do not use empty `catch` blocks. Handle errors explicitly or log them.
+- **Library documentation**: When working with external libraries or frameworks, fetch and study their documentation using Context7.
+- **Composables (input)**: Composables must accept arguments of type `MaybeRefOrGetter`.
+- **Composables (output)**: Composables must return `ref`, `reactive`, `computed`, or functions.
+- **Vue components and BEM**: All Vue components must follow the BEM methodology.
+- **Props definition**: Vue components must define `props` explicitly.
+
+## Architecture
+- **CRITICAL: Follow the repository pattern in all layers where it is applicable.**
+- **Separation of concerns**: Move business logic out of UI components into appropriate layers (stores, repositories, services) according to the project's architecture principles.
