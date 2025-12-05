@@ -101,7 +101,7 @@ export interface Link {
 
 export interface Page {
   // columns
-  id: number
+  id: string
   meta: Record<string, unknown> | null
   index: boolean
   _lft: number
@@ -111,6 +111,8 @@ export interface Page {
   updated_at: string | null
   deleted_at: string | null
   template_id: string | null
+  // relations
+  audits?: AuditModel[]
 }
 
 export interface Permission {

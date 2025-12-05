@@ -45,7 +45,7 @@ logs-node: ## Показать логи Node.js контейнера
 
 wait-for-mysql: ## Дождаться готовности MySQL
 	@echo "$(YELLOW)Ожидание готовности MySQL...$(NC)"
-	@docker-compose exec mysql sh -lc 'until mysqladmin ping -h "mysql" -u "$$MYSQL_USER" -p"$$MYSQL_PASSWORD" --protocol=tcp --silent; do sleep 2; done'
+	@docker-compose exec mysql sh -lc 'export MYSQL_PWD="$$MYSQL_PASSWORD"; until mysqladmin ping -h "mysql" -u "$$MYSQL_USER" --protocol=tcp --silent; do sleep 2; done'
 	@echo "$(GREEN)MySQL готов!$(NC)"
 
 shell: ## Войти в контейнер приложения
