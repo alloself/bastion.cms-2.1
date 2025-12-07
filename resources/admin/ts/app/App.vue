@@ -1,17 +1,19 @@
 <template>
-    <VApp>
-        <router-view v-slot="{ Component }">
-            <component :is="Component" />
-        </router-view>
-        <notification
-            v-for="(notification, index) in notifications"
-            :key="index"
-            :notification="notification"
-            :style="getOffsetStyle(index)"
-            @onCancel="notificationStore.closeAlert(index)"
-        >
-        </notification>
-    </VApp>
+    <Suspense>
+        <VApp>
+            <router-view v-slot="{ Component }">
+                <component :is="Component" />
+            </router-view>
+            <notification
+                v-for="(notification, index) in notifications"
+                :key="index"
+                :notification="notification"
+                :style="getOffsetStyle(index)"
+                @onCancel="notificationStore.closeAlert(index)"
+            >
+            </notification>
+        </VApp>
+    </Suspense>
     <PiniaColadaDevtools v-if="isDev()" />
 </template>
 
@@ -19,7 +21,10 @@
 import { PiniaColadaDevtools } from "@pinia/colada-devtools";
 import { isDev } from "@admin/ts/shared/helpers";
 
-import { Notification, useNotificationsStore } from "@admin/ts/features/notifications";
+import {
+    Notification,
+    useNotificationsStore,
+} from "@admin/ts/features/notifications";
 import { storeToRefs } from "pinia";
 
 const notificationStore = useNotificationsStore();

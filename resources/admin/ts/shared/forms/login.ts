@@ -2,18 +2,6 @@ import type { ISmartFormField } from "@admin/ts/types";
 import { ref, computed } from "vue";
 import { z } from "zod";
 
-const createZodFieldRule = <T extends z.ZodTypeAny>(schema: T) => {
-    return (value: unknown) => {
-        const result = schema.safeParse(value);
-        if (!result.success) {
-            const [firstIssue] = result.error.issues;
-            return firstIssue?.message || "Некорректное значение";
-        }
-
-        return true;
-    };
-};
-
 const emailSchema = z
     .string()
     .trim()
@@ -31,9 +19,6 @@ export const loginSchema = z.object({
 });
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
-
-const emailRule = createZodFieldRule(emailSchema);
-const passwordRule = createZodFieldRule(passwordSchema);
 
 export const useLoginFormFields = () => {
     const showPassword = ref(false);
@@ -53,7 +38,7 @@ export const useLoginFormFields = () => {
                 prependIcon: "mdi-email-outline",
                 type: "email",
             },
-            rule: emailRule,
+            rule: emailSchema,
         },
         {
             component: "v-text-field",
@@ -69,7 +54,7 @@ export const useLoginFormFields = () => {
             events: {
                 "click:appendInner": togglePasswordVisibility,
             },
-            rule: passwordRule,
+            rule: passwordSchema,
         },
     ]);
 

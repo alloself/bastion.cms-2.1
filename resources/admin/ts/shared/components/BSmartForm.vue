@@ -53,6 +53,8 @@ import {
     type FormContext,
     type GenericObject,
 } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/zod";
+import { z } from "zod";
 import type { ISmartFormField, ISmartFormProps } from "@admin/ts/types";
 
 const {
@@ -69,12 +71,17 @@ const emits = defineEmits<{
 }>();
 
 const mergedValidationSchema = computed(() => {
-    return fields.reduce((schema, field) => {
-        if (field.rule) {
-            schema[field.key] = field.rule;
-        }
-        return schema;
-    }, {} as GenericObject);
+    const schemaShape = fields.reduce(
+        (shape, field) => {
+            if (field.rule) {
+                shape[field.key] = field.rule;
+            }
+            return shape;
+        },
+        {} as Record<string, z.ZodType>
+    );
+
+    return toTypedSchema(z.object(schemaShape));
 });
 
 const formContext = useForm<T, K>({

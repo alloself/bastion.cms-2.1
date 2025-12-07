@@ -58,7 +58,7 @@
 
         <BKeepAlive
             v-if="activeTabComponent && activeTab"
-            :active-key="activeTab.id"
+            :active-key="activeTabKey"
             :component="activeTabComponent"
             :component-props="activeTabProps"
         />
@@ -78,7 +78,7 @@ import { computed, defineAsyncComponent, ref } from "vue";
 import type { AsyncComponentLoader, Component } from "vue";
 import { useScreenStore } from "@admin/ts/features/screen";
 import type { IScreen, ITab, TTabId } from "@admin/ts/features/screen";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { useScreenResizer } from "@admin/ts/features/screen/composables/useScreenResizer";
 import BKeepAlive from "@admin/ts/shared/components/BKeepAlive.vue";
 
@@ -90,6 +90,7 @@ const { screen, isLast, nextScreen } = defineProps<{
 
 const screenStore = useScreenStore();
 const router = useRouter();
+const route = useRoute();
 
 const screenWidth = computed(() => {
     return screenStore.getScreenWidth(screen.id);
@@ -202,6 +203,9 @@ const activeTabRouteLocation = computed(() => {
     if (!activeTab.value) {
         return null;
     }
+    if (route.fullPath === activeTab.value.route) {
+        return router.currentRoute.value;
+    }
     return router.resolve(activeTab.value.route);
 });
 
@@ -269,6 +273,13 @@ const activeTabProps = computed<Record<string, unknown>>(() => {
     }
 
     return {};
+});
+
+const activeTabKey = computed(() => {
+    if (!activeTab.value) {
+        return null;
+    }
+    return `${activeTab.value.id}-${activeTab.value.route}`;
 });
 </script>
 
