@@ -36,7 +36,9 @@
                     />
                 </div>
             </template>
-
+            <template #[`item.url`]="{ item }" >
+                <a :href="item.url?.toString()" target="_blank">{{ item.url }}</a>
+            </template>
             <template #loading>
                 <VSkeletonLoader type="table-row@20" />
             </template>
