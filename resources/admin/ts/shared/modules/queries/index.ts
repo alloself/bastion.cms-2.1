@@ -1,7 +1,7 @@
 export {
-    createModuleListQuery,
+    useModuleListQuery,
     defineModuleListQuery,
-    type ICreateModuleListQueryParams,
+    type IUseModuleListQueryParams,
 } from "./list";
 
 export {

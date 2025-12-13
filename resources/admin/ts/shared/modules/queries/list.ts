@@ -15,7 +15,7 @@ import {
 } from "../api";
 import { getModuleBaseUrl } from "..";
 
-export interface ICreateModuleListQueryParams {
+export interface IUseModuleListQueryParams {
     module: MaybeRefOrGetter<IModule>;
     queryParams: MaybeRefOrGetter<IModuleListQueryParams>;
 }
@@ -47,10 +47,10 @@ const getListQueryBaseKey = (module: IModule) => {
     return ["modules", module.key, "list"];
 };
 
-export const createModuleListQuery = <T extends IBaseEntity>({
+export const useModuleListQuery = <T extends IBaseEntity>({
     module,
     queryParams,
-}: ICreateModuleListQueryParams) => {
+}: IUseModuleListQueryParams) => {
     const queryCache = useQueryCache();
 
     const moduleValue = computed(() => toValue(module));

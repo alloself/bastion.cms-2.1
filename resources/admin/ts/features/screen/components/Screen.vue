@@ -81,6 +81,7 @@ import type { IScreen, ITab, TTabId } from "@admin/ts/features/screen";
 import { useRouter, useRoute } from "vue-router";
 import { useScreenResizer } from "@admin/ts/features/screen/composables/useScreenResizer";
 import BKeepAlive from "@admin/ts/shared/components/BKeepAlive.vue";
+import { isPlainRecord, isRouteLocationNormalized } from "@admin/ts/shared/typeGuards";
 
 const { screen, isLast, nextScreen } = defineProps<{
     screen: IScreen;
@@ -184,8 +185,36 @@ const onCloseTabClick = async (tab: ITab) => {
     }
 };
 
-const handleActivateScreen = () => {
+const getTabFullPath = (tab: ITab): string => {
+    const tabRoute = tab.route;
+    if (typeof tabRoute === "string") {
+        return tabRoute;
+    }
+    return router.resolve(tabRoute).fullPath;
+};
+
+const handleActivateScreen = async () => {
     screenStore.setActiveScreen(screen.id);
+
+    const activeTabId = screen.activeTabId;
+    if (!activeTabId) {
+        return;
+    }
+
+    const tab = screen.tabs.get(activeTabId);
+    if (!tab || !tab.route) {
+        return;
+    }
+
+    const nextFullPath = getTabFullPath(tab);
+    const currentFullPath = router.currentRoute.value.fullPath;
+
+    if (nextFullPath === currentFullPath) {
+        return;
+    }
+
+    await router.replace(tab.route);
+    screenStore.setActiveScreenTabRoute(router.currentRoute.value);
 };
 
 const activeTab = computed(() => {
@@ -203,7 +232,7 @@ const activeTabRouteLocation = computed(() => {
     if (!activeTab.value) {
         return null;
     }
-    if (route.fullPath === activeTab.value.route) {
+    if (typeof activeTab.value.route === "string" && route.fullPath === activeTab.value.route) {
         return router.currentRoute.value;
     }
     return router.resolve(activeTab.value.route);
@@ -251,35 +280,53 @@ const activeTabProps = computed(() => {
     const routeLocation = activeTabRouteLocation.value;
     const propsForRecord = matchedRecord?.props;
 
-    if (!matchedRecord || !routeLocation || !propsForRecord) {
+    if (!routeLocation) {
         return {};
+    }
+
+    const tabFullPath = routeLocation.fullPath;
+
+    if (!matchedRecord || !propsForRecord) {
+        return { tabFullPath };
     }
 
     const propsForView = propsForRecord.default;
 
     if (!propsForView) {
-        return {};
+        return { tabFullPath };
     }
 
     if (typeof propsForView === "boolean") {
         if (!propsForView) {
-            return {};
+            return { tabFullPath };
         }
-        return routeLocation.params;
+        return { ...routeLocation.params, tabFullPath };
     }
 
-    if (typeof propsForView === "object") {
-        return propsForView;
+    if (typeof propsForView === "function") {
+        if (!isRouteLocationNormalized(routeLocation)) {
+            return { tabFullPath };
+        }
+
+        const resolvedProps = propsForView(routeLocation);
+        if (!isPlainRecord(resolvedProps)) {
+            return { tabFullPath };
+        }
+        return { ...resolvedProps, tabFullPath };
     }
 
-    return {};
+    if (isPlainRecord(propsForView)) {
+        return { ...propsForView, tabFullPath };
+    }
+
+    return { tabFullPath };
 });
 
 const activeTabKey = computed(() => {
-    if (!activeTab.value) {
+    if (!activeTab.value || !activeTabRouteLocation.value) {
         return null;
     }
-    return `${activeTab.value.id}-${activeTab.value.route}`;
+    return `${activeTab.value.id}-${activeTabRouteLocation.value.path}`;
 });
 </script>
 

@@ -10,6 +10,8 @@ import {
     VCombobox,
     VSelect,
     VTreeview,
+    VSkeletonLoader,
+    VEmptyState,
 } from "vuetify/components";
 
 export const dark: ThemeDefinition = {
@@ -61,6 +63,8 @@ export default createVuetify({
         VCombobox,
         VSelect,
         VTreeview,
+        VSkeletonLoader,
+        VEmptyState,
     },
     theme: {
         defaultTheme: "dark",
