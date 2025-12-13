@@ -34,12 +34,7 @@ const getListQueryKey = (module: IModule, params: IModuleListQueryParams) => {
         "modules",
         module.key,
         "list",
-        {
-            page: params.page,
-            perPage: params.per_page,
-            sortBy: params.sortBy,
-            search: params.search,
-        },
+        params,
     ];
 };
 
