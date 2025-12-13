@@ -246,7 +246,7 @@ const activeTabComponent = computed<Component | null>(() => {
     return componentForView;
 });
 
-const activeTabProps = computed<Record<string, unknown>>(() => {
+const activeTabProps = computed(() => {
     const matchedRecord = activeMatchedRecord.value;
     const routeLocation = activeTabRouteLocation.value;
     const propsForRecord = matchedRecord?.props;
