@@ -9,6 +9,7 @@
             fixed-header
             fixed-footer
             show-select
+            density="compact"
             select-strategy="page"
             v-model="selectedEntityIds"
             :page="tableState.page"
