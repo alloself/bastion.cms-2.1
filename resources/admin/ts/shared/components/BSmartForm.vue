@@ -5,12 +5,7 @@
             :name="schemeField.key"
             :key="schemeField.uniqueKey"
         >
-            <div
-                class="smart-form__field"
-                :class="schemeField.wrapperClass"
-                :style="schemeField.wrapperStyle"
-                v-bind="schemeField.wrapperAttrs"
-            >
+            <div class="smart-form__field">
                 <Field
                     :name="schemeField.key"
                     :validate-on-mount="false"
@@ -90,9 +85,6 @@ const normalizedFields = computed(() => {
             events: {
                 ...(field.events || {}),
             },
-            wrapperClass: field.wrapperClass,
-            wrapperStyle: field.wrapperStyle,
-            wrapperAttrs: field.wrapperAttrs || {},
         };
     });
 });

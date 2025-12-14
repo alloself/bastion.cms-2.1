@@ -1,24 +1,11 @@
 import type { FormContext, GenericObject } from "vee-validate";
-import type { Component, StyleValue } from "vue";
+import type { Component } from "vue";
 import type { PartialDeep } from "type-fest";
 import type { z } from "zod";
 
 export type TClassValue = string | string[] | Record<string, boolean>;
 
-export interface ISmartFormLayoutConfig {
-    type?: "column" | "grid";
-    columns?: string;
-    minColumnWidth?: string;
-    areas?: string[];
-    gap?: string;
-    rowGap?: string;
-    columnGap?: string;
-    autoRows?: string;
-    alignItems?: string;
-    justifyItems?: string;
-    class?: TClassValue;
-    style?: StyleValue;
-}
+
 
 export interface ISmartFormField {
     component: Component | string;
@@ -27,9 +14,6 @@ export interface ISmartFormField {
     events?: Record<string, Function>;
     rule?: z.ZodType;
     readonly?: boolean;
-    wrapperClass?: TClassValue;
-    wrapperStyle?: StyleValue;
-    wrapperAttrs?: Record<string, unknown>;
 }
 
 export interface ISmartFormProps<
@@ -42,7 +26,6 @@ export interface ISmartFormProps<
     loading?: boolean;
     readonly?: boolean;
     initialItems?: Record<string, unknown>;
-    layout?: ISmartFormLayoutConfig;
 }
 
 export interface IBaseEntity extends Record<string, unknown> {
