@@ -57,7 +57,7 @@ const initialValues =
               email: "root@example.com",
               password: "password",
           }
-        : {};
+        : undefined;
 
 const handleLogin = async () => {
     if (!form.value) {

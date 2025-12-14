@@ -9,6 +9,7 @@ export interface ISmartFormLayoutConfig {
     type?: "column" | "grid";
     columns?: string;
     minColumnWidth?: string;
+    areas?: string[];
     gap?: string;
     rowGap?: string;
     columnGap?: string;

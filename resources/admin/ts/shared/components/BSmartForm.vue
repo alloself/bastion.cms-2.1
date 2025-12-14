@@ -1,10 +1,5 @@
 <template>
-    <form
-        class="smart-form"
-        @submit.prevent
-        :class="formClasses"
-        :style="formStyle"
-    >
+    <form class="smart-form" @submit.prevent>
         <slot
             v-for="schemeField in normalizedFields"
             :name="schemeField.key"
@@ -40,29 +35,16 @@
     </form>
 </template>
 
-<script
-    lang="ts"
-    setup
-    generic="T extends GenericObject,K extends GenericObject"
->
+<script lang="ts" setup generic="T extends IBaseEntity,K extends IBaseEntity">
 import { computed, watch } from "vue";
-import type { StyleValue } from "vue";
-import {
-    useForm,
-    Field,
-    type FormContext,
-    type GenericObject,
-} from "vee-validate";
-import { toTypedSchema } from "@vee-validate/zod";
+import { useForm, Field, type FormContext } from "vee-validate";
 import { z } from "zod";
-import type { ISmartFormField, ISmartFormProps } from "@admin/ts/types";
+import type { IBaseEntity, ISmartFormProps } from "@admin/ts/types";
 
 const {
     fields = [],
     initialValues,
     readonly = false,
-    initialItems = {},
-    layout,
     loading = false,
 } = defineProps<ISmartFormProps<T, K>>();
 
@@ -71,17 +53,21 @@ const emits = defineEmits<{
 }>();
 
 const mergedValidationSchema = computed(() => {
-    const schemaShape = fields.reduce(
+    const schemaShape = fields.reduce<Record<string, z.ZodType>>(
         (shape, field) => {
-            if (field.rule) {
-                shape[field.key] = field.rule;
+            if (!field.rule) {
+                return shape;
             }
-            return shape;
+
+            return {
+                ...shape,
+                [field.key]: field.rule,
+            };
         },
-        {} as Record<string, z.ZodType>
+        {}
     );
 
-    return toTypedSchema(z.object(schemaShape));
+    return z.object(schemaShape);
 });
 
 const formContext = useForm<T, K>({
@@ -93,12 +79,6 @@ const formContext = useForm<T, K>({
 
 emits("update:form", formContext);
 
-const getInitialItems = (field: ISmartFormField) => {
-    return field.key in initialItems
-        ? initialItems[field.key]
-        : field.props?.initialItems || [];
-};
-
 const normalizedFields = computed(() => {
     return fields.map((field) => {
         return {
@@ -106,7 +86,6 @@ const normalizedFields = computed(() => {
             uniqueKey: field.key,
             props: {
                 ...(field.props || {}),
-                initialItems: getInitialItems(field),
             },
             events: {
                 ...(field.events || {}),
@@ -116,85 +95,6 @@ const normalizedFields = computed(() => {
             wrapperAttrs: field.wrapperAttrs || {},
         };
     });
-});
-
-const isGridLayout = computed(() => layout?.type === "grid");
-
-const gridStyle = computed<StyleValue | undefined>(() => {
-    if (!isGridLayout.value) {
-        return undefined;
-    }
-
-    const style: Record<string, string> = {
-        display: "grid",
-        "grid-template-columns":
-            layout?.columns ||
-            (layout?.minColumnWidth
-                ? `repeat(auto-fit, minmax(${layout?.minColumnWidth}, 1fr))`
-                : "repeat(auto-fit, minmax(280px, 1fr))"),
-    };
-
-    if (layout?.gap) {
-        style.gap = layout?.gap;
-    }
-
-    if (!layout?.gap) {
-        if (layout?.columnGap) {
-            style["column-gap"] = layout?.columnGap;
-        }
-        if (layout?.rowGap) {
-            style["row-gap"] = layout?.rowGap;
-        }
-    } else {
-        if (layout?.columnGap) {
-            style["column-gap"] = layout?.columnGap;
-        }
-        if (layout?.rowGap) {
-            style["row-gap"] = layout?.rowGap;
-        }
-    }
-
-    if (!layout?.gap && !layout?.columnGap && !layout?.rowGap) {
-        style.gap = "1rem";
-    }
-
-    if (layout?.autoRows) {
-        style["grid-auto-rows"] = layout?.autoRows;
-    }
-
-    if (layout?.alignItems) {
-        style["align-items"] = layout?.alignItems;
-    }
-
-    if (layout?.justifyItems) {
-        style["justify-items"] = layout?.justifyItems;
-    }
-
-    return style;
-});
-
-const formClasses = computed(() => [
-    { "smart-form--grid": isGridLayout.value },
-    layout?.class,
-]);
-
-const formStyle = computed<StyleValue | undefined>(() => {
-    const baseStyle = layout?.style;
-    const extraStyle = gridStyle.value;
-
-    if (extraStyle) {
-        if (Array.isArray(baseStyle)) {
-            return [...baseStyle, extraStyle];
-        }
-
-        if (baseStyle) {
-            return [baseStyle, extraStyle];
-        }
-
-        return extraStyle;
-    }
-
-    return baseStyle;
 });
 
 watch(
@@ -222,14 +122,5 @@ watch(
     & > * {
         flex: none;
     }
-}
-
-.smart-form--grid {
-    flex-direction: initial;
-}
-
-.smart-form__field {
-    width: 100%;
-    min-width: 0;
 }
 </style>

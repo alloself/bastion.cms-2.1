@@ -394,11 +394,7 @@ const handleDeleteSelected = async () => {
         await listQuery.deleteEntitiesAsync(idsToDelete);
         selectedEntityIds.value = [];
     } catch (error) {
-        console.error("Не удалось удалить выбранные элементы", {
-            moduleKey: moduleValue.value.key,
-            idsToDelete,
-            error,
-        });
+       //todo: show notify
     }
 };
 

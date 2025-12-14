@@ -14,13 +14,10 @@
             </notification>
         </VApp>
     </Suspense>
-    <PiniaColadaDevtools v-if="isDev()" />
+    <!-- <PiniaColadaDevtools v-if="isDev()" /> -->
 </template>
 
 <script setup lang="ts">
-import { PiniaColadaDevtools } from "@pinia/colada-devtools";
-import { isDev } from "@admin/ts/shared/helpers";
-
 import {
     Notification,
     useNotificationsStore,
