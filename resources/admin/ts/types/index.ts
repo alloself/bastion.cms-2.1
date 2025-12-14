@@ -5,7 +5,18 @@ import type { z } from "zod";
 
 export type TClassValue = string | string[] | Record<string, boolean>;
 
+export type TSmartFormLayout = string | string[];
 
+export type TSmartFormGridLayout =
+    | {
+          isEnabled: false;
+      }
+    | {
+          isEnabled: true;
+          templateAreas: string;
+          templateColumns: string;
+          fieldAreaByKey: Record<string, string>;
+      };
 
 export interface ISmartFormField {
     component: Component | string;
@@ -21,6 +32,7 @@ export interface ISmartFormProps<
     TOutput extends GenericObject
 > {
     fields: ISmartFormField[];
+    layout?: TSmartFormLayout;
     form?: FormContext<TValues, TOutput>;
     initialValues?: PartialDeep<TValues>;
     loading?: boolean;

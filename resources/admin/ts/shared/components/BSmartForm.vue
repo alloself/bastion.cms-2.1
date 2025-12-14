@@ -1,11 +1,17 @@
 <template>
-    <form class="smart-form" @submit.prevent>
-        <slot
+    <form
+        class="smart-form"
+        :class="{ 'smart-form--grid': isGridLayoutEnabled }"
+        :style="formGridStyle"
+        @submit.prevent
+    >
+        <div
             v-for="schemeField in normalizedFields"
-            :name="schemeField.key"
             :key="schemeField.uniqueKey"
+            class="smart-form__field"
+            :style="fieldGridStyleByKey[schemeField.key]"
         >
-            <div class="smart-form__field">
+            <slot :name="schemeField.key">
                 <Field
                     :name="schemeField.key"
                     :validate-on-mount="false"
@@ -25,8 +31,8 @@
                         class="mb-1"
                     ></Component>
                 </Field>
-            </div>
-        </slot>
+            </slot>
+        </div>
     </form>
 </template>
 
@@ -35,9 +41,11 @@ import { computed, watch } from "vue";
 import { useForm, Field, type FormContext } from "vee-validate";
 import { z } from "zod";
 import type { IBaseEntity, ISmartFormProps } from "@admin/ts/types";
+import { useLayout } from "@admin/ts/shared/composables/useLayout";
 
 const {
     fields = [],
+    layout,
     initialValues,
     readonly = false,
     loading = false,
@@ -89,6 +97,11 @@ const normalizedFields = computed(() => {
     });
 });
 
+const { isGridLayoutEnabled, formGridStyle, fieldGridStyleByKey } = useLayout(
+    () => fields,
+    () => layout
+);
+
 watch(
     () => initialValues,
     (newValues) => {
@@ -113,6 +126,16 @@ watch(
 
     & > * {
         flex: none;
+    }
+
+    &--grid {
+        display: grid;
+        column-gap: 16px;
+        align-content: start;
+    }
+
+    &__field {
+        min-width: 0;
     }
 }
 </style>
