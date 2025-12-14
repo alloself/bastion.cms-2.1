@@ -85,10 +85,6 @@ export interface ISortBy {
     order: "asc" | "desc";
 }
 
-/**
- * Vuetify v-data-table-server options interface
- * Represents the options emitted by @update:options event
- */
 export interface IVuetifyTableOptions {
     page: number;
     itemsPerPage: number;
@@ -97,9 +93,6 @@ export interface IVuetifyTableOptions {
     search?: string;
 }
 
-/**
- * Module list query parameters for API requests
- */
 export interface IModuleListParams {
     page: number;
     perPage: number;
@@ -107,9 +100,6 @@ export interface IModuleListParams {
     search: string;
 }
 
-/**
- * Header definition for v-data-table
- */
 export interface ITableHeader {
     title: string;
     key: string;
@@ -120,14 +110,6 @@ export interface ITableHeader {
     maxWidth?: string;
 }
 
-/**
- * Module detail view mode
- */
-export type TDetailViewMode = "view" | "edit";
-
-/**
- * Delete confirmation dialog state
- */
 export interface IDeleteDialogState {
     isOpen: boolean;
     entityId: string | null;

@@ -37,9 +37,6 @@
                     />
                 </div>
             </template>
-            <template #[`item.url`]="{ item }" >
-                <a :href="item.url?.toString()" target="_blank">{{ item.url }}</a>
-            </template>
             <template #loading>
                 <VSkeletonLoader type="table-row@20" />
             </template>
@@ -152,22 +149,23 @@
 
 <script setup lang="ts" generic="T extends IBaseEntity">
 import type { IBaseEntity } from "@admin/ts/types";
-import type { ISortBy, IVuetifyTableOptions } from "@admin/ts/types";
+import type {
+    ISortBy,
+    IVuetifyTableOptions,
+    IModuleListParams,
+} from "@admin/ts/types";
 import type { IModule } from "@admin/ts/shared/modules";
 import type { IModuleListQueryParams } from "@admin/ts/shared/modules/api";
 import { useModuleListQuery } from "@admin/ts/shared/modules/queries";
-import { toScreenRoute } from "@admin/ts/shared/helpers";
+import {
+    parseIntegerParam,
+    parseSortByParam,
+    toScreenRoute,
+} from "@admin/ts/shared/helpers";
 import { useScreenStore } from "@admin/ts/features/screen";
 import { isPlainRecord } from "@admin/ts/shared/typeGuards";
 import { computed, ref, watch, capitalize } from "vue";
 import { useRouter } from "vue-router";
-
-interface IModuleListTableState {
-    page: number;
-    perPage: number;
-    sortBy: ISortBy[];
-    search: string;
-}
 
 const props = defineProps<{
     module: IModule;
@@ -177,38 +175,16 @@ const props = defineProps<{
 const router = useRouter();
 const screenStore = useScreenStore();
 
-const defaultTableState: IModuleListTableState = {
+const defaultTableState: IModuleListParams = {
     page: 1,
     perPage: 10,
     sortBy: [],
     search: "",
 };
 
-const parseIntegerParam = (value: string | null, fallback: number): number => {
-    if (!value) {
-        return fallback;
-    }
-    const parsedValue = Number.parseInt(value, 10);
-    if (Number.isNaN(parsedValue) || parsedValue < 1) {
-        return fallback;
-    }
-    return parsedValue;
-};
-
-const parseSortByParam = (rawValue: string): ISortBy | null => {
-    const [key, order] = rawValue.split(":");
-    if (!key || (order !== "asc" && order !== "desc")) {
-        return null;
-    }
-
-    return { key, order };
-};
-
-const parseTableStateFromFullPath = (
-    fullPath: string
-): IModuleListTableState => {
+const parseTableStateFromFullPath = (fullPath: string): IModuleListParams => {
     try {
-        const url = new URL(fullPath, "http://localhost");
+        const url = new URL(fullPath, import.meta.env.BASE_URL);
 
         const page = parseIntegerParam(
             url.searchParams.get("page"),
@@ -236,11 +212,6 @@ const parseTableStateFromFullPath = (
             search,
         };
     } catch (error) {
-        console.warn("Failed to parse module list fullPath", {
-            fullPath,
-            error,
-        });
-
         return {
             ...defaultTableState,
             sortBy: [...defaultTableState.sortBy],
@@ -257,9 +228,7 @@ const normalizeSortBy = (value: ISortBy[]): ISortBy[] => {
     });
 };
 
-const normalizeTableState = (
-    state: IModuleListTableState
-): IModuleListTableState => {
+const normalizeTableState = (state: IModuleListParams): IModuleListParams => {
     return {
         page: state.page < 1 ? defaultTableState.page : state.page,
         perPage: state.perPage < 1 ? defaultTableState.perPage : state.perPage,
@@ -270,9 +239,9 @@ const normalizeTableState = (
 
 const buildFullPathWithState = (
     baseFullPath: string,
-    state: IModuleListTableState
+    state: IModuleListParams
 ): string => {
-    const url = new URL(baseFullPath, "http://localhost");
+    const url = new URL(baseFullPath, import.meta.env.BASE_URL);
     const searchParams = new URLSearchParams(url.search);
 
     const normalizedState = normalizeTableState(state);
@@ -369,8 +338,8 @@ const replaceUrlForActiveTab = async (nextFullPath: string) => {
     screenStore.setActiveScreenTabRoute(router.currentRoute.value);
 };
 
-const patchUrlState = async (patch: Partial<IModuleListTableState>) => {
-    const nextState: IModuleListTableState = {
+const patchUrlState = async (patch: Partial<IModuleListParams>) => {
+    const nextState: IModuleListParams = {
         ...tableState.value,
         ...patch,
     };
@@ -396,18 +365,18 @@ const handleSearchSubmit = () => {
         return;
     }
 
-    void patchUrlState({ search: normalizedSearchValue, page: 1 });
+    patchUrlState({ search: normalizedSearchValue, page: 1 });
 };
 
 const handleClearSearch = () => {
     if (searchInput.value !== "") {
         searchInput.value = "";
     }
-    void patchUrlState({ search: "", page: 1 });
+    patchUrlState({ search: "", page: 1 });
 };
 
 const handleCreateClick = (event: MouseEvent) => {
-    void toScreenRoute(
+    toScreenRoute(
         { name: `${capitalize(moduleValue.value.key)}Create` },
         event
     );
@@ -461,7 +430,7 @@ const handlePerPageChange = (nextValue: unknown) => {
         return;
     }
 
-    void patchUrlState({ perPage: nextPerPage, page: 1 });
+    patchUrlState({ perPage: nextPerPage, page: 1 });
 };
 
 const handlePageChange = (nextValue: number) => {
@@ -472,7 +441,7 @@ const handlePageChange = (nextValue: number) => {
         return;
     }
 
-    void patchUrlState({ page: nextPage });
+    patchUrlState({ page: nextPage });
 };
 
 const areSortByEqual = (
@@ -517,7 +486,7 @@ const handleOptionsUpdate = (options: IVuetifyTableOptions) => {
         return;
     }
 
-    void patchUrlState({
+    patchUrlState({
         page: nextPage,
         perPage: nextPerPage,
         sortBy: nextSortBy,

@@ -1,4 +1,5 @@
 import { type RouteLocationRaw } from "vue-router";
+import type { ISortBy } from "@admin/ts/types";
 import { useScreenStore } from "@admin/ts/features/screen";
 import router from "../app/router";
 
@@ -8,6 +9,26 @@ export const isDev = () => {
 
 export const toKebabCase = (string: string) => {
     return string.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+};
+
+export const parseIntegerParam = (value: string | null, fallback: number) => {
+    if (!value) {
+        return fallback;
+    }
+    const parsedValue = Number.parseInt(value, 10);
+    if (Number.isNaN(parsedValue) || parsedValue < 1) {
+        return fallback;
+    }
+    return parsedValue;
+};
+
+export const parseSortByParam = (rawValue: string): ISortBy | null => {
+    const [key, order] = rawValue.split(":");
+    if (!key || (order !== "asc" && order !== "desc")) {
+        return null;
+    }
+
+    return { key, order };
 };
 
 const isModifierKeyPressed = (
