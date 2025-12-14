@@ -256,6 +256,39 @@ export const useScreenStore = defineStore("screen", () => {
         return tab;
     };
 
+    const syncActiveTabWithRoute = (route: RouteLocationNormalizedLoaded) => {
+        const targetFullPath = route.fullPath;
+
+        const activeScreenCandidate = getScreenById(activeScreenId.value);
+        if (activeScreenCandidate) {
+            for (const tab of activeScreenCandidate.tabs.values()) {
+                if (typeof tab.route === "string" && tab.route === targetFullPath) {
+                    activeScreenId.value = activeScreenCandidate.id;
+                    activeScreenCandidate.activeTabId = tab.id;
+                    return setActiveScreenTabRoute(route);
+                }
+            }
+        }
+
+        for (const screen of screens.values()) {
+            const shouldSkipScreen =
+                activeScreenCandidate !== null &&
+                screen.id === activeScreenCandidate.id;
+
+            if (!shouldSkipScreen) {
+                for (const tab of screen.tabs.values()) {
+                    if (typeof tab.route === "string" && tab.route === targetFullPath) {
+                        activeScreenId.value = screen.id;
+                        screen.activeTabId = tab.id;
+                        return setActiveScreenTabRoute(route);
+                    }
+                }
+            }
+        }
+
+        return setActiveScreenTabRoute(route);
+    };
+
     const initializeState = () => {
         if (storedState.value && storedState.value.screens.length > 0) {
             deserializeState(storedState.value);
@@ -342,6 +375,7 @@ export const useScreenStore = defineStore("screen", () => {
         addTab,
         openRouteTab,
         setActiveScreen,
+        syncActiveTabWithRoute,
         setActiveScreenTabRoute,
         getScreenWidth,
         setScreenWidth,

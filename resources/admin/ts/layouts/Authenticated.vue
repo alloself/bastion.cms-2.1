@@ -101,7 +101,7 @@
 </template>
 
 <script lang="ts" setup>
-import { capitalize, computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { capitalize, computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useNavigation } from "@admin/ts/shared/composables/useNavigation";
 import { modules, type IModule } from "@admin/ts/shared/modules";
 import { sortBy } from "lodash";
@@ -111,6 +111,7 @@ import { useRoute, useRouter } from "vue-router";
 import BLogo from "@admin/ts/shared/components/BLogo.vue";
 import { Screen, useScreenStore } from "@admin/ts/features/screen";
 import { useAuth } from "@admin/ts/features/auth";
+import { useEventListener } from "@vueuse/core";
 
 const { showNavigationDrawer, toggle } = useNavigation();
 const userStore = useUserStore();
@@ -195,6 +196,25 @@ const slots = defineSlots<{
 }>();
 
 const HTMLDOMElement = ref<HTMLHtmlElement | null>(null);
+const isHistoryNavigation = ref(false);
+
+const handlePopState = () => {
+    isHistoryNavigation.value = true;
+};
+
+useEventListener("popstate", handlePopState);
+
+watch(
+    () => route.fullPath,
+    () => {
+        if (isHistoryNavigation.value !== true) {
+            return;
+        }
+
+        isHistoryNavigation.value = false;
+        screenStore.syncActiveTabWithRoute(router.currentRoute.value);
+    }
+);
 
 onMounted(() => {
     if (screenStore.screens.size === 0) {
