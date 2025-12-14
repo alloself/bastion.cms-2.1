@@ -34,7 +34,11 @@
                         @keydown.enter.prevent="handleSearchSubmit"
                         @click:append-inner="handleSearchSubmit"
                         @click:clear="handleClearSearch"
-                    />
+                    >
+                    <template #["append-inner"]>
+                        <VHotkey keys="enter" variant="elevated" platform="auto" />
+                    </template>
+                    </VTextField>
                 </div>
             </template>
             <template #loading>

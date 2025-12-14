@@ -4,7 +4,7 @@
             <BSmartForm
                 class="module-detail__form"
                 :loading="isSaving || isLoading"
-                :fields="fields"
+                :fields="moduleFields"
                 :initial-values="initialValues"
                 v-model:form="form"
             />
@@ -17,95 +17,113 @@
                 content-class="module-detail__footer-container"
                 show-arrows
             >
-                <VBtn
-                    prepend-icon="mdi-arrow-left"
-                    size="small"
-                    variant="flat"
-                    :disabled="isActionDisabled"
-                    @click="handleBackClick"
-                >
-                    Назад
-                </VBtn>
+                <VTooltip location="top" text="Назад" color="primary">
+                    <template #activator="{ props: activatorProps }">
+                        <VBtn
+                            icon
+                            size="x-small"
+                            variant="flat"
+                            v-bind="activatorProps"
+                            :disabled="isActionDisabled"
+                            @click="handleBackClick"
+                        >
+                            <VIcon>mdi-arrow-left</VIcon>
+                        </VBtn>
+                    </template>
+                    <span>Назад</span>
+                </VTooltip>
                 <VSpacer />
-                <VBtn
-                    prepend-icon="mdi-refresh"
-                    size="small"
-                    variant="flat"
-                    class="mr-2"
-                    :disabled="isActionDisabled"
-                    :loading="isRefreshing"
-                    @click="handleRefreshClick"
-                >
-                    Обновить
-                </VBtn>
-                <VBtn
+                <VTooltip location="top" text="Обновить" color="primary">
+                    <template #activator="{ props: activatorProps }">
+                        <VBtn
+                            icon
+                            size="x-small"
+                            variant="flat"
+                            class="mr-2"
+                            v-bind="activatorProps"
+                            :disabled="isActionDisabled"
+                            :loading="isRefreshing"
+                            @click="handleRefreshClick"
+                        >
+                            <VIcon>mdi-refresh</VIcon>
+                        </VBtn>
+                    </template>
+                    <span>Обновить</span>
+                </VTooltip>
+
+                <VTooltip
                     v-if="!isNewEntity"
-                    prepend-icon="mdi-delete"
-                    size="small"
-                    variant="flat"
-                    color="error"
-                    :disabled="isActionDisabled"
-                    :loading="isDeleting"
-                    @click="handleDeleteClick"
-                >
-                    Удалить
-                </VBtn>
-                <VBtn
-                    prepend-icon="mdi-content-save"
-                    size="small"
-                    variant="flat"
+                    location="top"
+                    text="Удалить"
                     color="primary"
-                    :disabled="isSaveDisabled"
-                    :loading="isSaving"
-                    @click="handleSubmit"
                 >
-                    {{ isNewEntity ? "Создать" : "Сохранить" }}
-                </VBtn>
+                    <template #activator="{ props: activatorProps }">
+                        <VBtn
+                            icon
+                            size="x-small"
+                            variant="flat"
+                            color="error"
+                            class="mr-2"
+                            v-bind="activatorProps"
+                            :disabled="isActionDisabled"
+                            :loading="isDeleting"
+                            @click="handleDeleteClick"
+                        >
+                            <VIcon>mdi-delete</VIcon>
+                        </VBtn>
+                    </template>
+                    <span>Удалить</span>
+                </VTooltip>
+
+                <VTooltip
+                    location="top"
+                    :text="isNewEntity ? 'Создать' : 'Сохранить'"
+                    color="primary"
+                >
+                    <template #activator="{ props: activatorProps }">
+                        <VBtn
+                            icon
+                            size="x-small"
+                            variant="flat"
+                            color="primary"
+                            v-bind="activatorProps"
+                            :disabled="isSaveDisabled"
+                            :loading="isSaving"
+                            @click="handleSubmit"
+                        >
+                            <VIcon>mdi-content-save</VIcon>
+                        </VBtn>
+                    </template>
+                    <span>{{ isNewEntity ? "Создать" : "Сохранить" }}</span>
+                </VTooltip>
             </VSlideGroup>
         </VCardActions>
     </VCard>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" generic="T extends IBaseEntity">
 import { computed, ref } from "vue";
 import { capitalize } from "vue";
 import type { FormContext } from "vee-validate";
-import type { IBaseEntity, ISmartFormField } from "@admin/ts/types";
+import type { IBaseEntity } from "@admin/ts/types";
 import type { IModule } from "@admin/ts/shared/modules";
+import { useNotificationsStore } from "@admin/ts/features/notifications";
 import { createModuleDetailQuery } from "@admin/ts/shared/modules/queries";
 import { toScreenRoute } from "@admin/ts/shared/helpers";
 import { useFormSubmit } from "@admin/ts/shared/composables/useFormSubmit";
+import { useModuleForm } from "@admin/ts/shared/modules/forms";
 import BSmartForm from "@admin/ts/shared/components/BSmartForm.vue";
 
-const props = defineProps<{
+const { module, id } = defineProps<{
     module: IModule;
-    id?: string | string[];
-    tabFullPath: string;
+    id?: string;
 }>();
 
-const moduleValue = computed(() => props.module);
+const notificationsStore = useNotificationsStore();
 
-const entityId = computed<string | null>(() => {
-    const rawId = props.id;
-    if (typeof rawId === "string") {
-        const trimmedValue = rawId.trim();
-        return trimmedValue === "" ? null : trimmedValue;
-    }
-
-    if (Array.isArray(rawId) && rawId.length > 0) {
-        const firstValue = rawId[0];
-        if (typeof firstValue === "string") {
-            const trimmedValue = firstValue.trim();
-            return trimmedValue === "" ? null : trimmedValue;
-        }
-    }
-
-    return null;
-});
-
-const detailQuery = createModuleDetailQuery<IBaseEntity>({
-    module: moduleValue,
-    entityId,
+const detailQuery = createModuleDetailQuery<T>({
+    module,
+    entityId: id,
 });
 
 const isNewEntity = computed(() => detailQuery.isNewEntity.value);
@@ -150,33 +168,34 @@ const isSaveDisabled = computed(() => {
     );
 });
 
-const form = ref<FormContext<IBaseEntity, IBaseEntity>>();
+const form = ref<FormContext<T, T>>();
 
-const fields = computed<ISmartFormField[]>(() => {
-    return moduleValue.value.headers
-        .filter((header) => header.key.trim() !== "")
-        .map((header) => {
-            return {
-                component: "v-text-field",
-                key: header.key,
-                props: {
-                    label: header.title,
-                    name: header.key,
-                    density: "compact",
-                    variant: "filled",
-                    rounded: "0",
-                    clearable: true,
-                },
-            };
-        });
-});
+const { fields: moduleFields, createInitialValues } =
+    useModuleForm(module);
 
 const initialValues = computed(() => {
+    if (isNewEntity.value) {
+        return createInitialValues.value ?? undefined;
+    }
     return detailQuery.data.value ?? undefined;
 });
 
+
+const normalizeErrorMessage = (
+    error: unknown,
+    fallbackMessage: string
+): string => {
+    if (error instanceof Error && error.message.trim() !== "") {
+        return error.message;
+    }
+    if (typeof error === "string" && error.trim() !== "") {
+        return error;
+    }
+    return fallbackMessage;
+};
+
 const handleBackClick = async () => {
-    await toScreenRoute({ name: `${capitalize(moduleValue.value.key)}List` });
+    await toScreenRoute({ name: `${capitalize(module.key)}List` });
 };
 
 const handleRefreshClick = async () => {
@@ -188,7 +207,10 @@ const handleRefreshClick = async () => {
     try {
         await detailQuery.refetch();
     } catch (error: unknown) {
-         // TODO: show notify
+        notificationsStore.pushNotification({
+            content: normalizeErrorMessage(error, "Не удалось обновить данные"),
+            color: "error",
+        });
     } finally {
         isRefreshing.value = false;
     }
@@ -206,20 +228,19 @@ const saveEntity = async () => {
         const createdId = createdEntity.id;
         if (typeof createdId === "string" && createdId.trim() !== "") {
             await toScreenRoute({
-                name: `${capitalize(moduleValue.value.key)}Detail`,
+                name: `${capitalize(module.key)}Detail`,
                 params: { id: createdId },
             });
         }
         return;
     }
 
-    const currentEntityId = entityId.value;
-    if (!currentEntityId) {
+    if (!id) {
         return;
     }
 
     await detailQuery.updateAsync({
-        entityId: currentEntityId,
+        entityId: id,
         payload,
     });
 };
@@ -227,18 +248,20 @@ const saveEntity = async () => {
 const { handler: handleSubmit } = useFormSubmit(saveEntity, form);
 
 const handleDeleteClick = async () => {
-    const currentEntityId = entityId.value;
-    if (!currentEntityId) {
+    if (!id) {
         return;
     }
 
     try {
-        await detailQuery.deleteEntityAsync(currentEntityId);
+        await detailQuery.deleteEntityAsync(id);
         await toScreenRoute({
-            name: `${capitalize(moduleValue.value.key)}List`,
+            name: `${capitalize(module.key)}List`,
         });
     } catch (error: unknown) {
-        // TODO: show notify
+        notificationsStore.pushNotification({
+            content: normalizeErrorMessage(error, "Не удалось удалить запись"),
+            color: "error",
+        });
     }
 };
 </script>

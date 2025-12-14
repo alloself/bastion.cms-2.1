@@ -17,7 +17,7 @@ import { getModuleBaseUrl } from "..";
 
 export interface ICreateModuleDetailQueryParams {
     module: MaybeRefOrGetter<IModule>;
-    entityId: MaybeRefOrGetter<string | null>;
+    entityId: MaybeRefOrGetter<string | undefined>;
 }
 
 interface IUpdateOptimisticContext<TDetail extends IBaseEntity | null> {
@@ -29,14 +29,13 @@ interface IDeleteOptimisticContext<T extends IBaseEntity> {
     previousData: T | undefined;
 }
 
-const getDetailQueryKey = (module: IModule, entityId: string | null) => {
+const getDetailQueryKey = (module: IModule, entityId: string = "create") => {
     return ["modules", module.key, "detail", entityId];
 };
 
 const getListQueryBaseKey = (module: IModule) => {
     return ["modules", module.key, "list"];
 };
-
 
 export const createModuleDetailQuery = <T extends IBaseEntity>({
     module,
@@ -85,7 +84,10 @@ export const createModuleDetailQuery = <T extends IBaseEntity>({
             entityId: updateEntityId,
             payload,
         }): IUpdateOptimisticContext<T | null> {
-            const currentKey = getDetailQueryKey(moduleValue.value, updateEntityId);
+            const currentKey = getDetailQueryKey(
+                moduleValue.value,
+                updateEntityId
+            );
             const previousData = queryCache.getQueryData<T | null>(currentKey);
 
             const optimisticData =
@@ -101,13 +103,19 @@ export const createModuleDetailQuery = <T extends IBaseEntity>({
 
         onError(_error, { entityId: updateEntityId }, context) {
             if (context?.previousData) {
-                const currentKey = getDetailQueryKey(moduleValue.value, updateEntityId);
+                const currentKey = getDetailQueryKey(
+                    moduleValue.value,
+                    updateEntityId
+                );
                 queryCache.setQueryData(currentKey, context.previousData);
             }
         },
 
         onSuccess(responseData, { entityId: updateEntityId }) {
-            const currentKey = getDetailQueryKey(moduleValue.value, updateEntityId);
+            const currentKey = getDetailQueryKey(
+                moduleValue.value,
+                updateEntityId
+            );
             queryCache.setQueryData(currentKey, responseData);
         },
 
@@ -123,7 +131,10 @@ export const createModuleDetailQuery = <T extends IBaseEntity>({
             deleteModuleEntity(baseUrl.value, deleteEntityId),
 
         onMutate(deleteEntityId): IDeleteOptimisticContext<T> {
-            const currentKey = getDetailQueryKey(moduleValue.value, deleteEntityId);
+            const currentKey = getDetailQueryKey(
+                moduleValue.value,
+                deleteEntityId
+            );
             const previousData = queryCache.getQueryData<T>(currentKey);
 
             queryCache.setQueryData(currentKey, null);
@@ -134,7 +145,10 @@ export const createModuleDetailQuery = <T extends IBaseEntity>({
 
         onError(_error, deleteEntityId, context) {
             if (context?.previousData) {
-                const currentKey = getDetailQueryKey(moduleValue.value, deleteEntityId);
+                const currentKey = getDetailQueryKey(
+                    moduleValue.value,
+                    deleteEntityId
+                );
                 queryCache.setQueryData(currentKey, context.previousData);
             }
         },
@@ -196,7 +210,7 @@ export const createModuleDetailQuery = <T extends IBaseEntity>({
 
 export const defineModuleDetailQuery = <T extends IBaseEntity>(
     module: MaybeRefOrGetter<IModule>,
-    entityId: MaybeRefOrGetter<string | null>
+    entityId: MaybeRefOrGetter<string | undefined>
 ) => {
     return defineQuery(() => {
         const moduleValue = computed(() => toValue(module));
@@ -204,7 +218,8 @@ export const defineModuleDetailQuery = <T extends IBaseEntity>(
         const baseUrl = computed(() => getModuleBaseUrl(moduleValue.value));
 
         return {
-            key: () => getDetailQueryKey(moduleValue.value, entityIdValue.value),
+            key: () =>
+                getDetailQueryKey(moduleValue.value, entityIdValue.value),
             query: async () => {
                 const currentEntityId = entityIdValue.value;
                 if (!currentEntityId) {
