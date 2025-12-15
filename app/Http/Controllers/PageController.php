@@ -13,6 +13,16 @@ class PageController extends BaseCRUDController
         return Page::class;
     }
 
+    protected function validationRules(): array
+    {
+        return [
+            'index' => ['boolean'],
+            'meta' => ['nullable', 'json'],
+            'parent_id' => ['nullable', 'uuid', 'exists:pages,id'],
+            'template_id' => ['nullable', 'uuid', 'exists:templates,id'],
+        ];
+    }
+
     protected function resource(): string
     {
         return PageResource::class;

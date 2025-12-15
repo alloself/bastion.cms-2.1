@@ -2,11 +2,13 @@
 
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\TemplateController;
 use Illuminate\Support\Facades\Route;
 
 $resources = [
     'user' => UserController::class,
     'page' => PageController::class,
+    'template' => TemplateController::class
 
 ];
 

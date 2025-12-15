@@ -2,9 +2,7 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
-class Template extends Model
+class Template extends BaseCRUDModel
 {
     protected $fillable = ['name', 'value'];
 }

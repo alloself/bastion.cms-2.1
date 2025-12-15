@@ -1,6 +1,7 @@
 import { computed } from "vue";
 import type { PartialDeep } from "type-fest";
 import type { IBaseEntity, ISmartFormField } from "@admin/ts/types";
+import BCodeEditor from "@admin/ts/shared/components/BCodeEditor.vue";
 
 export const useTemplateModuleForm = () => {
     const fields = computed<ISmartFormField[]>(() => {
@@ -18,17 +19,16 @@ export const useTemplateModuleForm = () => {
                 },
             },
             {
-                component: "v-textarea",
+                component: BCodeEditor,
                 key: "value",
                 props: {
                     name: "value",
                     label: "Значение",
-                    density: "compact",
-                    variant: "filled",
-                    rounded: "0",
-                    clearable: true,
-                    autoGrow: true,
-                    rows: 8,
+                    height: "520px",
+                    options: {
+                        wordWrap: "on",
+                        tabSize: 4,
+                    },
                 },
             },
         ];
