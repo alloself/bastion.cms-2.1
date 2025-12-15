@@ -78,74 +78,76 @@
             </template>
 
             <template #bottom>
-                <VDivider role="separator" />
-                <VSlideGroup
-                    class="module-list__footer"
-                    content-class="module-list__footer-container"
-                    show-arrows
-                >
-                    <VTooltip location="top" text="Создать" color="primary">
-                        <template #activator="{ props }">
-                            <VBtn
-                                icon
-                                size="x-small"
-                                v-bind="props"
-                                class="mr-2"
-                                variant="flat"
-                                @click="handleCreateClick"
-                            >
-                                <VIcon>mdi-plus</VIcon>
-                            </VBtn>
-                        </template>
-                        <span>Создать</span>
-                    </VTooltip>
-
-                    <VTooltip
-                        location="top"
-                        text="Удалить выбранное"
-                        color="primary"
+                <VCardActions class="module-list__footer d-flex flex-column pa-0">
+                    <VDivider role="separator" />
+                    <VSlideGroup
+                        class="module-list__footer-actions"
+                        content-class="module-list__footer-container"
+                        show-arrows
                     >
-                        <template #activator="{ props }">
-                            <VBtn
-                                icon
-                                size="x-small"
-                                v-bind="props"
-                                variant="flat"
-                                :loading="isFooterActionLoading"
-                                :disabled="isDeleteSelectedDisabled"
-                                @click="handleDeleteSelected"
-                            >
-                                <VIcon>mdi-delete</VIcon>
-                            </VBtn>
-                        </template>
-                        <span>Удалить выбранное</span>
-                    </VTooltip>
+                        <VTooltip location="top" text="Создать" color="primary">
+                            <template #activator="{ props }">
+                                <VBtn
+                                    icon
+                                    size="x-small"
+                                    v-bind="props"
+                                    class="mr-2"
+                                    variant="flat"
+                                    @click="handleCreateClick"
+                                >
+                                    <VIcon>mdi-plus</VIcon>
+                                </VBtn>
+                            </template>
+                            <span>Создать</span>
+                        </VTooltip>
 
-                    <VSpacer />
+                        <VTooltip
+                            location="top"
+                            text="Удалить выбранное"
+                            color="primary"
+                        >
+                            <template #activator="{ props }">
+                                <VBtn
+                                    icon
+                                    size="x-small"
+                                    v-bind="props"
+                                    variant="flat"
+                                    :loading="isFooterActionLoading"
+                                    :disabled="isDeleteSelectedDisabled"
+                                    @click="handleDeleteSelected"
+                                >
+                                    <VIcon>mdi-delete</VIcon>
+                                </VBtn>
+                            </template>
+                            <span>Удалить выбранное</span>
+                        </VTooltip>
 
-                    <VSelect
-                        density="compact"
-                        class="per-page-counter module-list__per-page elevation-0"
-                        variant="filled"
-                        rounded="0"
-                        hide-details
-                        :items="itemsPerPageOptions"
-                        :model-value="tableState.perPage"
-                        :disabled="isTableLoading"
-                        @update:model-value="handlePerPageChange"
-                    />
+                        <VSpacer />
 
-                    <VPagination
-                        density="compact"
-                        rounded="circle"
-                        show-first-last-page
-                        :model-value="tableState.page"
-                        :length="lastPage"
-                        :total-visible="6"
-                        :disabled="isTableLoading"
-                        @update:model-value="handlePageChange"
-                    />
-                </VSlideGroup>
+                        <VSelect
+                            density="compact"
+                            class="per-page-counter module-list__per-page elevation-0"
+                            variant="filled"
+                            rounded="0"
+                            hide-details
+                            :items="itemsPerPageOptions"
+                            :model-value="tableState.perPage"
+                            :disabled="isTableLoading"
+                            @update:model-value="handlePerPageChange"
+                        />
+
+                        <VPagination
+                            density="compact"
+                            rounded="circle"
+                            show-first-last-page
+                            :model-value="tableState.page"
+                            :length="lastPage"
+                            :total-visible="6"
+                            :disabled="isTableLoading"
+                            @update:model-value="handlePageChange"
+                        />
+                    </VSlideGroup>
+                </VCardActions>
             </template>
         </VDataTableServer>
     </div>
@@ -568,14 +570,34 @@ const handleRowClick = async (event: MouseEvent, payload: unknown) => {
     }
 
     &__footer {
+        position: sticky;
+        bottom: 0;
+        z-index: 2;
+        gap: 5.5px;
+        background-color: rgb(var(--v-theme-surface));
+        align-items: stretch;
+
         :deep(.module-list__footer-container) {
+            display: flex;
             align-items: center;
             padding: 0 4px;
+        }
+
+        :deep(.module-list__footer-container > *) {
+            align-self: center;
+        }
+
+        :deep(.v-slide-group__container) {
+            align-items: center;
         }
 
         :deep(.v-slide-group__content) {
             align-items: center;
         }
+    }
+
+    &__footer-actions {
+        width: 100%;
     }
 
     &__no-data {
