@@ -81,7 +81,10 @@ import type { IScreen, ITab, TTabId } from "@admin/ts/features/screen";
 import { useRouter, useRoute } from "vue-router";
 import { useScreenResizer } from "@admin/ts/features/screen/composables/useScreenResizer";
 import BKeepAlive from "@admin/ts/shared/components/BKeepAlive.vue";
-import { isPlainRecord, isRouteLocationNormalized } from "@admin/ts/shared/typeGuards";
+import {
+    isPlainRecord,
+    isRouteLocationNormalized,
+} from "@admin/ts/shared/typeGuards";
 
 const { screen, isLast, nextScreen } = defineProps<{
     screen: IScreen;
@@ -175,7 +178,7 @@ const onRemoveScreen = () => {
 const onCloseTabClick = async (tab: ITab) => {
     const wasActiveTab = screen.activeTabId === tab.id;
     screenStore.closeTab(screen, tab.id);
-    
+
     if (wasActiveTab && screen.activeTabId) {
         const newActiveTab = screen.tabs.get(screen.activeTabId);
         if (newActiveTab?.route) {
@@ -232,7 +235,10 @@ const activeTabRouteLocation = computed(() => {
     if (!activeTab.value) {
         return null;
     }
-    if (typeof activeTab.value.route === "string" && route.fullPath === activeTab.value.route) {
+    if (
+        typeof activeTab.value.route === "string" &&
+        route.fullPath === activeTab.value.route
+    ) {
         return router.currentRoute.value;
     }
     return router.resolve(activeTab.value.route);
@@ -352,7 +358,8 @@ const activeTabKey = computed(() => {
 .divider-line {
     height: 100%;
     width: 1px;
-    border-left: thin solid rgba(var(--v-theme-on-surface), 0.12);
+    border-left: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+
     transition: border-color 0.2s ease;
     pointer-events: none;
 }

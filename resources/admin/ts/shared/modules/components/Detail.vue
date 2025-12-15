@@ -170,8 +170,7 @@ const isSaveDisabled = computed(() => {
 
 const form = ref<FormContext<T, T>>();
 
-const { fields: moduleFields, createInitialValues } =
-    useModuleForm(module);
+const { fields: moduleFields, createInitialValues } = useModuleForm(module);
 
 const initialValues = computed(() => {
     if (isNewEntity.value) {
@@ -179,7 +178,6 @@ const initialValues = computed(() => {
     }
     return detailQuery.data.value ?? undefined;
 });
-
 
 const normalizeErrorMessage = (
     error: unknown,
@@ -284,6 +282,7 @@ const handleDeleteClick = async () => {
         position: sticky;
         bottom: 0;
         z-index: 2;
+        gap: 6px;
         background-color: rgb(var(--v-theme-surface));
         align-items: stretch;
 

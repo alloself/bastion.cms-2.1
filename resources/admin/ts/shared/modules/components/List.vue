@@ -573,7 +573,7 @@ const handleRowClick = async (event: MouseEvent, payload: unknown) => {
         position: sticky;
         bottom: 0;
         z-index: 2;
-        gap: 5.5px;
+        gap: 6px;
         background-color: rgb(var(--v-theme-surface));
         align-items: stretch;
 
