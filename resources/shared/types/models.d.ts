@@ -12,7 +12,7 @@ export interface AuditModel {
   // columns
   id: string
   user_type: string | null
-  user_id: number | null
+  user_id: string | null
   event: string
   auditable_type: string
   auditable_id: number
@@ -154,12 +154,14 @@ export interface Role {
 
 export interface Template {
   // columns
-  id: number
+  id: string
   name: string
   value: string
   deleted_at: string | null
   created_at: string | null
   updated_at: string | null
+  // relations
+  audits?: AuditModel[]
 }
 
 export interface User {
