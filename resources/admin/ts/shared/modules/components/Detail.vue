@@ -282,7 +282,6 @@ const handleDeleteClick = async () => {
         position: sticky;
         bottom: 0;
         z-index: 2;
-        gap: 6px;
         background-color: rgb(var(--v-theme-surface));
         align-items: stretch;
 

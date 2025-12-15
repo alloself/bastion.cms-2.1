@@ -190,7 +190,7 @@ const defaultTableState: IModuleListParams = {
 
 const parseTableStateFromFullPath = (fullPath: string): IModuleListParams => {
     try {
-        const url = new URL(fullPath, import.meta.env.BASE_URL);
+        const url = new URL(fullPath,window.location.origin);
 
         const page = parseIntegerParam(
             url.searchParams.get("page"),
@@ -247,7 +247,7 @@ const buildFullPathWithState = (
     baseFullPath: string,
     state: IModuleListParams
 ): string => {
-    const url = new URL(baseFullPath, import.meta.env.BASE_URL);
+    const url = new URL(baseFullPath, window.location.origin);
     const searchParams = new URLSearchParams(url.search);
 
     const normalizedState = normalizeTableState(state);
@@ -573,7 +573,7 @@ const handleRowClick = async (event: MouseEvent, payload: unknown) => {
         position: sticky;
         bottom: 0;
         z-index: 2;
-        gap: 6px;
+        gap: 5px;
         background-color: rgb(var(--v-theme-surface));
         align-items: stretch;
 
