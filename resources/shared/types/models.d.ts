@@ -15,7 +15,7 @@ export interface AuditModel {
   user_id: string | null
   event: string
   auditable_type: string
-  auditable_id: number
+  auditable_id: string
   old_values: Record<string, unknown> | null
   new_values: Record<string, unknown> | null
   url: string | null
