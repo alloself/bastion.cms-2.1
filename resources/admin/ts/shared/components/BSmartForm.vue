@@ -118,9 +118,11 @@ watch(
 <style lang="scss" scoped>
 .smart-form {
     height: 100%;
+    min-height: 0;
     width: 100%;
     display: flex;
     flex-direction: column;
+    flex: 1 1 auto;
     overflow-y: auto;
     padding: 1rem;
 
