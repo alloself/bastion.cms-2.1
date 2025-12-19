@@ -5,7 +5,7 @@ import {
     useQueryCache,
 } from "@pinia/colada";
 import { computed, toValue, type MaybeRefOrGetter } from "vue";
-import type { IBaseEntity, IServerDataList } from "@admin/ts/types";
+import type { IBaseEntity, IServerDataList } from "@/admin/ts/shared/types";
 import type { IModule } from "..";
 import {
     getModuleList,

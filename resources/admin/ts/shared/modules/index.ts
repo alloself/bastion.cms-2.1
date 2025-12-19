@@ -6,10 +6,12 @@ import type {
 import { toKebabCase } from "@admin/ts/shared/helpers";
 import { capitalize } from "vue";
 import type {
+    IBaseEntity,
     ITableHeader,
-} from "../../types";
+} from "../types";
+import type { Page, Template } from "@/shared/types/models";
 
-export interface IModule {
+export interface IModule<T extends IBaseEntity = IBaseEntity> {
     key: string;
     title: string;
     icon?: string;
@@ -17,42 +19,51 @@ export interface IModule {
     showInNavigation?: boolean;
     isDefault?: boolean;
     headers: ITableHeader[];
-    getDetailTabTitle?: (payload: { id: string }) => string;
+    getDetailTabTitle?(entity: T): string;
 }
 
-export const modules: IModule[] = [
-    {
-        key: "page",
-        title: "Страницы",
-        icon: "mdi-file",
-        showInNavigation: true,
-        isDefault: true,
-        headers: [
-            {
-                title: "Заголовок",
-                key: "link.title",
-            },
-            {
-                title: "Ссылка",
-                key: "link.url",
-            },
-        ],
-        getDetailTabTitle: ({ id }) => `Страница #${id}`,
+const pageModule: IModule<Page> = {
+    key: "page",
+    title: "Страницы",
+    icon: "mdi-file",
+    showInNavigation: true,
+    isDefault: true,
+    headers: [
+        {
+            title: "Заголовок",
+            key: "link.title",
+        },
+        {
+            title: "Ссылка",
+            key: "link.url",
+        },
+    ],
+    getDetailTabTitle(entity: Page) {
+        return `Страница #${entity.id}`;
     },
-    {
-        key: "template",
-        title: "Шаблоны",
-        icon: "mdi-code-greater-than-or-equal",
-        showInNavigation: true,
-        headers: [
-            {
-                title: "Название",
-                key: "name",
-            },
-        ],
-        getDetailTabTitle: ({ id }) => `Шаблон #${id}`,
+};
+
+const templateModule: IModule<Template> = {
+    key: "template",
+    title: "Шаблоны",
+    icon: "mdi-code-greater-than-or-equal",
+    showInNavigation: true,
+    headers: [
+        {
+            title: "Название",
+            key: "name",
+        },
+    ],
+    getDetailTabTitle(entity: Template) {
+        const templateName = entity.name;
+        if (templateName.trim() !== "") {
+            return `Шаблон #${templateName}`;
+        }
+        return `Шаблон #${entity.id}`;
     },
-];
+};
+
+export const modules = [pageModule, templateModule];
 
 type ModuleRouteView = "list" | "create" | "detail";
 
@@ -127,7 +138,9 @@ const getDefaultModule = (): IModule | undefined => {
     return modules[0];
 };
 
-export const resolveModuleTabMeta = (route: RouteLocationNormalizedLoaded) => {
+export const resolveModuleTabMeta = (
+    route: RouteLocationNormalizedLoaded
+): { title: string; icon?: string } => {
     const routeName = route.name?.toString() ?? null;
     const match = getModuleRouteMatch(routeName);
     if (!match) {
@@ -165,12 +178,6 @@ export const resolveModuleTabMeta = (route: RouteLocationNormalizedLoaded) => {
             icon: match.module.icon,
         };
     }
-    if (match.module.getDetailTabTitle) {
-        return {
-            title: match.module.getDetailTabTitle({ id: routeId }),
-            icon: match.module.icon,
-        };
-    }
     return {
         title: `${match.module.title}: #${routeId}`,
         icon: match.module.icon,
@@ -185,10 +192,10 @@ export const getModuleUrlPart = (key: string) => {
 };
 
 export const createModulesRoutes = (array: IModule[]): RouteRecordRaw[] => {
-    return array.reduce((acc, item) => {
+    return array.reduce<RouteRecordRaw[]>((acc, item) => {
         const routes: RouteRecordRaw[] = [];
         if (item.showInNavigation) {
-            const listRoute = {
+            const listRoute: RouteRecordRaw = {
                 path: `/${toKebabCase(item.key)}`,
                 name: `${capitalize(item.key)}List`,
                 props: {
@@ -196,7 +203,7 @@ export const createModulesRoutes = (array: IModule[]): RouteRecordRaw[] => {
                 },
                 component: () =>
                     import(`@admin/ts/shared/modules/components/List.vue`),
-            } as RouteRecordRaw;
+            };
             if (item.isDefault) {
                 listRoute.alias = "/";
             }
@@ -227,7 +234,7 @@ export const createModulesRoutes = (array: IModule[]): RouteRecordRaw[] => {
         acc.push(...routes);
 
         return acc;
-    }, [] as RouteRecordRaw[]);
+    }, []);
 };
 
 

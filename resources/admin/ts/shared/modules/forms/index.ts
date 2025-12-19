@@ -1,6 +1,6 @@
 import { computed, toValue, type ComputedRef, type MaybeRefOrGetter } from "vue";
 import type { PartialDeep } from "type-fest";
-import type { IBaseEntity, ISmartFormField } from "@admin/ts/types";
+import type { IBaseEntity, ISmartFormField } from "@/admin/ts/shared/types";
 import type { IModule } from "..";
 import { usePageModuleForm } from "./page";
 import { useTemplateModuleForm } from "./template";

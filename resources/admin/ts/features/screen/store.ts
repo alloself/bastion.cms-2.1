@@ -14,6 +14,11 @@ interface StoredState {
     activeScreenId: string | null;
 }
 
+interface ISetRouteTabOptions {
+    title?: string;
+    icon?: string;
+}
+
 export const useScreenStore = defineStore("screen", () => {
     const screens = reactive<Map<string, IScreen>>(new Map());
     const activeScreenId = ref<string | null>(null);
@@ -187,6 +192,27 @@ export const useScreenStore = defineStore("screen", () => {
         return tab;
     };
 
+    const setTabTitle = (screenId: string, tabId: TTabId, title: string) => {
+        const nextTitle = title.trim();
+        if (nextTitle === "") {
+            return;
+        }
+
+        const screen = screens.get(screenId);
+        if (!screen) {
+            return;
+        }
+
+        const tab = screen.tabs.get(tabId);
+        if (!tab) {
+            return;
+        }
+
+        if (tab.title !== nextTitle) {
+            tab.title = nextTitle;
+        }
+    };
+
     const setActiveScreen = (screenId: string) => {
         if (screens.has(screenId)) {
             activeScreenId.value = screenId;
@@ -202,14 +228,18 @@ export const useScreenStore = defineStore("screen", () => {
 
     const openRouteTab = (
         screen: IScreen,
-        route: RouteLocationNormalizedLoaded
+        route: RouteLocationNormalizedLoaded,
+        options?: ISetRouteTabOptions
     ) => {
         const tabMeta = resolveModuleTabMeta(route);
+        const overrideTitle =
+            typeof options?.title === "string" ? options.title.trim() : "";
+        const resolvedTitle = overrideTitle !== "" ? overrideTitle : tabMeta.title;
         const tab = addTab(screen, {
             id: crypto.randomUUID(),
             route: route.fullPath,
-            title: tabMeta.title,
-            icon: tabMeta.icon,
+            title: resolvedTitle,
+            icon: options?.icon ?? tabMeta.icon,
         });
         screen.activeTabId = tab.id;
         return tab;
@@ -235,7 +265,8 @@ export const useScreenStore = defineStore("screen", () => {
     };
 
     const setActiveScreenTabRoute = (
-        route: RouteLocationNormalizedLoaded
+        route: RouteLocationNormalizedLoaded,
+        options?: ISetRouteTabOptions
     ) => {
         const screen = resolveActiveScreen();
         if (!screen) {
@@ -243,16 +274,32 @@ export const useScreenStore = defineStore("screen", () => {
         }
         const activeTabId = screen.activeTabId;
         if (!activeTabId) {
-            return openRouteTab(screen, route);
+            return openRouteTab(screen, route, options);
         }
         const tab = screen.tabs.get(activeTabId);
         if (!tab) {
-            return openRouteTab(screen, route);
+            return openRouteTab(screen, route, options);
         }
         const tabMeta = resolveModuleTabMeta(route);
-        tab.route = route.fullPath;
-        tab.title = tabMeta.title;
-        tab.icon = tabMeta.icon;
+        const overrideTitle =
+            typeof options?.title === "string" ? options.title.trim() : "";
+        const resolvedTitle = overrideTitle !== "" ? overrideTitle : tabMeta.title;
+
+        const previousTabRoute = tab.route;
+        const nextFullPath = route.fullPath;
+
+        const isSameFullPath = previousTabRoute === nextFullPath;
+
+        const shouldPreserveTitle =
+            isSameFullPath &&
+            tab.title !== "" &&
+            tab.title !== tabMeta.title;
+
+        tab.route = nextFullPath;
+        if (!shouldPreserveTitle) {
+            tab.title = resolvedTitle;
+        }
+        tab.icon = options?.icon ?? tabMeta.icon;
         return tab;
     };
 
@@ -373,6 +420,7 @@ export const useScreenStore = defineStore("screen", () => {
         addScreen,
         closeTab,
         addTab,
+        setTabTitle,
         openRouteTab,
         setActiveScreen,
         syncActiveTabWithRoute,

@@ -102,24 +102,28 @@
 </template>
 
 <script setup lang="ts" generic="T extends IBaseEntity">
-import { computed, ref } from "vue";
-import { capitalize } from "vue";
+import { capitalize, computed, ref, watch } from "vue";
 import type { FormContext } from "vee-validate";
-import type { IBaseEntity } from "@admin/ts/types";
+import type { IBaseEntity } from "@/admin/ts/shared/types";
 import type { IModule } from "@admin/ts/shared/modules";
 import { useNotificationsStore } from "@admin/ts/features/notifications";
+import { useScreenStore, type TTabId } from "@admin/ts/features/screen";
 import { createModuleDetailQuery } from "@admin/ts/shared/modules/queries";
 import { toScreenRoute } from "@admin/ts/shared/helpers";
 import { useFormSubmit } from "@admin/ts/shared/composables/useFormSubmit";
 import { useModuleForm } from "@admin/ts/shared/modules/forms";
 import BSmartForm from "@admin/ts/shared/components/BSmartForm.vue";
 
-const { module, id } = defineProps<{
-    module: IModule;
+const { module, id, tabFullPath, screenId, tabId } = defineProps<{
+    module: IModule<T>;
     id?: string;
+    tabFullPath?: string;
+    screenId?: string;
+    tabId?: TTabId;
 }>();
 
 const notificationsStore = useNotificationsStore();
+const screenStore = useScreenStore();
 
 const detailQuery = createModuleDetailQuery<T>({
     module,
@@ -178,6 +182,48 @@ const initialValues = computed(() => {
     }
     return detailQuery.data.value ?? undefined;
 });
+
+watch(
+    () => ({
+        entity: detailQuery.data.value,
+        screenId,
+        tabId,
+    }),
+    (nextState) => {
+        const entity = nextState.entity;
+        if (entity === null || entity === undefined) {
+            return;
+        }
+
+        const titleGetter = module.getDetailTabTitle;
+        if (!titleGetter) {
+            return;
+        }
+
+        const fullPath = nextState.fullPath;
+        if (typeof fullPath !== "string" || fullPath.trim() === "") {
+            return;
+        }
+
+        const nextTitle = titleGetter(entity);
+        if (nextTitle.trim() === "") {
+            return;
+        }
+
+        const nextScreenId = nextState.screenId;
+        if (typeof nextScreenId !== "string" || nextScreenId.trim() === "") {
+            return;
+        }
+
+        const nextTabId = nextState.tabId;
+        if (typeof nextTabId !== "string" || nextTabId.trim() === "") {
+            return;
+        }
+
+        screenStore.setTabTitle(nextScreenId, nextTabId, nextTitle);
+    },
+    { immediate: true }
+);
 
 const normalizeErrorMessage = (
     error: unknown,

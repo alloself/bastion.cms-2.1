@@ -26,8 +26,8 @@
                         :readonly="readonly || schemeField.readonly"
                         @update:modelValue="handleChange"
                         :error-messages="errors"
-                        v-bind="schemeField.props"
-                        v-on="schemeField.events"
+                        v-bind="schemeField.props || {}"
+                        v-on="schemeField.events || {}"
                         class="mb-1"
                     ></Component>
                 </Field>
@@ -40,7 +40,7 @@
 import { computed, watch } from "vue";
 import { useForm, Field, type FormContext } from "vee-validate";
 import { z } from "zod";
-import type { IBaseEntity, ISmartFormProps } from "@admin/ts/types";
+import type { IBaseEntity, ISmartFormProps } from "@/admin/ts/shared/types";
 import { useLayout } from "@admin/ts/shared/composables/useLayout";
 
 const {

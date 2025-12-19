@@ -3,7 +3,7 @@ import type {
     ISmartFormField,
     TSmartFormGridLayout,
     TSmartFormLayout,
-} from "@admin/ts/types";
+} from "@/admin/ts/shared/types";
 
 const normalizeAreaName = (rawAreaName: string): string => {
     const trimmedName = rawAreaName.trim();

@@ -154,12 +154,12 @@
 </template>
 
 <script setup lang="ts" generic="T extends IBaseEntity">
-import type { IBaseEntity } from "@admin/ts/types";
+import type { IBaseEntity } from "@/admin/ts/shared/types";
 import type {
     ISortBy,
     IVuetifyTableOptions,
     IModuleListParams,
-} from "@admin/ts/types";
+} from "@/admin/ts/shared/types";
 import type { IModule } from "@admin/ts/shared/modules";
 import type { IModuleListQueryParams } from "@admin/ts/shared/modules/api";
 import { useModuleListQuery } from "@admin/ts/shared/modules/queries";
@@ -168,7 +168,7 @@ import {
     parseSortByParam,
     toScreenRoute,
 } from "@admin/ts/shared/helpers";
-import { useScreenStore } from "@admin/ts/features/screen";
+import { useScreenStore, type TTabId } from "@admin/ts/features/screen";
 import { isPlainRecord } from "@admin/ts/shared/typeGuards";
 import { computed, ref, watch, capitalize } from "vue";
 import { useRouter } from "vue-router";
@@ -176,6 +176,8 @@ import { useRouter } from "vue-router";
 const props = defineProps<{
     module: IModule;
     tabFullPath: string;
+    screenId?: string;
+    tabId?: TTabId;
 }>();
 
 const router = useRouter();
@@ -526,6 +528,65 @@ const extractEntityIdFromRowClick = (payload: unknown): string | null => {
     return null;
 };
 
+const extractEntityFromRowClick = (payload: unknown): IBaseEntity | null => {
+    if (!isPlainRecord(payload)) {
+        return null;
+    }
+
+    const candidateEntities: unknown[] = [];
+    candidateEntities.push(payload.item);
+    candidateEntities.push(payload.internalItem);
+
+    if (isPlainRecord(payload.item) && isPlainRecord(payload.item.raw)) {
+        candidateEntities.push(payload.item.raw);
+    }
+    if (
+        isPlainRecord(payload.internalItem) &&
+        isPlainRecord(payload.internalItem.raw)
+    ) {
+        candidateEntities.push(payload.internalItem.raw);
+    }
+
+    for (const candidateEntity of candidateEntities) {
+        if (isPlainRecord(candidateEntity)) {
+            const idValue = candidateEntity.id;
+            if (typeof idValue === "string" && idValue.trim() !== "") {
+                return candidateEntity;
+            }
+        }
+    }
+
+    return null;
+};
+
+const resolveDetailTabTitleOverride = (
+    payload: unknown,
+    entityId: string
+): string => {
+    const titleGetter = moduleValue.value.getDetailTabTitle;
+    if (!titleGetter) {
+        return "";
+    }
+
+    const entity = extractEntityFromRowClick(payload);
+    if (!entity) {
+        return "";
+    }
+
+    const entityIdValue = entity.id;
+    if (entityIdValue !== entityId) {
+        return "";
+    }
+
+    const title = titleGetter(entity);
+    const normalizedTitle = title.trim();
+    if (normalizedTitle === "") {
+        return "";
+    }
+
+    return normalizedTitle;
+};
+
 const handleRowClick = async (event: MouseEvent, payload: unknown) => {
     const eventTarget = event.target;
     if (eventTarget instanceof HTMLElement) {
@@ -542,12 +603,15 @@ const handleRowClick = async (event: MouseEvent, payload: unknown) => {
         return;
     }
 
+    const tabTitleOverride = resolveDetailTabTitleOverride(payload, entityId);
+
     await toScreenRoute(
         {
             name: `${capitalize(moduleValue.value.key)}Detail`,
             params: { id: entityId },
         },
-        event
+        event,
+        { tabTitle: tabTitleOverride }
     );
 };
 </script>

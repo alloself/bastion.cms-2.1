@@ -1,4 +1,4 @@
-import type { ISmartFormField } from "@admin/ts/types";
+import type { ISmartFormField } from "@/admin/ts/shared/types";
 import { ref, computed } from "vue";
 import { z } from "zod";
 

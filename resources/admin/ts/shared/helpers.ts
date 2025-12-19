@@ -1,5 +1,5 @@
 import { type RouteLocationRaw } from "vue-router";
-import type { ISortBy } from "@admin/ts/types";
+import type { ISortBy } from "@/admin/ts/shared/types";
 import { useScreenStore } from "@admin/ts/features/screen";
 import router from "../app/router";
 
@@ -42,21 +42,34 @@ const isModifierKeyPressed = (
 
 export const toScreenRoute = async (
     route: RouteLocationRaw | string,
-    event?: Event
+    event?: Event,
+    options?: {
+        tabTitle?: string;
+        tabIcon?: string;
+    }
 ) => {
     const screenStore = useScreenStore();
 
     await router.push(route);
+
+    const titleOverride = options?.tabTitle?.trim() ?? "";
+    const iconOverride = options?.tabIcon;
 
     if (event instanceof MouseEvent && isModifierKeyPressed(event)) {
         const activeScreen = screenStore.screens.get(
             screenStore.activeScreenId ?? ""
         );
         if (activeScreen) {
-            screenStore.openRouteTab(activeScreen, router.currentRoute.value);
+            screenStore.openRouteTab(activeScreen, router.currentRoute.value, {
+                title: titleOverride,
+                icon: iconOverride,
+            });
             return;
         }
     }
 
-    screenStore.setActiveScreenTabRoute(router.currentRoute.value);
+    screenStore.setActiveScreenTabRoute(router.currentRoute.value, {
+        title: titleOverride,
+        icon: iconOverride,
+    });
 };

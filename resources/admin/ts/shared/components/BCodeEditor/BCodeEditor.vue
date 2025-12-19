@@ -23,7 +23,9 @@
             class="b-code-editor__errors"
         >
             <li
-                v-for="(errorMessage, errorMessageIndex) in normalizedErrorMessages"
+                v-for="(
+                    errorMessage, errorMessageIndex
+                ) in normalizedErrorMessages"
                 :key="errorMessageIndex"
                 class="b-code-editor__error"
             >
@@ -229,7 +231,6 @@ watch(
         min-height: 0;
         position: relative;
         border: 1px solid rgba(255, 255, 255, 0.12);
-        border-radius: 8px;
         overflow: hidden;
         display: flex;
         flex-direction: column;

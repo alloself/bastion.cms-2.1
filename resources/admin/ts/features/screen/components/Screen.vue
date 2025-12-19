@@ -286,46 +286,50 @@ const activeTabProps = computed(() => {
     const routeLocation = activeTabRouteLocation.value;
     const propsForRecord = matchedRecord?.props;
 
-    if (!routeLocation) {
+    if (!routeLocation || !activeTab.value) {
         return {};
     }
 
     const tabFullPath = routeLocation.fullPath;
+    const tabId = activeTab.value.id;
+    const screenId = screen.id;
+
+    const baseProps = { tabFullPath, tabId, screenId };
 
     if (!matchedRecord || !propsForRecord) {
-        return { tabFullPath };
+        return baseProps;
     }
 
     const propsForView = propsForRecord.default;
 
     if (!propsForView) {
-        return { tabFullPath };
+        return baseProps;
     }
 
     if (typeof propsForView === "boolean") {
         if (!propsForView) {
-            return { tabFullPath };
+            return baseProps;
         }
-        return { ...routeLocation.params, tabFullPath };
+        return { ...routeLocation.params, ...baseProps };
     }
 
     if (typeof propsForView === "function") {
         if (!isRouteLocationNormalized(routeLocation)) {
-            return { tabFullPath };
+            return baseProps;
         }
 
         const resolvedProps = propsForView(routeLocation);
         if (!isPlainRecord(resolvedProps)) {
-            return { tabFullPath };
+            return baseProps;
         }
-        return { ...resolvedProps, tabFullPath };
+        return { ...resolvedProps, ...baseProps };
     }
 
     if (isPlainRecord(propsForView)) {
-        return { ...propsForView, tabFullPath };
+        return { ...propsForView, ...baseProps };
     }
 
-    return { tabFullPath };
+    return baseProps;
 });
 
 const activeTabKey = computed(() => {

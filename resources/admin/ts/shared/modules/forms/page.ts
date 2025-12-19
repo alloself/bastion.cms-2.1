@@ -1,6 +1,6 @@
 import { computed } from "vue";
 import type { PartialDeep } from "type-fest";
-import type { IBaseEntity, ISmartFormField } from "@admin/ts/types";
+import type { IBaseEntity, ISmartFormField } from "@/admin/ts/shared/types";
 
 export const usePageModuleForm = () => {
     const fields = computed<ISmartFormField[]>(() => {

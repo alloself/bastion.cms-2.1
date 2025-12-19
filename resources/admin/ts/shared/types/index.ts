@@ -40,7 +40,7 @@ export interface ISmartFormProps<
     initialItems?: Record<string, unknown>;
 }
 
-export interface IBaseEntity extends Record<string, unknown> {
+export interface IBaseEntity{
     id?: string;
 }
 
