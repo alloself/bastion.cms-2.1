@@ -6,8 +6,8 @@
         @submit.prevent
     >
         <div
-            v-for="schemeField in normalizedFields"
-            :key="schemeField.uniqueKey"
+            v-for="schemeField in fields"
+            :key="schemeField.key"
             class="smart-form__field"
             :style="fieldGridStyleByKey[schemeField.key]"
         >
@@ -82,21 +82,6 @@ const formContext = useForm<T, K>({
 
 emits("update:form", formContext);
 
-const normalizedFields = computed(() => {
-    return fields.map((field) => {
-        return {
-            ...field,
-            uniqueKey: field.key,
-            props: {
-                ...(field.props || {}),
-            },
-            events: {
-                ...(field.events || {}),
-            },
-        };
-    });
-});
-
 const { isGridLayoutEnabled, formGridStyle, fieldGridStyleByKey } = useLayout(
     () => fields,
     () => layout
@@ -125,6 +110,7 @@ watch(
     flex: 1 1 auto;
     overflow-y: auto;
     padding: 1rem;
+    row-gap: 4px;
 
     & > * {
         flex: none;
@@ -138,6 +124,10 @@ watch(
 
     &__field {
         min-width: 0;
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
     }
 }
 </style>

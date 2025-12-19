@@ -34,6 +34,10 @@
 </template>
 
 <script setup lang="ts">
+defineOptions({
+    name: "BCodeEditor",
+});
+
 import {
     computed,
     onBeforeUnmount,
@@ -41,7 +45,6 @@ import {
     shallowRef,
     watch,
     useTemplateRef,
-    type CSSProperties,
 } from "vue";
 import * as monaco from "monaco-editor";
 import "monaco-editor/min/vs/editor/editor.main.css";
@@ -51,7 +54,7 @@ import type { TBCodeEditorProps } from "./BCodeEditor.types";
 
 const {
     modelValue = "",
-    height = "320px",
+    height,
     readonly = false,
     loading = false,
     errorMessages,
@@ -82,9 +85,18 @@ const normalizedErrorMessages = computed<string[]>(() => {
     return [errorMessages];
 });
 
-const containerStyle = computed<CSSProperties>(() => {
+const containerStyle = computed<Record<string, string> | undefined>(() => {
+    if (typeof height !== "string") {
+        return undefined;
+    }
+
+    const trimmedHeight = height.trim();
+    if (trimmedHeight === "") {
+        return undefined;
+    }
+
     return {
-        height,
+        minHeight: trimmedHeight,
     };
 });
 
@@ -205,20 +217,28 @@ watch(
 <style scoped lang="scss">
 .b-code-editor {
     width: 100%;
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
     display: flex;
     flex-direction: column;
 
     &__container {
         width: 100%;
+        flex: 1 1 auto;
+        min-height: 0;
         position: relative;
         border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: 8px;
         overflow: hidden;
+        display: flex;
+        flex-direction: column;
     }
 
     &__editor {
         width: 100%;
-        height: 100%;
+        flex: 1 1 auto;
+        min-height: 0;
     }
 
     &__loading {

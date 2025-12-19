@@ -24,7 +24,6 @@ export const useTemplateModuleForm = () => {
                 props: {
                     name: "value",
                     label: "Значение",
-                    height: "520px",
                     options: {
                         wordWrap: "on",
                         tabSize: 4,
