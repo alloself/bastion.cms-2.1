@@ -1,7 +1,7 @@
 import { computed } from "vue";
 import type { PartialDeep } from "type-fest";
 import type { IBaseEntity, ISmartFormField } from "@admin/ts/types";
-import BCodeEditor from "@admin/ts/shared/components/BCodeEditor.vue";
+import BCodeEditor from "@admin/ts/shared/components/BCodeEditor";
 
 export const useTemplateModuleForm = () => {
     const fields = computed<ISmartFormField[]>(() => {
