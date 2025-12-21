@@ -90,8 +90,7 @@ services:
     environment:
       CHOKIDAR_USEPOLLING: 1
       WATCHPACK_POLLING: true
-    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
-    #command: sh -c "npm install && npm run dev:all -- --host 0.0.0.0"
+    command: sh -c "npm install && npm run dev:all -- --host 0.0.0.0"
 
   redis:
     image: redis:7.4.3-alpine
