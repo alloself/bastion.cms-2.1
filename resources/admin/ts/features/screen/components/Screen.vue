@@ -85,6 +85,37 @@ const { screen, isLast, nextScreen } = defineProps<{
 const screenStore = useScreenStore();
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+.screen {
+    &-chip {
+        cursor: pointer;
+    }
+    &-divider {
+        position: relative;
+        width: 4px;
+        margin: 0 -2px;
+        flex-shrink: 0;
+        cursor: col-resize;
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        background-color: transparent;
+        transition: background-color 0.2s ease;
+        z-index: 1;
 
+        &:hover .divider-line,
+        &.is-dragging .divider-line {
+            border-left-color: rgb(var(--v-theme-primary));
+        }
+    }
+}
+
+.divider-line {
+    height: 100%;
+    width: 1px;
+    border-left: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+
+    transition: border-color 0.2s ease;
+    pointer-events: none;
+}
 </style>
