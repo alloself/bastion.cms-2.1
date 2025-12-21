@@ -12,9 +12,7 @@
         "noUncheckedSideEffectImports": true,
         "baseUrl": ".",
         "paths": {
-            "@/*": ["resources/*"],
-            "@admin/*": ["resources/admin/*"],
-            "@site/*": ["resources/site/*"],
+            "@/*": ["resources/site/*"],
             "@shared/*": ["resources/shared/*"]
         }
     },
