@@ -122,7 +122,7 @@ const { user } = storeToRefs(authStore);
 
 const userMenu = ref(false);
 const railMode = ref(true);
-const showNavigationDrawer = ref(false);
+const showNavigationDrawer = ref(true);
 
 const items = computed(() => {
     const array = sortBy(modules, ["title"]).reduce((acc, item) => {
