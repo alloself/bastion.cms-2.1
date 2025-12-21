@@ -115,7 +115,7 @@ const router = useRouter();
 const route = useRoute();
 
 const screenStore = useScreenStore();
-const { screens } = storeToRefs(screenStore);
+const { screens, activeScreen } = storeToRefs(screenStore);
 const authStore = useAuthStore();
 
 const { user } = storeToRefs(authStore);
@@ -161,11 +161,8 @@ const handleNavigationItemClick = async (
 
     await router.push({ name: item.to });
 
-    if ((event.ctrlKey || event.metaKey) && screenStore.activeScreen) {
-        screenStore.openRouteTab(
-            screenStore.activeScreen,
-            router.currentRoute.value
-        );
+    if ((event.ctrlKey || event.metaKey) && activeScreen) {
+        screenStore.openRouteTab(activeScreen, router.currentRoute.value);
     } else {
         screenStore.setActiveScreenTabRoute(router.currentRoute.value);
     }
