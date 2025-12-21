@@ -3,15 +3,41 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vite build",
-        "dev": "vite"
+        "dev:site": "vite --config vite.site.config.ts",
+        "dev:admin": "vite --config vite.admin.config.ts",
+        "build:site": "vite build --config vite.site.config.ts",
+        "build:admin": "vite build --config vite.admin.config.ts",
+        "dev:all": "concurrently -k -n site,admin -c yellow,cyan \"npm:dev:site\" \"npm:dev:admin\""
     },
     "devDependencies": {
-        "@tailwindcss/vite": "^4.0.0",
-        "axios": "^1.11.0",
-        "concurrently": "^9.0.1",
-        "laravel-vite-plugin": "^2.0.0",
-        "tailwindcss": "^4.0.0",
-        "vite": "^7.0.7"
+        "@pinia/colada-devtools": "^0.3.0",
+        "@types/lodash": "^4.17.21",
+        "@types/node": "^25.0.3",
+        "@vitejs/plugin-vue": "^6.0.3",
+        "@vue/tsconfig": "^0.8.1",
+        "concurrently": "^9.2.1",
+        "laravel-vite-plugin": "^2.0.1",
+        "postcss": "^8.5.6",
+        "postcss-nested": "^7.0.2",
+        "sass": "^1.97.1",
+        "typescript": "^5.9.3",
+        "vite": "^7.3.0",
+        "vite-plugin-vuetify": "^2.1.2",
+        "vue-tsc": "^3.2.0"
+    },
+    "dependencies": {
+        "@mdi/font": "^7.4.47",
+        "@pinia/colada": "^0.19.1",
+        "@vueuse/core": "^14.1.0",
+        "axios": "^1.13.2",
+        "lodash": "^4.17.21",
+        "monaco-editor": "^0.55.1",
+        "npm-check-updates": "^19.2.0",
+        "pinia": "^3.0.4",
+        "vee-validate": "^5.0.0-beta.0",
+        "vue": "^3.5.26",
+        "vue-router": "^4.6.4",
+        "vuetify": "^3.11.4",
+        "zod": "^4.2.1"
     }
 }
