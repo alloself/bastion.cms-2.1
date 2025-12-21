@@ -13,3 +13,9 @@ export interface ISmartFormField {
     rule?: z.ZodType;
     readonly?: boolean;
 }
+
+export interface ITableHeader {
+    title: string;
+    key: string;
+    sortable?: boolean;
+}
