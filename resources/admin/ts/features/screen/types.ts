@@ -1,6 +1,5 @@
+import type { TUUID } from "@/ts/shared/types";
 import type { RouteLocationRaw } from "vue-router";
-
-export type TUUID = `${string}-${string}-${string}-${string}-${string}`;
 
 export interface ITab {
     id: TUUID;

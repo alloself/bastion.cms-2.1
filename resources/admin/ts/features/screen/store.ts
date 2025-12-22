@@ -1,8 +1,9 @@
 import { defineStore } from "pinia";
 import { computed, reactive, ref } from "vue";
-import type { IScreen, ITab, TUUID } from "./types";
+import type { IScreen, ITab } from "./types";
 import type { RouteLocationNormalizedLoaded } from "vue-router";
 import type { IModule } from "@/ts/shared/modules";
+import type { TUUID } from "@/ts/shared/types";
 
 export const useScreenStore = defineStore("screen", () => {
     const screens = reactive<Map<TUUID, IScreen>>(new Map());
@@ -62,6 +63,7 @@ export const useScreenStore = defineStore("screen", () => {
     };
 
     const addScreen = (tabs: ITab[] = [], activeTabId: TUUID | null = null) => {
+        console.log("addScreen", tabs, activeTabId);
         const initialTabs: ITab[] = [...tabs];
         if (!tabs.length) {
             const clonedTab = cloneActiveTabFromActiveScreen();
@@ -80,11 +82,12 @@ export const useScreenStore = defineStore("screen", () => {
             screen.tabs.set(tab.id, tab);
         });
 
-        if (screen.activeTabId === null) {
+        const hasValidActiveTab =
+            screen.activeTabId !== null && screen.tabs.has(screen.activeTabId);
+
+        if (!hasValidActiveTab) {
             const [firstTab] = initialTabs;
-            if (firstTab) {
-                screen.activeTabId = firstTab.id;
-            }
+            screen.activeTabId = firstTab ? firstTab.id : null;
         }
 
         const totalScreens = screens.size + 1;
@@ -144,11 +147,106 @@ export const useScreenStore = defineStore("screen", () => {
         return tab;
     };
 
+    const setActiveScreen = (screenId: TUUID) => {
+        if (screens.has(screenId)) {
+            activeScreenId.value = screenId;
+        }
+    };
+
+    const setActiveTab = (screenId: TUUID, tabId: TUUID) => {
+        const screen = screens.get(screenId);
+        if (!screen) {
+            return;
+        }
+        if (screen.tabs.has(tabId)) {
+            screen.activeTabId = tabId;
+        }
+    };
+
+    const removeTab = (screenId: TUUID, tabId: TUUID): ITab | null => {
+        const screen = screens.get(screenId);
+        if (!screen) {
+            return null;
+        }
+        if (screen.tabs.size <= 1) {
+            return null;
+        }
+        const wasActive = screen.activeTabId === tabId;
+        screen.tabs.delete(tabId);
+        if (wasActive) {
+            const remainingTabs = Array.from(screen.tabs.values());
+            const nextTab = remainingTabs[0];
+            if (nextTab) {
+                screen.activeTabId = nextTab.id;
+                return nextTab;
+            }
+            screen.activeTabId = null;
+        }
+        return null;
+    };
+
+    const removeScreen = (screenId: TUUID) => {
+        if (screens.size <= 1) {
+            return;
+        }
+        screens.delete(screenId);
+        if (activeScreenId.value === screenId) {
+            const remainingScreens = Array.from(screens.keys());
+            activeScreenId.value = remainingScreens.length
+                ? (remainingScreens[0] as TUUID)
+                : null;
+        }
+        normalizeScreenWidths();
+    };
+
+    const resizeScreens = (
+        screenId: TUUID,
+        nextScreenId: TUUID,
+        deltaPercent: number,
+        startScreenWidth: number,
+        startNextScreenWidth: number
+    ): number | null => {
+        const screen = screens.get(screenId);
+        const nextScreen = screens.get(nextScreenId);
+        if (!screen || !nextScreen) {
+            return null;
+        }
+
+        const totalWidth = startScreenWidth + startNextScreenWidth;
+        if (totalWidth <= 0) {
+            return null;
+        }
+
+        const minWidthPercent = 10;
+        const effectiveMinWidth = Math.min(minWidthPercent, totalWidth / 2);
+
+        const maxWidth = totalWidth - effectiveMinWidth;
+        const unclampedWidth = startScreenWidth + deltaPercent;
+        const newScreenWidth = Math.max(
+            effectiveMinWidth,
+            Math.min(maxWidth, unclampedWidth)
+        );
+
+        const newNextScreenWidth = totalWidth - newScreenWidth;
+
+        screen.width = newScreenWidth;
+        nextScreen.width = newNextScreenWidth;
+
+        return newScreenWidth;
+    };
+
     return {
         screens,
         activeScreen,
         addScreen,
         openRouteTab,
         setActiveTabRoute,
+        setActiveScreen,
+        setActiveTab,
+        removeTab,
+        removeScreen,
+        normalizeScreenWidths,
+        getScreenWidth,
+        resizeScreens,
     };
 });

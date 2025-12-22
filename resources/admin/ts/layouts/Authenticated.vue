@@ -90,13 +90,13 @@
             </template>
         </VAppBar>
         <VMain class="d-flex">
-            <!-- <Screen
+            <Screen
                 v-for="(screen, index) in screenArray"
                 :key="screen.id"
                 :screen="screen"
                 :is-last="index === screenArray.length - 1"
                 :next-screen="screenArray[index + 1]"
-            /> -->
+            />
         </VMain>
     </VLayout>
 </template>
@@ -123,6 +123,10 @@ const { user } = storeToRefs(authStore);
 const userMenu = ref(false);
 const railMode = ref(true);
 const showNavigationDrawer = ref(true);
+
+const screenArray = computed(() => {
+    return Array.from(screens.value.values());
+});
 
 const items = computed(() => {
     const array = sortBy(modules, ["title"]).reduce((acc, item) => {

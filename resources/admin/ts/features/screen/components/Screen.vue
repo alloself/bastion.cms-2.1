@@ -1,10 +1,11 @@
 <template>
     <VCard
+        ref="screenCardRef"
         outlined
         rounded="0"
         flat
         class="h-100 d-flex flex-column"
-        :style="{ width: screenWidth + '%', flexShrink: 0 }"
+        :style="{ width: screen.width + '%', flexShrink: 0 }"
         @pointerdown="handleActivateScreen"
     >
         <VCardTitle
@@ -44,7 +45,7 @@
                 size="x-small"
                 icon="mdi-dock-window"
                 variant="flat"
-                @click="addScreen"
+                @click="screenStore.addScreen()"
             />
             <VBtn
                 v-if="screenStore.screens.size > 1"
@@ -57,24 +58,34 @@
         <VDivider />
 
         <KeepAlive
-            v-if="activeTabComponent && activeTab"
-            :active-key="activeTabKey"
-            :component="activeTabComponent"
-            :component-props="activeTabProps"
-        />
+            v-if="activeTabComponent && activeTab && activeTabKey"
+            :key="activeTabKey"
+        >
+            <component :is="activeTabComponent" v-bind="activeTabProps" />
+        </KeepAlive>
     </VCard>
     <div
         v-if="!isLast && nextScreen"
         class="screen-divider"
         :class="{ 'is-dragging': isDragging }"
-        @mousedown="handleResizerMouseDown"
+        @pointerdown="handleResizerPointerDown"
     >
         <div class="divider-line"></div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { useScreenStore, type IScreen } from "..";
+import {
+    computed,
+    ref,
+    watch,
+    useTemplateRef,
+    type ComponentPublicInstance,
+} from "vue";
+import { useRouter } from "vue-router";
+import { useScreenStore, type IScreen, type ITab } from "..";
+import type { TUUID } from "@/ts/shared/types";
+import { useScreenResize } from "../composables/useScreenResize";
 
 const { screen, isLast, nextScreen } = defineProps<{
     screen: IScreen;
@@ -83,6 +94,111 @@ const { screen, isLast, nextScreen } = defineProps<{
 }>();
 
 const screenStore = useScreenStore();
+const router = useRouter();
+
+const screenCardRef = useTemplateRef<ComponentPublicInstance>("screenCardRef");
+
+const { isDragging, handleResizerPointerDown } = useScreenResize({
+    screen: () => screen,
+    nextScreen: () => nextScreen,
+    screenCardRef,
+});
+
+const selectedTabId = ref<TUUID | null>(screen.activeTabId);
+
+const activeTab = computed(() => {
+    if (!screen.activeTabId) {
+        return null;
+    }
+    return screen.tabs.get(screen.activeTabId) || null;
+});
+
+const activeTabKey = computed(() => {
+    return activeTab.value?.id || null;
+});
+
+const activeTabRoute = computed(() => {
+    if (!activeTab.value) {
+        return null;
+    }
+    const resolved = router.resolve(activeTab.value.route);
+    return resolved.matched[resolved.matched.length - 1];
+});
+
+const activeTabComponent = computed(() => {
+    if (!activeTabRoute.value) {
+        return null;
+    }
+    const component = activeTabRoute.value.components?.default;
+    if (!component) {
+        return null;
+    }
+    return component;
+});
+
+const activeTabProps = computed(() => {
+    if (!activeTabRoute.value) {
+        return {};
+    }
+    const props = activeTabRoute.value.props.default || {};
+    if (typeof props === "function") {
+        return props(router.currentRoute.value);
+    }
+    return activeTabRoute.value.props.default;
+});
+
+const isTabCloseDisabled = computed(() => {
+    return screen.tabs.size <= 1;
+});
+
+const handleActivateScreen = () => {
+    screenStore.setActiveScreen(screen.id);
+};
+
+const onTabClick = (toggle: () => void, tab: ITab) => {
+    toggle();
+    screenStore.setActiveTab(screen.id, tab.id);
+    router.push(tab.route);
+};
+
+const onCloseTabClick = (tab: ITab) => {
+    const nextTab = screenStore.removeTab(screen.id, tab.id);
+    if (nextTab) {
+        router.push(nextTab.route);
+    }
+};
+
+const onAddTabClick = () => {
+    const currentRoute = router.currentRoute.value;
+    screenStore.openRouteTab(screen, currentRoute);
+};
+
+const onRemoveScreen = () => {
+    if (screenStore.screens.size <= 1) {
+        return;
+    }
+    screenStore.removeScreen(screen.id);
+};
+
+watch(
+    () => screen.activeTabId,
+    (newId) => {
+        selectedTabId.value = newId;
+    }
+);
+
+watch(
+    () => selectedTabId.value,
+    (newId) => {
+        if (newId && newId !== screen.activeTabId) {
+            const tab = screen.tabs.get(newId);
+            if (tab) {
+                screenStore.setActiveTab(screen.id, newId);
+                router.push(tab.route);
+            }
+        }
+    }
+);
 </script>
 
 <style scoped lang="scss">
@@ -96,6 +212,7 @@ const screenStore = useScreenStore();
         margin: 0 -2px;
         flex-shrink: 0;
         cursor: col-resize;
+        touch-action: none;
         display: flex;
         align-items: stretch;
         justify-content: center;

@@ -19,3 +19,5 @@ export interface ITableHeader {
     key: string;
     sortable?: boolean;
 }
+
+export type TUUID = `${string}-${string}-${string}-${string}-${string}`;
