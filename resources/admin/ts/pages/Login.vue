@@ -35,12 +35,15 @@ import type { FormContext } from "vee-validate";
 import { ref } from "vue";
 import { useFormSubmit } from "@/ts/shared/composables";
 import { useAuthStore } from "../features/auth";
+import { routeNames } from "../app/router/routes";
+import { useRouter } from "vue-router";
 
 const form = ref<FormContext<LoginFormValues, LoginFormValues>>();
 const loading = ref(false);
 
 const { fields } = useLoginFormFields();
 const { login } = useAuthStore();
+const router = useRouter();
 
 const initialValues =
     import.meta.env.MODE === "development"
@@ -58,6 +61,7 @@ const handleLogin = async () => {
     loading.value = true;
     try {
         await login(form.value.values);
+        await router.push({ name: routeNames.Authenticated });
     } finally {
         loading.value = false;
     }

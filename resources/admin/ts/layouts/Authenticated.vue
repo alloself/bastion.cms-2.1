@@ -161,10 +161,10 @@ const handleNavigationItemClick = async (
 
     await router.push({ name: item.to });
 
-    if ((event.ctrlKey || event.metaKey) && activeScreen) {
-        screenStore.openRouteTab(activeScreen, router.currentRoute.value);
+    if ((event.ctrlKey || event.metaKey) && activeScreen.value) {
+        screenStore.openRouteTab(activeScreen.value, router.currentRoute.value);
     } else {
-        screenStore.setActiveScreenTabRoute(router.currentRoute.value);
+        screenStore.setActiveTabRoute(router.currentRoute.value);
     }
 };
 
@@ -179,7 +179,7 @@ const toggleRailMode = () => {
 watch(
     () => route.fullPath,
     () => {
-        screenStore.syncActiveTabWithRoute(router.currentRoute.value);
+        screenStore.setActiveTabRoute(router.currentRoute.value);
     }
 );
 
