@@ -63,7 +63,6 @@ export const useScreenStore = defineStore("screen", () => {
     };
 
     const addScreen = (tabs: ITab[] = [], activeTabId: TUUID | null = null) => {
-        console.log("addScreen", tabs, activeTabId);
         const initialTabs: ITab[] = [...tabs];
         if (!tabs.length) {
             const clonedTab = cloneActiveTabFromActiveScreen();
