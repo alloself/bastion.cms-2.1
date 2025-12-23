@@ -75,17 +75,12 @@
 </template>
 
 <script setup lang="ts">
-import {
-    computed,
-    ref,
-    watch,
-    useTemplateRef,
-    type ComponentPublicInstance,
-} from "vue";
+import { computed, ref, watch, useTemplateRef } from "vue";
 import { useRouter } from "vue-router";
 import { useScreenStore, type IScreen, type ITab } from "..";
 import type { TUUID } from "@/ts/shared/types";
 import { useScreenResize } from "../composables/useScreenResize";
+import type { VCard } from "vuetify/components";
 
 const { screen, isLast, nextScreen } = defineProps<{
     screen: IScreen;
@@ -96,7 +91,8 @@ const { screen, isLast, nextScreen } = defineProps<{
 const screenStore = useScreenStore();
 const router = useRouter();
 
-const screenCardRef = useTemplateRef<ComponentPublicInstance>("screenCardRef");
+const screenCardRef =
+    useTemplateRef<InstanceType<typeof VCard>>("screenCardRef");
 
 const { isDragging, handleResizerPointerDown } = useScreenResize({
     screen: () => screen,
@@ -155,7 +151,18 @@ const handleActivateScreen = () => {
     screenStore.setActiveScreen(screen.id);
 };
 
+const isTabToggleDisabled = computed(() => {
+    return screen.tabs.size === 1;
+});
+
 const onTabClick = (toggle: () => void, tab: ITab) => {
+    if (
+        isTabToggleDisabled.value ||
+        screen.activeTabId === tab.id ||
+        !tab.route
+    ) {
+        return;
+    }
     toggle();
     screenStore.setActiveTab(screen.id, tab.id);
     router.push(tab.route);
