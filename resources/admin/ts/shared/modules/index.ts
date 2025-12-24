@@ -54,7 +54,8 @@ export const createModulesRoutes = () => {
                     import(`@/ts/shared/modules/components/List.vue`),
             };
             if (item.isDefault) {
-                listRoute.alias = "/";
+                listRoute.alias = listRoute.path;
+                listRoute.path = "";
             }
             routes.push(listRoute);
         }

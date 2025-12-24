@@ -75,12 +75,21 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, useTemplateRef } from "vue";
+import {
+    computed,
+    defineAsyncComponent,
+    ref,
+    watch,
+    useTemplateRef,
+} from "vue";
+import type { Component } from "vue";
 import { useRouter } from "vue-router";
 import { useScreenStore, type IScreen, type ITab } from "..";
 import type { TUUID } from "@/ts/shared/types";
 import { useScreenResize } from "../composables/useScreenResize";
+import { isVueComponent, resolveComponentExport } from "@/ts/shared/helpers";
 import type { VCard } from "vuetify/components";
+import ScreenTabLoading from "./ScreenTabLoading.vue";
 
 const { screen, isLast, nextScreen } = defineProps<{
     screen: IScreen;
@@ -101,6 +110,42 @@ const { isDragging, handleResizerPointerDown } = useScreenResize({
 });
 
 const selectedTabId = ref<TUUID | null>(screen.activeTabId);
+
+const renderComponent = (routeComponent: unknown): Component | null => {
+    if (!routeComponent) {
+        return null;
+    }
+
+    if (typeof routeComponent === "function") {
+        const asyncComponent = defineAsyncComponent({
+            loader: async (): Promise<Component> => {
+                try {
+                    const resolvedExport = resolveComponentExport(
+                        await routeComponent()
+                    );
+
+                    if (isVueComponent(resolvedExport)) {
+                        return resolvedExport;
+                    }
+
+                    throw new Error("Failed to load screen tab component.");
+                } catch (error) {
+                    console.error(error);
+                    throw error;
+                }
+            },
+            loadingComponent: ScreenTabLoading,
+        });
+
+        return asyncComponent;
+    }
+
+    if (isVueComponent(routeComponent)) {
+        return routeComponent;
+    }
+
+    return null;
+};
 
 const activeTab = computed(() => {
     if (!screen.activeTabId) {
@@ -129,7 +174,7 @@ const activeTabComponent = computed(() => {
     if (!component) {
         return null;
     }
-    return component;
+    return renderComponent(component);
 });
 
 const activeTabProps = computed(() => {
