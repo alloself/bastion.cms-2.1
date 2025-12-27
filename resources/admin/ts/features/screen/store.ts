@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { computed, reactive, ref } from "vue";
 import type { IScreen, ITab } from "./types";
 import type { RouteLocationNormalizedLoaded } from "vue-router";
-import type { IModule } from "@/ts/shared/modules";
+import { modules, type IModule } from "@/ts/shared/modules";
 import type { TUUID } from "@/ts/shared/types";
 
 export const useScreenStore = defineStore("screen", () => {
@@ -109,7 +109,14 @@ export const useScreenStore = defineStore("screen", () => {
         screen: IScreen,
         route: RouteLocationNormalizedLoaded
     ) => {
-        const module = route.meta.module as IModule | undefined;
+        let module = route.meta.module as IModule | undefined;
+
+        if (!module) {
+            module = modules.find(
+                ({ isDefault, showInNavigation }) =>
+                    isDefault && showInNavigation
+            );
+        }
 
         const tab = addTab(screen, {
             id: crypto.randomUUID(),

@@ -173,7 +173,8 @@ const handleNavigationItemClick = async (
 };
 
 const onLogout = async () => {
-    await authStore.logout();
+    authStore.logout();
+    router.push({ name: "Login" });
 };
 
 const toggleRailMode = () => {
