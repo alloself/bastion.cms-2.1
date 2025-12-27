@@ -1,8 +1,12 @@
-import type { Page } from "@shared/types/models";
+import type { Page, Template } from "@shared/types/models";
 import type { IBaseEntity, ITableHeader } from "../types";
 import { capitalize } from "lodash";
 import { toKebabCase } from "../helpers";
-import type { RouteLocation, RouteRecordRaw, RouteLocationNormalized } from "vue-router";
+import type {
+    RouteLocation,
+    RouteRecordRaw,
+    RouteLocationNormalized,
+} from "vue-router";
 
 export interface IModule<T extends IBaseEntity = IBaseEntity> {
     key: string;
@@ -35,12 +39,27 @@ const pageModule: IModule<Page> = {
     },
 };
 
-export const modules = [pageModule];
+const templateModule: IModule<Template> = {
+    key: "template",
+    title: "Шаблоны",
+    icon: "mdi-code-greater-than-or-equal",
+    showInNavigation: true,
+    headers: [
+        {
+            title: "Название",
+            key: "name",
+        },
+    ],
+    getDetailTabTitle(entity: Template) {
+        return `Шаблон #${entity.id}`;
+    },
+};
+
+export const modules = [pageModule, templateModule];
 
 export const getDefaultModule = () => {
     return modules.find(
-        ({ isDefault, showInNavigation }) =>
-            isDefault && showInNavigation
+        ({ isDefault, showInNavigation }) => isDefault && showInNavigation
     );
 };
 
