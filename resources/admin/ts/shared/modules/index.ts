@@ -2,7 +2,7 @@ import type { Page } from "@shared/types/models";
 import type { IBaseEntity, ITableHeader } from "../types";
 import { capitalize } from "lodash";
 import { toKebabCase } from "../helpers";
-import type { RouteLocation, RouteRecordRaw } from "vue-router";
+import type { RouteLocation, RouteRecordRaw, RouteLocationNormalized } from "vue-router";
 
 export interface IModule<T extends IBaseEntity = IBaseEntity> {
     key: string;
@@ -36,6 +36,27 @@ const pageModule: IModule<Page> = {
 };
 
 export const modules = [pageModule];
+
+export const getDefaultModule = () => {
+    return modules.find(
+        ({ isDefault, showInNavigation }) =>
+            isDefault && showInNavigation
+    );
+};
+
+export const getModuleFromMatchedRoutes = (
+    route: RouteLocationNormalized,
+    moduleKey: string
+) => {
+    const matchedRoute = route.matched
+        .slice()
+        .reverse()
+        .find(({ meta }) => {
+            return meta.module?.key === moduleKey;
+        });
+
+    return matchedRoute?.meta?.module;
+};
 
 export const createModulesRoutes = () => {
     return modules.reduce<RouteRecordRaw[]>((acc, item) => {

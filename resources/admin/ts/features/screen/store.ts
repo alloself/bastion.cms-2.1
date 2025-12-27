@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { computed, reactive, ref } from "vue";
 import type { IScreen, ITab } from "./types";
 import type { RouteLocationNormalizedLoaded } from "vue-router";
-import { modules, type IModule } from "@/ts/shared/modules";
+import { getDefaultModule } from "@/ts/shared/modules";
 import type { TUUID } from "@/ts/shared/types";
 
 export const useScreenStore = defineStore("screen", () => {
@@ -109,13 +109,10 @@ export const useScreenStore = defineStore("screen", () => {
         screen: IScreen,
         route: RouteLocationNormalizedLoaded
     ) => {
-        let module = route.meta.module as IModule | undefined;
+        let module = route.meta.module;
 
         if (!module) {
-            module = modules.find(
-                ({ isDefault, showInNavigation }) =>
-                    isDefault && showInNavigation
-            );
+            module = getDefaultModule();
         }
 
         const tab = addTab(screen, {
@@ -129,7 +126,7 @@ export const useScreenStore = defineStore("screen", () => {
     };
 
     const setActiveTabRoute = (route: RouteLocationNormalizedLoaded) => {
-        const module = route.meta.module as IModule;
+        const module = route.meta.module;
         if (!activeScreen.value) {
             return null;
         }
@@ -145,7 +142,7 @@ export const useScreenStore = defineStore("screen", () => {
         const isSameFullPath = previousTabRoute === nextFullPath;
 
         tab.route = nextFullPath;
-        if (!isSameFullPath) {
+        if (!isSameFullPath && module) {
             tab.title = module.title;
             tab.icon = module.icon;
         }

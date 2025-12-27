@@ -103,13 +103,19 @@
 
 <script lang="ts" setup>
 import { capitalize, computed, onMounted, ref, watch } from "vue";
-import { modules, type IModule } from "@/ts/shared/modules";
+import {
+    modules,
+    getDefaultModule,
+    getModuleFromMatchedRoutes,
+    type IModule,
+} from "@/ts/shared/modules";
 import { sortBy } from "lodash";
 import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 import { BLogo } from "@/ts/shared/components";
 import { Screen, useScreenStore } from "@/ts/features/screen";
 import { useAuthStore } from "@/ts/features/auth";
+import { routeNames } from "@/ts/app/router/routes";
 
 const router = useRouter();
 const route = useRoute();
@@ -149,10 +155,32 @@ const isItemActive = (item: IModule) => {
         return false;
     }
 
+    if (currentRouteName === item.to) {
+        return true;
+    }
+
     const moduleName = capitalize(item.key);
-    return (
-        currentRouteName === item.to || currentRouteName.startsWith(moduleName)
-    );
+    if (currentRouteName.startsWith(moduleName)) {
+        return true;
+    }
+
+    if (route.meta.module?.key === item.key) {
+        return true;
+    }
+
+    if (currentRouteName === routeNames.Authenticated) {
+        const matchedModule = getModuleFromMatchedRoutes(route, item.key);
+        if (matchedModule) {
+            return true;
+        }
+
+        const defaultModule = getDefaultModule();
+        if (defaultModule?.key === item.key) {
+            return true;
+        }
+    }
+
+    return false;
 };
 
 const handleNavigationItemClick = async (
