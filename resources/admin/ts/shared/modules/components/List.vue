@@ -40,7 +40,6 @@
                 icon="mdi-database-off-outline"
                 :title="noDataTitle"
                 :text="noDataText"
-                :size="128"
                 justify="center"
             >
                 <template #actions>
@@ -72,7 +71,7 @@
                     <template #activator="{ props }">
                         <VBtn
                             icon
-                            size="x-small"
+                            size="small"
                             v-bind="props"
                             :loading="isLoading"
                             class="mr-2"
@@ -92,7 +91,7 @@
                     <template #activator="{ props }">
                         <VBtn
                             icon
-                            size="x-small"
+                            size="small"
                             :loading="isLoading"
                             v-bind="props"
                             flat
@@ -219,25 +218,7 @@ const onDelete = () => {
 
         :deep(.v-field) {
             box-shadow: none;
-            min-height: 28px;
-            padding-inline: 8px;
-            font-size: 0.8125rem;
-
-            .v-field__input {
-                padding-top: 4px;
-                padding-bottom: 4px;
-                min-height: 28px;
-            }
-
-            .v-field__append-inner {
-                padding-top: 2px;
-            }
         }
-    }
-
-    &__footer {
-        min-height: var(--v-table-header-height);
-        padding: 0 4px;
     }
 }
 </style>
