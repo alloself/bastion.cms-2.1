@@ -3,8 +3,13 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\PageController;
+use App\Http\Controllers\TemplateController;
 
-$resources = [];
+$resources = [
+    'page' => PageController::class,
+    'template' => TemplateController::class,
+];
 
 
 

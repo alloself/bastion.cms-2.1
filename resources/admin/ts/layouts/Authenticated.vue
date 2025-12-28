@@ -5,6 +5,7 @@
             v-model="showNavigationDrawer"
             :rail="railMode"
             mobile-breakpoint="sm"
+            density="compact"
         >
             <VList density="compact" nav>
                 <VTooltip

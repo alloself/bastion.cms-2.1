@@ -61,7 +61,7 @@
             v-if="activeTabComponent && activeTab && activeTabKey"
             :key="activeTabKey"
         >
-            <component :is="activeTabComponent" v-bind="activeTabProps" />
+            <component :is="activeTabComponent" v-bind="activeTabProps" :tab="activeTab" />
         </KeepAlive>
     </VCard>
     <div
@@ -251,6 +251,8 @@ watch(
         }
     }
 );
+
+
 </script>
 
 <style scoped lang="scss">
