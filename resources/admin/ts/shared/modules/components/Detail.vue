@@ -10,8 +10,7 @@
             />
         </VCardText>
 
-        <VCardActions class="module-detail__footer d-flex flex-column pa-0">
-            <VDivider role="separator" />
+        <VCardActions class="module-detail__footer">
             <VSlideGroup
                 class="module-detail__footer-actions"
                 content-class="module-detail__footer-container"
@@ -24,7 +23,7 @@
                             size="x-small"
                             variant="flat"
                             v-bind="activatorProps"
-                            :disabled="isActionDisabled"
+                            :disabled="isLoading"
                             @click="handleBackClick"
                         >
                             <VIcon>mdi-arrow-left</VIcon>
@@ -41,8 +40,8 @@
                             variant="flat"
                             class="mr-2"
                             v-bind="activatorProps"
-                            :disabled="isActionDisabled"
-                            :loading="isRefreshing"
+                            :disabled="isLoading"
+                            :loading="isLoading"
                             @click="handleRefreshClick"
                         >
                             <VIcon>mdi-refresh</VIcon>
@@ -52,7 +51,7 @@
                 </VTooltip>
 
                 <VTooltip
-                    v-if="!isNewEntity"
+                    v-if="id"
                     location="top"
                     text="Удалить"
                     color="primary"
@@ -65,8 +64,8 @@
                             color="error"
                             class="mr-2"
                             v-bind="activatorProps"
-                            :disabled="isActionDisabled"
-                            :loading="isDeleting"
+                            :disabled="isLoading"
+                            :loading="isLoading"
                             @click="handleDeleteClick"
                         >
                             <VIcon>mdi-delete</VIcon>
@@ -77,7 +76,7 @@
 
                 <VTooltip
                     location="top"
-                    :text="isNewEntity ? 'Создать' : 'Сохранить'"
+                    :text="id ? 'Сохранить' : 'Создать'"
                     color="primary"
                 >
                     <template #activator="{ props: activatorProps }">
@@ -87,14 +86,14 @@
                             variant="flat"
                             color="primary"
                             v-bind="activatorProps"
-                            :disabled="isSaveDisabled"
-                            :loading="isSaving"
-                            @click="handleSubmit"
+                            :disabled="isLoading"
+                            :loading="isLoading"
+                            @click="handleSaveClick"
                         >
                             <VIcon>mdi-content-save</VIcon>
                         </VBtn>
                     </template>
-                    <span>{{ isNewEntity ? "Создать" : "Сохранить" }}</span>
+                    <span>{{ id ? "Сохранить" : "Создать" }}</span>
                 </VTooltip>
             </VSlideGroup>
         </VCardActions>
@@ -107,15 +106,19 @@ import type { IModule } from "..";
 import type { IBaseEntity, TUUID } from "../../types";
 import { BSmartForm } from "../../components";
 import type { FormContext } from "vee-validate";
-import type { PartialDeep } from "type-fest";
-import { computed, ref } from "vue";
+import { capitalize, computed, ref } from "vue";
 import { useModuleDetailQuery } from "../queries/detail";
+import { toScreenRoute } from "../../helpers";
 
-const { module, id, tab } = defineProps<{
+const { module, id } = defineProps<{
     module: IModule<T>;
     id?: TUUID;
     tab: ITab;
 }>();
+
+const handleBackClick = async () => {
+    await toScreenRoute({ name: `${capitalize(module.key)}List` });
+};
 
 const form = ref<FormContext<T, T>>();
 
@@ -143,10 +146,35 @@ const fields = computed(() => moduleFormContext.value.fields.value);
 const initialValues = computed(() => {
     return moduleFormContext.value.createInitialValues();
 });
+
+const handleRefreshClick = async () => {};
+
+const handleDeleteClick = async () => {};
+
+const handleSaveClick = async () => {};
 </script>
 
 <style lang="scss" scoped>
 .module-detail {
-   padding: 8px 8px 0px 8px;
+    display: flex;
+    flex-direction: column;
+    padding: 8px 8px 0px 8px;
+    height: calc(100svh - 96px);
+    &__footer {
+        position: sticky;
+        bottom: 0;
+        border-top: 1px solid
+            rgba(var(--v-border-color), var(--v-border-opacity));
+        margin: 0 -8px;
+        padding: 0 8px;
+
+        &-actions {
+            width: 100%;
+        }
+    }
+
+    &__content {
+        flex: 1 1 auto;
+    }
 }
 </style>
