@@ -9,10 +9,11 @@ import type {
     RouteLocationNormalized,
 } from "vue-router";
 import { usePageForm, useTemplateForm } from "./forms";
+import type { PartialDeep } from "type-fest";
 
-export interface IModuleForm {
+export interface IModuleForm<T extends IBaseEntity> {
     fields: ComputedRef<ISmartFormField[]>;
-    createInitialValues: ComputedRef<Record<string, unknown>>;
+    createInitialValues: () => PartialDeep<T>;
 }
 
 export interface IModule<T extends IBaseEntity = IBaseEntity> {
@@ -24,7 +25,7 @@ export interface IModule<T extends IBaseEntity = IBaseEntity> {
     isDefault?: boolean;
     headers: ITableHeader[];
     getDetailTabTitle?(entity: T): string;
-    createForm: (entity: T) => IModuleForm;
+    createForm: (entity?: T) => IModuleForm<T>;
 }
 const pageModule: IModule<Page> = {
     key: "page",
@@ -98,7 +99,7 @@ export const createModulesRoutes = (): RouteRecordRaw[] => {
                     module: item,
                 },
                 meta: {
-                    module: item as IModule<IBaseEntity>,
+                    module: item,
                 },
                 component: () =>
                     import(`@/ts/shared/modules/components/List.vue`),
@@ -116,7 +117,7 @@ export const createModulesRoutes = (): RouteRecordRaw[] => {
                     module: item,
                 },
                 meta: {
-                    module: item as IModule<IBaseEntity>,
+                    module: item,
                 },
                 component: () =>
                     import(`@/ts/shared/modules/components/Detail.vue`),
@@ -129,7 +130,7 @@ export const createModulesRoutes = (): RouteRecordRaw[] => {
                     module: item,
                 }),
                 meta: {
-                    module: item as IModule<IBaseEntity>,
+                    module: item,
                 },
                 component: () =>
                     import(`@/ts/shared/modules/components/Detail.vue`),

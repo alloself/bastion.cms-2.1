@@ -1,6 +1,6 @@
 import type { IModule } from ".";
 import { client } from "../api/client";
-import type { IBaseEntity, IServerDataList, ISortBy } from "../types";
+import type { IBaseEntity, IServerDataList, ISortBy, TUUID } from "../types";
 
 export interface IModuleListQueryParams {
     page: number;
@@ -33,5 +33,42 @@ export const getModuleListQuery = async <T extends IBaseEntity>(
 ) => {
     const url = `/api/admin/${module.key}?${buildQueryString(params)}`;
     const { data } = await client.get<IServerDataList<T>>(url);
+    return data;
+};
+
+export const getModuleDetailQuery = async <T extends IBaseEntity>(
+    module: IModule<T>,
+    id: TUUID
+) => {
+    const url = `/api/admin/${module.key}/${id}`;
+    const { data } = await client.get<T>(url);
+    return data;
+};
+
+export const createModuleDetailQuery = async <T extends IBaseEntity>(
+    module: IModule<T>,
+    payload: Partial<T>
+) => {
+    const url = `/api/admin/${module.key}/create`;
+    const { data } = await client.post<T>(url, payload);
+    return data;
+};
+
+export const updateModuleDetailQuery = async <T extends IBaseEntity>(
+    module: IModule<T>,
+    id: TUUID,
+    data: Partial<T>
+) => {
+    const url = `/api/admin/${module.key}/${id}`;
+    const { data: updatedData } = await client.patch<T>(url, data);
+    return updatedData;
+};
+
+export const deleteModuleDetailQuery = async <T extends IBaseEntity>(
+    module: IModule<T>,
+    id: TUUID
+) => {
+    const url = `/api/admin/${module.key}/${id}`;
+    const { data } = await client.delete<T>(url);
     return data;
 };

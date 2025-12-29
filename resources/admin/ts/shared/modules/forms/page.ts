@@ -2,7 +2,7 @@ import { computed } from "vue";
 import type { ISmartFormField } from "../../types";
 import type { Page } from "@shared/types/models";
 
-export const usePageForm = (entity: Page) => {
+export const usePageForm = (entity?: Page) => {
     const fields = computed<ISmartFormField[]>(() => {
         return [
             {
@@ -46,7 +46,7 @@ export const usePageForm = (entity: Page) => {
         ];
     });
 
-    const createInitialValues = computed(() => {
+    const createInitialValues = () => {
         return {
             index: false,
             link: {
@@ -54,8 +54,7 @@ export const usePageForm = (entity: Page) => {
                 url: "",
             },
         };
-    });
-
+    };
     return {
         fields,
         createInitialValues,

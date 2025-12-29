@@ -2,7 +2,7 @@ import { computed } from "vue";
 import type { ISmartFormField } from "../../types";
 import type { Template } from "@shared/types/models";
 
-export const useTemplateForm = (entity: Template) => {
+export const useTemplateForm = (entity?: Template) => {
     const fields = computed<ISmartFormField[]>(() => {
         return [
             {
@@ -34,16 +34,15 @@ export const useTemplateForm = (entity: Template) => {
         ];
     });
 
-    const createInitialValues = computed(() => {
+    const createInitialValues = () => {
         return {
             name: "",
             value: "",
         };
-    });
+    };
 
     return {
         fields,
         createInitialValues,
     };
 };
-

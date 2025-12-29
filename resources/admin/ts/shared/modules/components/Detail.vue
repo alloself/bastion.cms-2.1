@@ -1,5 +1,5 @@
 <template>
-    <VCard class="module-detail" rounded="0" flat>
+    <VCard class="module-detail" rounded="0" flat density="compact">
         <VCardText class="module-detail__content pa-0">
             <BSmartForm
                 class="module-detail__form"
@@ -107,7 +107,9 @@ import type { IModule } from "..";
 import type { IBaseEntity, TUUID } from "../../types";
 import { BSmartForm } from "../../components";
 import type { FormContext } from "vee-validate";
-import { ref } from "vue";
+import type { PartialDeep } from "type-fest";
+import { computed, ref } from "vue";
+import { useModuleDetailQuery } from "../queries/detail";
 
 const { module, id, tab } = defineProps<{
     module: IModule<T>;
@@ -116,4 +118,35 @@ const { module, id, tab } = defineProps<{
 }>();
 
 const form = ref<FormContext<T, T>>();
+
+const { detailQuery, createMutation, updateMutation, deleteMutation } =
+    useModuleDetailQuery(module, id);
+
+const moduleFormContext = computed(() => {
+    const data = detailQuery.data.value;
+    if (!data) {
+        return module.createForm();
+    }
+    return module.createForm(data);
+});
+
+const isLoading = computed(
+    () =>
+        detailQuery.asyncStatus.value === "loading" ||
+        createMutation.asyncStatus.value === "loading" ||
+        updateMutation.asyncStatus.value === "loading" ||
+        deleteMutation.asyncStatus.value === "loading"
+);
+
+const fields = computed(() => moduleFormContext.value.fields.value);
+
+const initialValues = computed(() => {
+    return moduleFormContext.value.createInitialValues();
+});
 </script>
+
+<style lang="scss" scoped>
+.module-detail {
+   padding: 8px 8px 0px 8px;
+}
+</style>
