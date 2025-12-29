@@ -1,5 +1,6 @@
 import type { Page, Template } from "@shared/types/models";
-import type { IBaseEntity, ITableHeader } from "../types";
+import type { ComputedRef } from "vue";
+import type { IBaseEntity, ISmartFormField, ITableHeader } from "../types";
 import { capitalize } from "lodash";
 import { toKebabCase } from "../helpers";
 import type {
@@ -7,6 +8,12 @@ import type {
     RouteRecordRaw,
     RouteLocationNormalized,
 } from "vue-router";
+import { usePageForm, useTemplateForm } from "./forms";
+
+export interface IModuleForm {
+    fields: ComputedRef<ISmartFormField[]>;
+    createInitialValues: ComputedRef<Record<string, unknown>>;
+}
 
 export interface IModule<T extends IBaseEntity = IBaseEntity> {
     key: string;
@@ -17,6 +24,7 @@ export interface IModule<T extends IBaseEntity = IBaseEntity> {
     isDefault?: boolean;
     headers: ITableHeader[];
     getDetailTabTitle?(entity: T): string;
+    createForm: (entity: T) => IModuleForm;
 }
 const pageModule: IModule<Page> = {
     key: "page",
@@ -37,6 +45,7 @@ const pageModule: IModule<Page> = {
     getDetailTabTitle(entity: Page) {
         return `Страница #${entity.id}`;
     },
+    createForm: usePageForm,
 };
 
 const templateModule: IModule<Template> = {
@@ -53,6 +62,7 @@ const templateModule: IModule<Template> = {
     getDetailTabTitle(entity: Template) {
         return `Шаблон #${entity.id}`;
     },
+    createForm: useTemplateForm,
 };
 
 export const modules = [pageModule, templateModule];
@@ -77,9 +87,9 @@ export const getModuleFromMatchedRoutes = (
     return matchedRoute?.meta?.module;
 };
 
-export const createModulesRoutes = () => {
+export const createModulesRoutes = (): RouteRecordRaw[] => {
     return modules.reduce<RouteRecordRaw[]>((acc, item) => {
-        const routes = [];
+        const routes: RouteRecordRaw[] = [];
         if (item.showInNavigation) {
             const listRoute: RouteRecordRaw = {
                 path: `/${toKebabCase(item.key)}`,
@@ -88,7 +98,7 @@ export const createModulesRoutes = () => {
                     module: item,
                 },
                 meta: {
-                    module: item,
+                    module: item as IModule<IBaseEntity>,
                 },
                 component: () =>
                     import(`@/ts/shared/modules/components/List.vue`),
@@ -106,7 +116,7 @@ export const createModulesRoutes = () => {
                     module: item,
                 },
                 meta: {
-                    module: item,
+                    module: item as IModule<IBaseEntity>,
                 },
                 component: () =>
                     import(`@/ts/shared/modules/components/Detail.vue`),
@@ -119,7 +129,7 @@ export const createModulesRoutes = () => {
                     module: item,
                 }),
                 meta: {
-                    module: item,
+                    module: item as IModule<IBaseEntity>,
                 },
                 component: () =>
                     import(`@/ts/shared/modules/components/Detail.vue`),

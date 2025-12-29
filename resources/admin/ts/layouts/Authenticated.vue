@@ -118,6 +118,14 @@ import { Screen, useScreenStore } from "@/ts/features/screen";
 import { useAuthStore } from "@/ts/features/auth";
 import { routeNames } from "@/ts/app/router/routes";
 
+type TNavigationModuleItem = {
+    title: string;
+    icon?: string;
+    to: string;
+    key: string;
+    showInNavigation: boolean;
+};
+
 const router = useRouter();
 const route = useRoute();
 
@@ -136,17 +144,26 @@ const screenArray = computed(() => {
 });
 
 const items = computed(() => {
-    const array = sortBy(modules, ["title"]).reduce((acc, item) => {
-        if (item.showInNavigation) {
-            acc.push({ ...item, to: `${capitalize(item.key)}List` });
-        }
-        return acc;
-    }, [] as IModule[]);
+    const array = sortBy(modules, ["title"]).reduce<TNavigationModuleItem[]>(
+        (acc, item) => {
+            if (item.showInNavigation) {
+                acc.push({
+                    title: item.title,
+                    icon: item.icon,
+                    to: `${capitalize(item.key)}List`,
+                    key: item.key,
+                    showInNavigation: item.showInNavigation,
+                });
+            }
+            return acc;
+        },
+        []
+    );
 
     return array;
 });
 
-const isItemActive = (item: IModule) => {
+const isItemActive = (item: TNavigationModuleItem) => {
     if (!item.to) {
         return false;
     }
@@ -186,7 +203,7 @@ const isItemActive = (item: IModule) => {
 
 const handleNavigationItemClick = async (
     event: MouseEvent | KeyboardEvent,
-    item: IModule
+    item: TNavigationModuleItem
 ) => {
     if (!item.to) {
         return;
