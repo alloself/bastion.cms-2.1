@@ -201,6 +201,8 @@ const isItemActive = (item: TNavigationModuleItem) => {
     return false;
 };
 
+const isOpeningNewTab = ref(false);
+
 const handleNavigationItemClick = async (
     event: MouseEvent | KeyboardEvent,
     item: TNavigationModuleItem
@@ -209,10 +211,18 @@ const handleNavigationItemClick = async (
         return;
     }
 
+    const shouldOpenNewTab =
+        (event.ctrlKey || event.metaKey) && activeScreen.value;
+
+    if (shouldOpenNewTab) {
+        isOpeningNewTab.value = true;
+    }
+
     await router.push({ name: item.to });
 
-    if ((event.ctrlKey || event.metaKey) && activeScreen.value) {
+    if (shouldOpenNewTab && activeScreen.value) {
         screenStore.openRouteTab(activeScreen.value, router.currentRoute.value);
+        isOpeningNewTab.value = false;
     } else {
         screenStore.setActiveTabRoute(router.currentRoute.value);
     }
@@ -230,6 +240,9 @@ const toggleRailMode = () => {
 watch(
     () => route.fullPath,
     () => {
+        if (isOpeningNewTab.value) {
+            return;
+        }
         screenStore.setActiveTabRoute(router.currentRoute.value);
     }
 );

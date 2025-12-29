@@ -24,7 +24,7 @@ export interface IModule<T extends IBaseEntity = IBaseEntity> {
     showInNavigation?: boolean;
     isDefault?: boolean;
     headers: ITableHeader[];
-    getDetailTabTitle?(entity: T): string;
+    getDetailTabTitle(entity?: T | null): string;
     createForm: (entity?: T) => IModuleForm<T>;
 }
 const pageModule: IModule<Page> = {
@@ -43,7 +43,10 @@ const pageModule: IModule<Page> = {
             key: "link.url",
         },
     ],
-    getDetailTabTitle(entity: Page) {
+    getDetailTabTitle(entity?: Page) {
+        if (!entity) {
+            return "Создание страницы";
+        }
         return `Страница #${entity.id}`;
     },
     createForm: usePageForm,
@@ -60,7 +63,10 @@ const templateModule: IModule<Template> = {
             key: "name",
         },
     ],
-    getDetailTabTitle(entity: Template) {
+    getDetailTabTitle(entity?: Template) {
+        if (!entity) {
+            return "Создание шаблона";
+        }
         return `Шаблон #${entity.id}`;
     },
     createForm: useTemplateForm,

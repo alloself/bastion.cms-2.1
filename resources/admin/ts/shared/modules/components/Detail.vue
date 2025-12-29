@@ -106,11 +106,11 @@ import type { IModule } from "..";
 import type { IBaseEntity, TUUID } from "../../types";
 import { BSmartForm } from "../../components";
 import type { FormContext } from "vee-validate";
-import { capitalize, computed, ref } from "vue";
+import { capitalize, computed, onActivated, ref, watch } from "vue";
 import { useModuleDetailQuery } from "../queries/detail";
 import { toScreenRoute } from "../../helpers";
 
-const { module, id } = defineProps<{
+const { module, id, tab } = defineProps<{
     module: IModule<T>;
     id?: TUUID;
     tab: ITab;
@@ -152,6 +152,17 @@ const handleRefreshClick = async () => {};
 const handleDeleteClick = async () => {};
 
 const handleSaveClick = async () => {};
+
+watch(
+    () => detailQuery.data.value,
+    (newData) => {
+        tab.title = module.getDetailTabTitle(newData);
+    }
+);
+
+onActivated(() => {
+    tab.title = module.getDetailTabTitle(detailQuery.data.value);
+});
 </script>
 
 <style lang="scss" scoped>
