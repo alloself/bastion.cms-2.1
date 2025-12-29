@@ -201,7 +201,12 @@ const isItemActive = (item: TNavigationModuleItem) => {
     return false;
 };
 
-const isOpeningNewTab = ref(false);
+const { pause: pauseRouteWatch, resume: resumeRouteWatch } = watch(
+    () => route.fullPath,
+    () => {
+        screenStore.setActiveTabRoute(router.currentRoute.value);
+    }
+);
 
 const handleNavigationItemClick = async (
     event: MouseEvent | KeyboardEvent,
@@ -215,14 +220,14 @@ const handleNavigationItemClick = async (
         (event.ctrlKey || event.metaKey) && activeScreen.value;
 
     if (shouldOpenNewTab) {
-        isOpeningNewTab.value = true;
+        pauseRouteWatch();
     }
 
     await router.push({ name: item.to });
 
     if (shouldOpenNewTab && activeScreen.value) {
         screenStore.openRouteTab(activeScreen.value, router.currentRoute.value);
-        isOpeningNewTab.value = false;
+        resumeRouteWatch();
     } else {
         screenStore.setActiveTabRoute(router.currentRoute.value);
     }
@@ -236,16 +241,6 @@ const onLogout = async () => {
 const toggleRailMode = () => {
     railMode.value = !railMode.value;
 };
-
-watch(
-    () => route.fullPath,
-    () => {
-        if (isOpeningNewTab.value) {
-            return;
-        }
-        screenStore.setActiveTabRoute(router.currentRoute.value);
-    }
-);
 
 onMounted(() => {
     if (screenStore.screens.size === 0) {

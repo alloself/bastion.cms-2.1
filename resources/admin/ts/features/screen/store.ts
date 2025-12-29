@@ -175,10 +175,20 @@ export const useScreenStore = defineStore("screen", () => {
             return null;
         }
         const wasActive = screen.activeTabId === tabId;
+
+        const tabsArray = Array.from(screen.tabs.values());
+        const closedTabIndex = tabsArray.findIndex((tab) => tab.id === tabId);
+
         screen.tabs.delete(tabId);
+
         if (wasActive) {
             const remainingTabs = Array.from(screen.tabs.values());
-            const nextTab = remainingTabs[0];
+
+            const newActiveIndex = Math.min(
+                closedTabIndex > 0 ? closedTabIndex - 1 : 0,
+                remainingTabs.length - 1
+            );
+            const nextTab = remainingTabs[newActiveIndex];
             if (nextTab) {
                 screen.activeTabId = nextTab.id;
                 return nextTab;
