@@ -1,9 +1,10 @@
 <template>
-    <form class="smart-form" @submit.prevent>
+    <form class="smart-form" :style="formGridStyle" @submit.prevent>
         <div
             v-for="schemeField in fields"
             :key="schemeField.key"
             class="smart-form__field"
+            :style="{ gridArea: schemeField.key }"
         >
             <slot :name="schemeField.key">
                 <Field
@@ -51,12 +52,14 @@ const {
     initialValues,
     readonly = false,
     loading = false,
+    layout,
 } = defineProps<{
     fields: ISmartFormField[];
     form?: FormContext<T, K>;
     initialValues?: PartialDeep<T>;
     loading?: boolean;
     readonly?: boolean;
+    layout?: string;
     initialItems?: Record<string, unknown>;
 }>();
 
@@ -80,6 +83,69 @@ const mergedValidationSchema = computed(() => {
     );
 
     return z.object(schemaShape);
+});
+
+const formGridStyle = computed<Record<string, string> | undefined>(() => {
+    const trimmedLayout = layout?.trim();
+    if (!trimmedLayout) {
+        return undefined;
+    }
+
+    const rowStrings = trimmedLayout.match(/"[^"]*"/g) ?? [];
+    const tokenRows = rowStrings.reduce<string[][]>((rows, rowString) => {
+        const rowTokens = rowString
+            .slice(1, -1)
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean);
+
+        if (rowTokens.length > 0) {
+            rows.push(rowTokens);
+        }
+
+        return rows;
+    }, []);
+
+    const maxColumns = tokenRows.reduce<number>((currentMax, rowTokens) => {
+        return Math.max(currentMax, rowTokens.length);
+    }, 0);
+    if (maxColumns === 0) {
+        return undefined;
+    }
+
+    const usedFieldKeySet = new Set<string>(
+        tokenRows
+            .reduce<string[]>(
+                (flatTokens, rowTokens) => flatTokens.concat(rowTokens),
+                []
+            )
+            .filter((token) => token !== ".")
+    );
+
+    const gridTemplateAreaRows = tokenRows.map((rowTokens) => {
+        const paddedTokens = [
+            ...rowTokens,
+            ...new Array<string>(maxColumns - rowTokens.length).fill("."),
+        ];
+
+        return `"${paddedTokens.join(" ")}"`;
+    });
+
+    const additionalRows = fields.reduce<string[]>((rows, field) => {
+        if (!usedFieldKeySet.has(field.key)) {
+            rows.push(
+                `"${new Array<string>(maxColumns).fill(field.key).join(" ")}"`
+            );
+        }
+        return rows;
+    }, []);
+
+    return {
+        display: "grid",
+        gridTemplateAreas: [...gridTemplateAreaRows, ...additionalRows].join("\n"),
+        gridTemplateColumns: `repeat(${maxColumns}, minmax(0, 1fr))`,
+        gap: "8px",
+    };
 });
 
 const formContext = useForm<T, K>({
