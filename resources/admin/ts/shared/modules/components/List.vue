@@ -220,7 +220,7 @@ const syncTableStateToUrl = async () => {
 };
 
 watch(
-    () => ({ ...tableState }),
+    () => tableState,
     () => {
         syncTableStateToUrl();
     },
