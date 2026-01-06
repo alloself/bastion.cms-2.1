@@ -1,4 +1,4 @@
-import { toValue, type MaybeRefOrGetter } from "vue";
+import { computed, toValue, type MaybeRefOrGetter } from "vue";
 import type { IModule } from "..";
 import type { IBaseEntity } from "../../types";
 import { useQuery } from "@pinia/colada";
@@ -9,11 +9,14 @@ export const useModuleListQuery = <T extends IBaseEntity>(
     queryParams: MaybeRefOrGetter<IModuleListQueryParams>
 ) => {
     const moduleValue = toValue(module);
-    const queryParamsValue = toValue(queryParams);
+
+    const key = computed(() => ["list", moduleValue.key, JSON.stringify(toValue(queryParams))]);
+
+    console.log(key.value);
 
     const listQuery = useQuery({
-        key: ["list", module, queryParams],
-        query: () => getModuleListQuery(moduleValue, queryParamsValue),
+        key,
+        query: () => getModuleListQuery(moduleValue, toValue(queryParams)),
     });
 
     return listQuery;
