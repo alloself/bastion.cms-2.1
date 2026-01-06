@@ -195,7 +195,7 @@ const buildQueryParams = () => {
     if (tableState.search.trim() !== "") {
         params.set("search", tableState.search.trim());
     }
-    if (tableState.sortBy.length > 0) {
+    if (tableState.sortBy.length) {
         tableState.sortBy.forEach((sort) => {
             params.append("sortBy[]", `${sort.key}:${sort.order}`);
         });
