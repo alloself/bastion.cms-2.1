@@ -7,6 +7,7 @@
         class="module-list"
         show-select
         v-model="selectedItems"
+        v-model:sort-by="tableState.sortBy"
         density="compact"
         @click:row="handleRowClick"
         striped="even"
@@ -126,12 +127,14 @@
 </template>
 
 <script setup lang="ts" generic="T extends IBaseEntity">
-import { capitalize, computed, reactive, ref } from "vue";
+import { capitalize, computed, reactive, ref, watch } from "vue";
 import type { IModule } from "..";
-import type { IBaseEntity, TUUID } from "../../types";
+import type { IBaseEntity, ISortBy, TUUID } from "../../types";
 import type { ITab } from "@/ts/features/screen";
 import { useModuleListQuery } from "../queries";
 import { toScreenRoute } from "../../helpers";
+import router from "@/ts/app/router";
+import { useScreenStore } from "@/ts/features/screen";
 
 const { module, tab } = defineProps<{
     module: IModule<T>;
@@ -140,29 +143,89 @@ const { module, tab } = defineProps<{
 
 const selectedItems = ref<TUUID[]>([]);
 
+const parseSortByFromUrl = (url: URL): ISortBy[] => {
+    const sortByParams = url.searchParams.getAll("sortBy[]");
+
+    return sortByParams.reduce<ISortBy[]>((result, param) => {
+        const [key, order] = param.split(":");
+        if (key && (order === "asc" || order === "desc")) {
+            result.push({ key, order });
+        }
+        return result;
+    }, []);
+};
+
 const parseQueryTableState = (tab: ITab) => {
     const url = new URL(tab.route, window.location.origin);
 
     const page = parseInt(url.searchParams.get("page") || "1");
     const perPage = parseInt(url.searchParams.get("per_page") || "10");
     const search = url.searchParams.get("search") ?? "";
+    const sortBy = parseSortByFromUrl(url);
 
     return {
         page,
         perPage,
         search,
+        sortBy,
     };
 };
 
 const tableState = reactive(parseQueryTableState(tab));
 
-const searchInput = ref("");
+const searchInput = ref(tableState.search);
 
 const { state, asyncStatus } = useModuleListQuery<T>(module, tableState);
+
+const screenStore = useScreenStore();
 
 const items = computed(() => state.value?.data?.data ?? []);
 const itemsLength = computed(() => state.value?.data?.meta?.total ?? 0);
 const isLoading = computed(() => asyncStatus.value === "loading");
+
+const buildQueryParams = () => {
+    const params = new URLSearchParams();
+
+    if (tableState.page !== 1) {
+        params.set("page", String(tableState.page));
+    }
+    if (tableState.perPage !== 10) {
+        params.set("per_page", String(tableState.perPage));
+    }
+    if (tableState.search.trim() !== "") {
+        params.set("search", tableState.search.trim());
+    }
+    if (tableState.sortBy.length > 0) {
+        tableState.sortBy.forEach((sort) => {
+            params.append("sortBy[]", `${sort.key}:${sort.order}`);
+        });
+    }
+
+    return params;
+};
+
+const syncTableStateToUrl = async () => {
+    const currentRoute = router.currentRoute.value;
+    const queryParams = buildQueryParams();
+    const queryString = queryParams.toString();
+    const basePath = currentRoute.path;
+    const newFullPath = queryString ? `${basePath}?${queryString}` : basePath;
+
+    if (currentRoute.fullPath === newFullPath) {
+        return;
+    }
+
+    await router.replace({ path: basePath, query: Object.fromEntries(queryParams) });
+    screenStore.setActiveTabRoute(router.currentRoute.value);
+};
+
+watch(
+    () => ({ ...tableState }),
+    () => {
+        syncTableStateToUrl();
+    },
+    { deep: true }
+);
 
 const handleSearchSubmit = () => {
     tableState.search = searchInput.value.trim();

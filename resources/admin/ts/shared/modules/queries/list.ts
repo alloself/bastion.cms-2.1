@@ -10,9 +10,7 @@ export const useModuleListQuery = <T extends IBaseEntity>(
 ) => {
     const moduleValue = toValue(module);
 
-    const key = computed(() => ["list", moduleValue.key, JSON.stringify(toValue(queryParams))]);
-
-    console.log(key.value);
+    const key = computed(() => ["list", moduleValue.key, toValue(queryParams)]);
 
     const listQuery = useQuery({
         key,
