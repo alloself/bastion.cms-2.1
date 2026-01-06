@@ -23,6 +23,18 @@ abstract class CRUDController extends Controller
 
         $paginator = DB::transaction(function () use ($modelClass, $request) {
             $query = $modelClass::query();
+
+            $sortby = $request->input('sortBy', []);
+            foreach ($sortby as $param) {
+                $parts = explode(':', $param);
+                if (count($parts) === 2) {
+                    [$key, $order] = $parts;
+                    if (in_array($order, ['asc', 'desc'], true)) {
+                        $query->orderBy($key, $order);
+                    }
+                }
+            }
+
             $perPage = $request->input('per_page', 15);
             $paginator = $query->paginate($perPage);
             $paginator->appends($request->query());

@@ -118,7 +118,7 @@
                     rounded="circle"
                     :showFirstLastPag="true"
                     v-model="tableState.page"
-                    :length="itemsLength"
+                    :length="pagesCount"
                     :total-visible="6"
                 ></VPagination>
             </div>
@@ -182,6 +182,7 @@ const screenStore = useScreenStore();
 
 const items = computed(() => state.value?.data?.data ?? []);
 const itemsLength = computed(() => state.value?.data?.meta?.total ?? 0);
+const pagesCount = computed(() => state.value?.data?.meta?.last_page ?? 1);
 const isLoading = computed(() => asyncStatus.value === "loading");
 
 const buildQueryParams = () => {
