@@ -67,7 +67,7 @@ const templateModule: IModule<Template> = {
         if (!entity) {
             return "Создание шаблона";
         }
-        return `Шаблон #${entity.id}`;
+        return `Шаблон ${entity.name}`;
     },
     createForm: useTemplateForm,
 };

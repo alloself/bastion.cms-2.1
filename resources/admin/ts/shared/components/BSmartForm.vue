@@ -4,6 +4,9 @@
             v-for="schemeField in fields"
             :key="schemeField.key"
             class="smart-form__field"
+            :class="{
+                'smart-form__field--grow': schemeField.isGrow,
+            }"
             :style="{ gridArea: schemeField.key }"
         >
             <slot :name="schemeField.key">
@@ -170,4 +173,22 @@ watch(
 );
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.smart-form {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.smart-form__field {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.smart-form__field--grow {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+</style>

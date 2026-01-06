@@ -49,7 +49,7 @@ export const createModuleDetailQuery = async <T extends IBaseEntity>(
     module: IModule<T>,
     payload: Partial<T>
 ) => {
-    const url = `/api/admin/${module.key}/create`;
+    const url = `/api/admin/${module.key}`;
     const { data } = await client.post<T>(url, payload);
     return data;
 };

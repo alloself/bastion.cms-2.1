@@ -12,6 +12,7 @@ export interface ISmartFormField {
     events?: Record<string, Function>;
     rule?: z.ZodType;
     readonly?: boolean;
+    isGrow?: boolean;
 }
 
 export interface ITableHeader {

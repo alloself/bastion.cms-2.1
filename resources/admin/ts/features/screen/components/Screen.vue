@@ -61,7 +61,11 @@
             v-if="activeTabComponent && activeTab && activeTabKey"
             :key="activeTabKey"
         >
-            <component :is="activeTabComponent" v-bind="activeTabProps" :tab="activeTab" />
+            <component
+                :is="activeTabComponent"
+                v-bind="activeTabProps"
+                :tab="activeTab"
+            />
         </KeepAlive>
     </VCard>
     <div
@@ -83,13 +87,14 @@ import {
     useTemplateRef,
 } from "vue";
 import type { Component } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, type RouteLocationResolved } from "vue-router";
 import { useScreenStore, type IScreen, type ITab } from "..";
 import type { TUUID } from "@/ts/shared/types";
 import { useScreenResize } from "../composables/useScreenResize";
 import { isVueComponent, resolveComponentExport } from "@/ts/shared/helpers";
 import type { VCard } from "vuetify/components";
 import ScreenTabLoading from "./ScreenTabLoading.vue";
+import { isObject } from "lodash";
 
 const { screen, isLast, nextScreen } = defineProps<{
     screen: IScreen;
@@ -147,6 +152,26 @@ const renderComponent = (routeComponent: unknown): Component | null => {
     return null;
 };
 
+const extractRouteProps = (
+    propsConfig: unknown,
+    route: RouteLocationResolved
+) => {
+    if (!propsConfig) {
+        return {};
+    }
+    if (typeof propsConfig === "function") {
+        const result = propsConfig(route);
+        if (isObject(result)) {
+            return result;
+        }
+        return {};
+    }
+    if (isObject(propsConfig)) {
+        return propsConfig;
+    }
+    return {};
+};
+
 const activeTab = computed(() => {
     if (!screen.activeTabId) {
         return null;
@@ -158,12 +183,19 @@ const activeTabKey = computed(() => {
     return activeTab.value?.id || null;
 });
 
-const activeTabRoute = computed(() => {
+const resolvedTabRoute = computed(() => {
     if (!activeTab.value) {
         return null;
     }
-    const resolved = router.resolve(activeTab.value.route);
-    return resolved.matched[resolved.matched.length - 1];
+    return router.resolve(activeTab.value.route);
+});
+
+const activeTabRoute = computed(() => {
+    if (!resolvedTabRoute.value) {
+        return null;
+    }
+    const { matched } = resolvedTabRoute.value;
+    return matched[matched.length - 1] ?? null;
 });
 
 const activeTabComponent = computed(() => {
@@ -178,14 +210,13 @@ const activeTabComponent = computed(() => {
 });
 
 const activeTabProps = computed(() => {
-    if (!activeTabRoute.value) {
+    if (!activeTabRoute.value || !resolvedTabRoute.value) {
         return {};
     }
-    const props = activeTabRoute.value.props.default || {};
-    if (typeof props === "function") {
-        return props(router.currentRoute.value);
-    }
-    return activeTabRoute.value.props.default;
+    return extractRouteProps(
+        activeTabRoute.value.props.default,
+        resolvedTabRoute.value
+    );
 });
 
 const isTabCloseDisabled = computed(() => {
@@ -194,6 +225,10 @@ const isTabCloseDisabled = computed(() => {
 
 const handleActivateScreen = () => {
     screenStore.setActiveScreen(screen.id);
+    
+    if (activeTab.value?.route) {
+        router.push(activeTab.value.route);
+    }
 };
 
 const isTabToggleDisabled = computed(() => {
@@ -251,8 +286,6 @@ watch(
         }
     }
 );
-
-
 </script>
 
 <style scoped lang="scss">

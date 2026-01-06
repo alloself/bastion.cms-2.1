@@ -17,7 +17,7 @@ return new class extends Migration
 
             $table->uuid('id')->primary()->unique();
             $table->string($morphPrefix . '_type')->nullable();
-            $table->unsignedBigInteger($morphPrefix . '_id')->nullable();
+            $table->uuid($morphPrefix . '_id')->nullable();
             $table->string('event');
             $table->uuidMorphs('auditable');
             $table->text('old_values')->nullable();

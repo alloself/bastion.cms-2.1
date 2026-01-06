@@ -14,17 +14,18 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
     id: MaybeRefOrGetter<TUUID | undefined>
 ) => {
     const moduleValue = toValue(module);
-    const idValue = toValue(id);
+    const getIdValue = () => toValue(id);
 
     const detailQuery = useQuery({
-        key: ["detail", module, idValue || "create"],
+        key: () => ["detail", moduleValue.key, getIdValue() ?? "create"],
         query: async () => {
+            const idValue = getIdValue();
             if (!idValue) {
-              return null;
+                return null;
             }
             return getModuleDetailQuery(moduleValue, idValue);
         },
-        enabled: !!idValue,
+        enabled: () => !!getIdValue(),
     });
 
     const createMutation = useMutation({

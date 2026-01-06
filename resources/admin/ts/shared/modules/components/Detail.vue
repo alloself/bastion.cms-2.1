@@ -1,6 +1,6 @@
 <template>
     <VCard class="module-detail" rounded="0" flat density="compact">
-        <VCardText class="module-detail__content pa-0">
+        <VCardText class="module-detail__content">
             <BSmartForm
                 class="module-detail__form"
                 :loading="isLoading"
@@ -16,7 +16,12 @@
                 content-class="module-detail__footer-container"
                 show-arrows
             >
-                <VTooltip location="top" text="Назад" color="primary">
+                <VTooltip
+                    v-if="canGoBack"
+                    location="top"
+                    text="Назад"
+                    color="primary"
+                >
                     <template #activator="{ props: activatorProps }">
                         <VBtn
                             icon
@@ -32,69 +37,32 @@
                     <span>Назад</span>
                 </VTooltip>
                 <VSpacer />
-                <VTooltip location="top" text="Обновить" color="primary">
-                    <template #activator="{ props: activatorProps }">
-                        <VBtn
-                            icon
-                            size="x-small"
-                            variant="flat"
-                            class="mr-2"
-                            v-bind="activatorProps"
-                            :disabled="isLoading"
-                            :loading="isLoading"
-                            @click="handleRefreshClick"
-                        >
-                            <VIcon>mdi-refresh</VIcon>
-                        </VBtn>
-                    </template>
-                    <span>Обновить</span>
-                </VTooltip>
 
-                <VTooltip
-                    v-if="id"
-                    location="top"
-                    text="Удалить"
-                    color="primary"
-                >
-                    <template #activator="{ props: activatorProps }">
-                        <VBtn
-                            icon
-                            size="x-small"
-                            variant="flat"
-                            color="error"
-                            class="mr-2"
-                            v-bind="activatorProps"
-                            :disabled="isLoading"
-                            :loading="isLoading"
-                            @click="handleDeleteClick"
-                        >
-                            <VIcon>mdi-delete</VIcon>
-                        </VBtn>
-                    </template>
-                    <span>Удалить</span>
-                </VTooltip>
-
-                <VTooltip
-                    location="top"
-                    :text="id ? 'Сохранить' : 'Создать'"
-                    color="primary"
-                >
-                    <template #activator="{ props: activatorProps }">
-                        <VBtn
-                            icon
-                            size="x-small"
-                            variant="flat"
-                            color="primary"
-                            v-bind="activatorProps"
-                            :disabled="isLoading"
-                            :loading="isLoading"
-                            @click="handleSaveClick"
-                        >
-                            <VIcon>mdi-content-save</VIcon>
-                        </VBtn>
-                    </template>
-                    <span>{{ id ? "Сохранить" : "Создать" }}</span>
-                </VTooltip>
+                <template v-for="action in actions" :key="action.key">
+                    <VTooltip
+                        v-if="action.isVisible"
+                        location="top"
+                        :text="action.tooltipText"
+                        color="primary"
+                    >
+                        <template #activator="{ props: activatorProps }">
+                            <VBtn
+                                icon
+                                size="x-small"
+                                variant="flat"
+                                :color="action.color"
+                                :class="action.buttonClass"
+                                v-bind="activatorProps"
+                                :disabled="action.isDisabled"
+                                :loading="action.isLoading"
+                                @click="action.handleClick"
+                            >
+                                <VIcon :icon="action.icon" />
+                            </VBtn>
+                        </template>
+                        <span>{{ action.label }}</span>
+                    </VTooltip>
+                </template>
             </VSlideGroup>
         </VCardActions>
     </VCard>
@@ -107,8 +75,22 @@ import type { IBaseEntity, TUUID } from "../../types";
 import { BSmartForm } from "../../components";
 import type { FormContext } from "vee-validate";
 import { capitalize, computed, onActivated, ref, watch } from "vue";
+import { useRouter } from "vue-router";
 import { useModuleDetailQuery } from "../queries/detail";
 import { toScreenRoute } from "../../helpers";
+
+type TAction = {
+    key: string;
+    isVisible: boolean;
+    tooltipText: string;
+    label: string;
+    icon: string;
+    color?: string;
+    buttonClass: string;
+    isDisabled: boolean;
+    isLoading: boolean;
+    handleClick: () => Promise<void>;
+};
 
 const { module, id, tab } = defineProps<{
     module: IModule<T>;
@@ -116,14 +98,25 @@ const { module, id, tab } = defineProps<{
     tab: ITab;
 }>();
 
+const router = useRouter();
+
+const canGoBack = computed(() => {
+    const historyState = window.history.state;
+    return Boolean(historyState?.back);
+});
+
 const handleBackClick = async () => {
+    if (canGoBack.value) {
+        router.back();
+        return;
+    }
     await toScreenRoute({ name: `${capitalize(module.key)}List` });
 };
 
 const form = ref<FormContext<T, T>>();
 
 const { detailQuery, createMutation, updateMutation, deleteMutation } =
-    useModuleDetailQuery(module, id);
+    useModuleDetailQuery(module, () => id);
 
 const moduleFormContext = computed(() => {
     const data = detailQuery.data.value;
@@ -141,17 +134,116 @@ const isLoading = computed(
         deleteMutation.asyncStatus.value === "loading"
 );
 
+const actions = computed<Array<TAction>>(() => {
+    const isDisabled = isLoading.value;
+
+    const refreshAction: TAction = {
+        key: "refresh",
+        isVisible: false,
+        tooltipText: "",
+        label: "",
+        icon: "mdi-refresh",
+        buttonClass: "mr-2",
+        isDisabled,
+        isLoading: isLoading.value,
+        handleClick: handleRefreshClick,
+    };
+
+    const deleteAction: TAction = {
+        key: "delete",
+        isVisible: !!id,
+        tooltipText: "Удалить",
+        label: "Удалить",
+        icon: "mdi-delete",
+        color: "error",
+        buttonClass: "mr-2",
+        isDisabled,
+        isLoading: isLoading.value,
+        handleClick: handleDeleteClick,
+    };
+
+    const saveAction: TAction = {
+        key: "save",
+        isVisible: true,
+        tooltipText: id ? "Сохранить" : "Создать",
+        label: id ? "Сохранить" : "Создать",
+        icon: "mdi-content-save",
+        color: "primary",
+        buttonClass: "",
+        isDisabled,
+        isLoading: isLoading.value,
+        handleClick: id ? handleSaveClick : handleCreateClick,
+    };
+
+    return [refreshAction, deleteAction, saveAction];
+});
+
 const fields = computed(() => moduleFormContext.value.fields.value);
 
 const initialValues = computed(() => {
     return moduleFormContext.value.createInitialValues();
 });
 
-const handleRefreshClick = async () => {};
+const handleRefreshClick = async () => {
+    if (id) {
+        await detailQuery.refetch();
+        return;
+    }
 
-const handleDeleteClick = async () => {};
+    form.value?.resetForm();
+};
 
-const handleSaveClick = async () => {};
+const handleDeleteClick = async () => {
+    if (!id) {
+        return;
+    }
+
+    await deleteMutation.mutateAsync(id);
+    await toScreenRoute({ name: `${capitalize(module.key)}List` });
+};
+
+const handleSaveClick = async () => {
+    if (!id) {
+        return;
+    }
+
+    const formContext = form.value;
+    if (!formContext) {
+        return;
+    }
+
+    const validationResult = await formContext.validate();
+    if (!validationResult.valid) {
+        return;
+    }
+
+    await updateMutation.mutateAsync({
+        id,
+        payload: formContext.values,
+    });
+};
+
+const handleCreateClick = async () => {
+    const formContext = form.value;
+    if (!formContext) {
+        return;
+    }
+
+    const validationResult = await formContext.validate();
+    if (!validationResult.valid) {
+        return;
+    }
+
+    const createdEntity = await createMutation.mutateAsync(formContext.values);
+    if (!createdEntity.id) {
+        return;
+    }
+
+    await toScreenRoute({
+        name: `${capitalize(module.key)}Detail`,
+        params: { id: createdEntity.id },
+    });
+};
 
 watch(
     () => detailQuery.data.value,
@@ -169,16 +261,25 @@ onActivated(() => {
 .module-detail {
     display: flex;
     flex-direction: column;
-    padding: 8px 8px 0px 8px;
     height: calc(100svh - 96px);
+
+    &__content {
+        padding: 8px;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
     &__footer {
         position: sticky;
         bottom: 0;
         border-top: 1px solid
             rgba(var(--v-border-color), var(--v-border-opacity));
         margin: 0 -8px;
-        padding: 0 8px;
-
+        padding: 0 16px;
+        background: rgb(var(--v-theme-surface));
+        z-index: 1;
         &-actions {
             width: 100%;
         }
@@ -186,6 +287,12 @@ onActivated(() => {
 
     &__content {
         flex: 1 1 auto;
+        min-height: 0;
+    }
+
+    &__form {
+        flex: 1 1 auto;
+        min-height: 0;
     }
 }
 </style>

@@ -1,5 +1,6 @@
 import type { Component } from "vue";
 import type { RouteLocationRaw } from "vue-router";
+import { nextTick } from "vue";
 import { useScreenStore } from "../features/screen";
 import router from "../app/router";
 
@@ -38,14 +39,12 @@ export const toScreenRoute = async (
     const screenStore = useScreenStore();
 
     await router.push(route);
+    await nextTick();
 
     if (event instanceof MouseEvent && isModifierKeyPressed(event)) {
         const activeScreen = screenStore.activeScreen;
         if (activeScreen) {
-            return screenStore.openRouteTab(
-                activeScreen,
-                router.currentRoute.value
-            );
+            return screenStore.openRouteTab(activeScreen, router.currentRoute.value);
         }
     }
 

@@ -1,6 +1,7 @@
 import { computed } from "vue";
-import type { ISmartFormField } from "../../types";
 import type { Template } from "@shared/types/models";
+import type { ISmartFormField } from "../../types";
+import { BCodeEditor } from "../../components";
 
 export const useTemplateForm = (entity?: Template) => {
     const fields = computed<ISmartFormField[]>(() => {
@@ -18,27 +19,25 @@ export const useTemplateForm = (entity?: Template) => {
                 },
             },
             {
-                component: "v-textarea",
+                component: BCodeEditor,
                 key: "value",
+                isGrow: true,
                 props: {
                     name: "value",
-                    label: "Шаблон",
-                    density: "compact",
-                    variant: "filled",
-                    rounded: "0",
-                    clearable: true,
-                    autoGrow: true,
-                    rows: 6,
                 },
             },
         ];
     });
 
     const createInitialValues = () => {
-        return {
-            name: "",
-            value: "",
-        };
+        if (!entity) {
+            return {
+                name: "",
+                value: "",
+            };
+        }
+
+        return entity;
     };
 
     return {
