@@ -1,7 +1,7 @@
 import type { RouteLocationNormalized } from "vue-router";
 import { isSafeRedirectPath } from ".";
 import { useAuthStore } from "@/ts/features/auth";
-import { routeNames } from "./routes";
+import { routeNames } from "@/ts/shared";
 
 const isUserAuthenticated = () => {
     const authStore = useAuthStore();

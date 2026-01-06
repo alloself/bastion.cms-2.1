@@ -1,4 +1,3 @@
-
 import { PiniaColada } from "@pinia/colada";
 import { createPinia } from "pinia";
 import type { App } from "vue";

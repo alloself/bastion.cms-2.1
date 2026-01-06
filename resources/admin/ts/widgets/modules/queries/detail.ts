@@ -1,6 +1,6 @@
 import { toValue, type MaybeRefOrGetter } from "vue";
 import type { IModule } from "..";
-import type { IBaseEntity, TUUID } from "../../types";
+import type { IBaseEntity, TUUID } from "@/ts/shared/types";
 import { useMutation, useQuery, useQueryCache } from "@pinia/colada";
 import {
     getModuleDetailQuery,

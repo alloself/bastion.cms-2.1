@@ -2,8 +2,8 @@ import { defineStore } from "pinia";
 import { computed, reactive, ref, watch } from "vue";
 import type { IScreen, ITab, IScreenStateSerializable } from "./types";
 import type { RouteLocationNormalizedLoaded } from "vue-router";
-import { getDefaultModule } from "@/ts/shared/modules";
 import type { TUUID } from "@/ts/shared/types";
+import { defaultTabConfig } from "@/ts/shared/const";
 
 const STORAGE_KEY = "screen-store";
 
@@ -182,17 +182,13 @@ export const useScreenStore = defineStore("screen", () => {
         screen: IScreen,
         route: RouteLocationNormalizedLoaded
     ) => {
-        let module = route.meta.module;
-
-        if (!module) {
-            module = getDefaultModule();
-        }
+        const module = route.meta.module;
 
         const tab = addTab(screen, {
             id: crypto.randomUUID(),
             route: route.fullPath,
-            title: module?.title || "",
-            icon: module?.icon || "",
+            title: module?.title || defaultTabConfig.title,
+            icon: module?.icon || defaultTabConfig.icon,
         });
         screen.activeTabId = tab.id;
         return tab;

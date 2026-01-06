@@ -1,6 +1,6 @@
 import type { IModule } from ".";
-import { client } from "../api/client";
-import type { IBaseEntity, IServerDataList, ISortBy, TUUID } from "../types";
+import { client } from "@/ts/shared/api/client";
+import type { IBaseEntity, IServerDataList, ISortBy, TUUID } from "@/ts/shared/types";
 
 export interface IModuleListQueryParams {
     page: number;

@@ -1,5 +1,5 @@
 import { computed } from "vue";
-import type { ISmartFormField } from "../../types";
+import type { ISmartFormField } from "@/ts/shared/types";
 import type { Page } from "@shared/types/models";
 
 export const usePageForm = (entity?: Page) => {

@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { routes } from "./routes";
 import { guards } from "./guards";
+import { isValidRedirectPath } from "@/ts/shared/helpers";
 
 const router = createRouter({
     history: createWebHistory("/admin"),
@@ -8,23 +9,9 @@ const router = createRouter({
 });
 
 export const isSafeRedirectPath = (value: unknown): value is string => {
-    if (typeof value !== "string") {
+    if (!isValidRedirectPath(value)) {
         return false;
     }
-    if (
-        value.startsWith("http://") ||
-        value.startsWith("https://") ||
-        value.startsWith("//")
-    ) {
-        return false;
-    }
-    if (!value.startsWith("/")) {
-        return false;
-    }
-    if (!router) {
-        return true;
-    }
-
     return router.resolve(value).matched.length > 0;
 };
 

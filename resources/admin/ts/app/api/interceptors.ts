@@ -2,6 +2,7 @@ import { isAxiosError, type AxiosError } from "axios";
 import router from "@/ts/app/router";
 import { useAuthStore } from "@/ts/features/auth";
 import { useNotificationsStore } from "@/ts/features/notifications";
+import { routeNames } from "@/ts/shared";
 
 export const handleAuthError = async (error: AxiosError) => {
     const authStore = useAuthStore();
@@ -10,7 +11,7 @@ export const handleAuthError = async (error: AxiosError) => {
         if (authStore.user) {
             await authStore.logout();
         }
-        router.push({ name: "Login" });
+        router.push({ name: routeNames.Login });
         return Promise.reject(error);
     }
 

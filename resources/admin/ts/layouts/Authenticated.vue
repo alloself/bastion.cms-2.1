@@ -108,15 +108,13 @@ import {
     modules,
     getDefaultModule,
     getModuleFromMatchedRoutes,
-    type IModule,
-} from "@/ts/shared/modules";
+} from "@/ts/widgets";
 import { sortBy } from "lodash";
 import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
-import { BLogo } from "@/ts/shared/components";
+import { BLogo, routeNames } from "@/ts/shared";
 import { Screen, useScreenStore } from "@/ts/features/screen";
 import { useAuthStore } from "@/ts/features/auth";
-import { routeNames } from "@/ts/app/router/routes";
 
 type TNavigationModuleItem = {
     title: string;

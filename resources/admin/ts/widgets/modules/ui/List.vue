@@ -128,13 +128,11 @@
 
 <script setup lang="ts" generic="T extends IBaseEntity">
 import { capitalize, computed, reactive, ref, watch } from "vue";
+import { useRouter } from "vue-router";
 import type { IModule } from "..";
-import type { IBaseEntity, ISortBy, TUUID } from "../../types";
-import type { ITab } from "@/ts/features/screen";
+import type { IBaseEntity, ISortBy, TUUID } from "@/ts/shared/types";
+import { type ITab, useScreenNavigation, useScreenStore } from "@/ts/features/screen";
 import { useModuleListQuery } from "../queries";
-import { toScreenRoute } from "../../helpers";
-import router from "@/ts/app/router";
-import { useScreenStore } from "@/ts/features/screen";
 
 const { module, tab } = defineProps<{
     module: IModule<T>;
@@ -170,6 +168,9 @@ const parseQueryTableState = (tab: ITab) => {
         sortBy,
     };
 };
+
+const router = useRouter();
+const { toScreenRoute } = useScreenNavigation();
 
 const tableState = reactive(parseQueryTableState(tab));
 

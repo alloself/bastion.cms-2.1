@@ -69,15 +69,14 @@
 </template>
 
 <script setup lang="ts" generic="T extends IBaseEntity">
-import type { ITab } from "@/ts/features/screen";
+import { type ITab, useScreenNavigation } from "@/ts/features/screen";
 import type { IModule } from "..";
-import type { IBaseEntity, TUUID } from "../../types";
-import { BSmartForm } from "../../components";
+import type { IBaseEntity, TUUID } from "@/ts/shared/types";
+import { BSmartForm } from "@/ts/shared/components";
 import type { FormContext } from "vee-validate";
 import { capitalize, computed, onActivated, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useModuleDetailQuery } from "../queries/detail";
-import { toScreenRoute } from "../../helpers";
 
 type TAction = {
     key: string;
@@ -99,6 +98,7 @@ const { module, id, tab } = defineProps<{
 }>();
 
 const router = useRouter();
+const { toScreenRoute } = useScreenNavigation();
 
 const canGoBack = computed(() => {
     const historyState = window.history.state;

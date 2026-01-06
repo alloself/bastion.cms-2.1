@@ -1,11 +1,8 @@
 import { type RouteRecordRaw } from "vue-router";
-import { createModulesRoutes } from "@/ts/shared/modules";
+import { createModulesRoutes } from "@/ts/widgets";
+import { routeNames } from "@/ts/shared";
 
-export const routeNames = {
-    Authenticated: "Authenticated",
-    Login: "Login",
-    NotFound: "NotFound",
-};
+export { routeNames };
 
 export const routes: RouteRecordRaw[] = [
     {

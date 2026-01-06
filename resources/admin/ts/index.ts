@@ -1,13 +1,12 @@
 import { createApp } from "vue";
 
 import App from "@/ts/app/App.vue";
+import { configureClient, getCSRFToken } from "@/ts/shared";
 import {
-    configureClient,
-    getCSRFToken,
     installPlugins,
     handleAuthError,
     handleUnprocessableEntityError,
-} from "@/ts/shared";
+} from "@/ts/app";
 
 const bootstrapAdminApp = async () => {
     const container = document.getElementById("admin-app");

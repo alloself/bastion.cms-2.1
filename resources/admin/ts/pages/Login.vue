@@ -33,11 +33,9 @@ import { BLogo, BSmartForm } from "@/ts/shared/components";
 import { useLoginFormFields, type LoginFormValues } from "@/ts/shared/forms";
 import type { FormContext } from "vee-validate";
 import { ref } from "vue";
-import { useFormSubmit } from "@/ts/shared/composables";
-import { useAuthStore } from "../features/auth";
-import { routeNames } from "../app/router/routes";
+import { useFormSubmit, routeNames, isValidRedirectPath } from "@/ts/shared";
+import { useAuthStore } from "@/ts/features/auth";
 import { useRouter, useRoute } from "vue-router";
-import { isSafeRedirectPath } from "../app/router";
 
 const form = ref<FormContext<LoginFormValues, LoginFormValues>>();
 const loading = ref(false);
@@ -55,6 +53,13 @@ const initialValues =
           }
         : undefined;
 
+const isSafeRedirect = (value: unknown): value is string => {
+    if (!isValidRedirectPath(value)) {
+        return false;
+    }
+    return router.resolve(value).matched.length > 0;
+};
+
 const handleLogin = async () => {
     if (!form.value) {
         return;
@@ -63,9 +68,9 @@ const handleLogin = async () => {
     loading.value = true;
     try {
         await login(form.value.values);
-        
+
         const redirectPath = route.query.redirect;
-        if (redirectPath && isSafeRedirectPath(redirectPath)) {
+        if (isSafeRedirect(redirectPath)) {
             await router.push(redirectPath);
         } else {
             await router.push({ name: routeNames.Authenticated });

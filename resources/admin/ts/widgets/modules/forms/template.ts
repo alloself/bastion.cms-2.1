@@ -1,7 +1,7 @@
 import { computed } from "vue";
 import type { Template } from "@shared/types/models";
-import type { ISmartFormField } from "../../types";
-import { BCodeEditor } from "../../components";
+import type { ISmartFormField } from "@/ts/shared/types";
+import { BCodeEditor } from "@/ts/shared/components";
 
 export const useTemplateForm = (entity?: Template) => {
     const fields = computed<ISmartFormField[]>(() => {

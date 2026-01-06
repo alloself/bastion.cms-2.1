@@ -1,8 +1,8 @@
 import type { Page, Template } from "@shared/types/models";
 import type { ComputedRef } from "vue";
-import type { IBaseEntity, ISmartFormField, ITableHeader } from "../types";
+import type { IBaseEntity, ISmartFormField, ITableHeader } from "@/ts/shared/types";
 import { capitalize } from "lodash";
-import { toKebabCase } from "../helpers";
+import { toKebabCase } from "@/ts/shared/helpers";
 import type {
     RouteLocation,
     RouteRecordRaw,
@@ -108,7 +108,7 @@ export const createModulesRoutes = (): RouteRecordRaw[] => {
                     module: item,
                 },
                 component: () =>
-                    import(`@/ts/shared/modules/components/List.vue`),
+                    import(`@/ts/widgets/modules/ui/List.vue`),
             };
             if (item.isDefault) {
                 listRoute.alias = "/";
@@ -126,7 +126,7 @@ export const createModulesRoutes = (): RouteRecordRaw[] => {
                     module: item,
                 },
                 component: () =>
-                    import(`@/ts/shared/modules/components/Detail.vue`),
+                    import(`@/ts/widgets/modules/ui/Detail.vue`),
             },
             {
                 path: `/${toKebabCase(item.key)}/:id`,
@@ -139,7 +139,7 @@ export const createModulesRoutes = (): RouteRecordRaw[] => {
                     module: item,
                 },
                 component: () =>
-                    import(`@/ts/shared/modules/components/Detail.vue`),
+                    import(`@/ts/widgets/modules/ui/Detail.vue`),
             }
         );
 
