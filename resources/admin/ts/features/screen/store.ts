@@ -1,13 +1,86 @@
 import { defineStore } from "pinia";
-import { computed, reactive, ref } from "vue";
-import type { IScreen, ITab } from "./types";
+import { computed, reactive, ref, watch } from "vue";
+import type { IScreen, ITab, IScreenStateSerializable } from "./types";
 import type { RouteLocationNormalizedLoaded } from "vue-router";
 import { getDefaultModule } from "@/ts/shared/modules";
 import type { TUUID } from "@/ts/shared/types";
 
+const STORAGE_KEY = "screen-store";
+
+const serialize = (
+    screens: Map<TUUID, IScreen>,
+    activeScreenId: TUUID | null
+) => {
+    const serializedScreens = Array.from(screens.values()).map((screen) => ({
+        id: screen.id,
+        tabs: Array.from(screen.tabs.values()),
+        activeTabId: screen.activeTabId,
+        width: screen.width,
+    }));
+
+    return {
+        screens: serializedScreens,
+        activeScreenId,
+    };
+};
+
+const deserialize = (data: IScreenStateSerializable) => {
+    const screens = new Map<TUUID, IScreen>();
+
+    for (const screenData of data.screens) {
+        const tabs = new Map<TUUID, ITab>();
+        for (const tab of screenData.tabs) {
+            tabs.set(tab.id, tab);
+        }
+        screens.set(screenData.id, {
+            id: screenData.id,
+            tabs,
+            activeTabId: screenData.activeTabId,
+            width: screenData.width,
+        });
+    }
+
+    return {
+        screens,
+        activeScreenId: data.activeScreenId,
+    };
+};
+
+const loadFromStorage = () => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) {
+        return { screens: new Map(), activeScreenId: null };
+    }
+    const parsed = JSON.parse(stored) as IScreenStateSerializable;
+    
+    if (!parsed.screens) {
+        return { screens: new Map(), activeScreenId: null };
+    }
+    return deserialize(parsed);
+};
+
+const saveToStorage = (
+    screens: Map<TUUID, IScreen>,
+    activeScreenId: TUUID | null
+) => {
+    const serialized = serialize(screens, activeScreenId);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(serialized));
+};
+
 export const useScreenStore = defineStore("screen", () => {
-    const screens = reactive<Map<TUUID, IScreen>>(new Map());
-    const activeScreenId = ref<TUUID | null>(null);
+    const { screens: initialScreens, activeScreenId: initialActiveScreenId } =
+        loadFromStorage();
+
+    const screens = reactive<Map<TUUID, IScreen>>(initialScreens);
+    const activeScreenId = ref<TUUID | null>(initialActiveScreenId);
+
+    watch(
+        [() => screens, () => activeScreenId.value],
+        () => {
+            saveToStorage(screens, activeScreenId.value);
+        },
+        { deep: true }
+    );
 
     const activeScreen = computed(
         () => activeScreenId.value && screens.get(activeScreenId.value)

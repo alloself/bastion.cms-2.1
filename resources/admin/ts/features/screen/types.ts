@@ -13,3 +13,22 @@ export interface IScreen {
     activeTabId: TUUID | null;
     width: number;
 }
+
+export interface ITabSerializable {
+    id: TUUID;
+    title: string;
+    route: string;
+    icon?: string;
+}
+
+export interface IScreenSerializable {
+    id: TUUID;
+    tabs: ITabSerializable[];
+    activeTabId: TUUID | null;
+    width: number;
+}
+
+export interface IScreenStateSerializable {
+    screens: IScreenSerializable[];
+    activeScreenId: TUUID | null;
+}

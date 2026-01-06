@@ -36,6 +36,9 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
     const updateMutation = useMutation({
         mutation: ({ id, payload }: { id: TUUID; payload: Partial<T> }) =>
             updateModuleDetailQuery<T>(moduleValue, id, payload),
+        onMutate: ({ id, payload }: { id: TUUID; payload: Partial<T> }) => {
+            console.log("onMutate", id, payload);
+        },
     });
 
     const deleteMutation = useMutation({
