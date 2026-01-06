@@ -29,7 +29,13 @@
                 @click:clear="handleClearSearch"
             >
                 <template #append-inner>
-                    <VHotkey keys="enter" variant="elevated" platform="auto" />
+                    <VHotkey
+                        keys="enter"
+                        class="module-list__search-hotkey"
+                        variant="elevated"
+                        platform="auto"
+                        @click="handleSearchSubmit"
+                    />
                 </template>
             </VTextField>
         </template>
@@ -131,7 +137,11 @@ import { capitalize, computed, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import type { IModule } from "..";
 import type { IBaseEntity, ISortBy, TUUID } from "@/ts/shared/types";
-import { type ITab, useScreenNavigation, useScreenStore } from "@/ts/features/screen";
+import {
+    type ITab,
+    useScreenNavigation,
+    useScreenStore,
+} from "@/ts/features/screen";
 import { useModuleListQuery } from "../queries";
 
 const { module, tab } = defineProps<{
@@ -217,7 +227,10 @@ const syncTableStateToUrl = async () => {
         return;
     }
 
-    await router.replace({ path: basePath, query: Object.fromEntries(queryParams) });
+    await router.replace({
+        path: basePath,
+        query: Object.fromEntries(queryParams),
+    });
     screenStore.setActiveTabRoute(router.currentRoute.value);
 };
 
@@ -257,7 +270,10 @@ const handleCreateClick = (event: MouseEvent) => {
 };
 
 const handleRowClick = async (_event: MouseEvent, { item }: { item: T }) => {
-    await toScreenRoute({ name: `${capitalize(module.key)}Detail`, params: { id: item.id } });
+    await toScreenRoute({
+        name: `${capitalize(module.key)}Detail`,
+        params: { id: item.id },
+    });
 };
 
 const onDelete = () => {
@@ -289,6 +305,10 @@ const onDelete = () => {
         :deep(.v-field) {
             box-shadow: none;
         }
+    }
+    &__search-hotkey {
+        cursor: pointer;
+        user-select: none;
     }
 }
 </style>
