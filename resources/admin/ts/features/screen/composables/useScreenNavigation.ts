@@ -1,4 +1,5 @@
 import type { RouteLocationRaw } from "vue-router";
+import type { Component } from "vue";
 import { nextTick } from "vue";
 import { useRouter } from "vue-router";
 import { useScreenStore } from "../store";
@@ -11,7 +12,7 @@ export const resolveComponentExport = (value: unknown) => {
     return value;
 };
 
-export const isVueComponent = (value: unknown) => {
+export const isVueComponent = (value: unknown): value is Component => {
     return typeof value === "function" || isObject(value);
 };
 

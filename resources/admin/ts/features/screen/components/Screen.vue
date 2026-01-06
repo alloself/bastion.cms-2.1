@@ -90,8 +90,7 @@ import type { Component } from "vue";
 import { useRouter, type RouteLocationResolved } from "vue-router";
 import { useScreenStore, type IScreen, type ITab } from "..";
 import type { TUUID } from "@/ts/shared/types";
-import { useScreenResize } from "../composables/useScreenResize";
-import { isVueComponent, resolveComponentExport } from "@/ts/shared/helpers";
+import { useScreenResize, isVueComponent, resolveComponentExport } from "../composables";
 import type { VCard } from "vuetify/components";
 import ScreenTabLoading from "./ScreenTabLoading.vue";
 import { isObject } from "lodash";
@@ -123,7 +122,7 @@ const renderComponent = (routeComponent: unknown): Component | null => {
 
     if (typeof routeComponent === "function") {
         const asyncComponent = defineAsyncComponent({
-            loader: async (): Promise<Component> => {
+            loader: async () => {
                 try {
                     const resolvedExport = resolveComponentExport(
                         await routeComponent()
