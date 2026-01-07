@@ -1,5 +1,33 @@
 <template>
     <VCard class="module-detail" rounded="0" flat density="compact">
+        <VDialog v-model="isDeleteDialogVisible" max-width="400" persistent>
+            <VCard>
+                <VCardTitle class="text-h6">Подтверждение удаления</VCardTitle>
+                <VCardText>
+                    Вы уверены, что хотите удалить эту запись? Это действие
+                    нельзя отменить.
+                </VCardText>
+                <VCardActions>
+                    <VSpacer />
+                    <VBtn
+                        variant="text"
+                        :disabled="isLoading"
+                        @click="handleCancelDelete"
+                    >
+                        Отмена
+                    </VBtn>
+                    <VBtn
+                        color="error"
+                        variant="flat"
+                        :loading="isLoading"
+                        @click="handleConfirmDelete"
+                    >
+                        Удалить
+                    </VBtn>
+                </VCardActions>
+            </VCard>
+        </VDialog>
+
         <VCardText class="module-detail__content">
             <BSmartForm
                 class="module-detail__form"
@@ -115,6 +143,7 @@ const handleBackClick = async () => {
 };
 
 const form = ref<FormContext<T, T>>();
+const isDeleteDialogVisible = ref(false);
 
 const { detailQuery, createMutation, updateMutation, deleteMutation } =
     useModuleDetailQuery(module, () => id);
@@ -198,8 +227,20 @@ const handleDeleteClick = async () => {
     if (!id) {
         return;
     }
+    isDeleteDialogVisible.value = true;
+};
+
+const handleCancelDelete = () => {
+    isDeleteDialogVisible.value = false;
+};
+
+const handleConfirmDelete = async () => {
+    if (!id) {
+        return;
+    }
 
     await deleteMutation.mutateAsync(id);
+    isDeleteDialogVisible.value = false;
     await toScreenRoute({ name: `${capitalize(module.key)}List` });
 };
 

@@ -92,7 +92,10 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
                     if (itemIndex !== -1) {
                         foundInList = true;
                         const updatedData = [...listData.data];
-                        updatedData[itemIndex] = { ...updatedData[itemIndex], ...data };
+                        updatedData[itemIndex] = {
+                            ...updatedData[itemIndex],
+                            ...data,
+                        };
                         queryCache.setQueryData(entry.key, {
                             ...listData,
                             data: updatedData,
@@ -130,9 +133,13 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
             }
         },
         onSettled(_data, _error, id) {
-            queryCache.invalidateQueries({
+            const [detailEntry] = queryCache.getEntries({
                 key: ["detail", moduleValue.key, id],
+                exact: true,
             });
+            if (detailEntry) {
+                queryCache.remove(detailEntry);
+            }
             queryCache.invalidateQueries({
                 key: ["list", moduleValue.key],
             });

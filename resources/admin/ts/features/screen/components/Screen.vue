@@ -85,15 +85,22 @@ import {
     ref,
     watch,
     useTemplateRef,
+    provide,
 } from "vue";
 import type { Component } from "vue";
 import { useRouter, type RouteLocationResolved } from "vue-router";
 import { useScreenStore, type IScreen, type ITab } from "..";
 import type { TUUID } from "@/ts/shared/types";
-import { useScreenResize, isVueComponent, resolveComponentExport } from "../composables";
+import {
+    useScreenResize,
+    isVueComponent,
+    resolveComponentExport,
+} from "../composables";
+
 import type { VCard } from "vuetify/components";
 import ScreenTabLoading from "./ScreenTabLoading.vue";
 import { isObject } from "lodash";
+import { ACTIVE_SCREEN_KEY } from "@/ts/shared/const";
 
 const { screen, isLast, nextScreen } = defineProps<{
     screen: IScreen;
@@ -103,6 +110,8 @@ const { screen, isLast, nextScreen } = defineProps<{
 
 const screenStore = useScreenStore();
 const router = useRouter();
+
+provide(ACTIVE_SCREEN_KEY, () => screenStore.activeScreen?.id === screen.id);
 
 const screenCardRef =
     useTemplateRef<InstanceType<typeof VCard>>("screenCardRef");

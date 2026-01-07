@@ -1,14 +1,13 @@
 import { onActivated, onDeactivated, onMounted, onUnmounted } from "vue";
 
 interface IEventRegistration {
-    componentId: symbol;
     handler: (event: Event) => void;
 }
 
 type TEventType = keyof DocumentEventMap;
 type TCleanupFn = () => void;
 
-const eventRegistries = new Map<TEventType, Map<string, IEventRegistration>>();
+const eventRegistries = new Map<TEventType, Map<Symbol, IEventRegistration>>();
 const eventCleanups = new Map<TEventType, TCleanupFn>();
 
 const getOrCreateRegistry = (eventType: TEventType) => {
@@ -69,42 +68,23 @@ const cleanupIfEmpty = (eventType: TEventType) => {
 
 export const useGlobalEvent = (
     eventType: TEventType,
-    handler: (event: Event) => void,
-    options: { key: string }
+    handler: (event: Event) => void
 ) => {
-    const componentId = Symbol("global-event-component");
+    const eventId = Symbol("global-event");
     const registry = getOrCreateRegistry(eventType);
 
     const register = () => {
-        registry.set(options.key, { componentId, handler });
+        registry.set(eventId, { handler });
         ensureListenerExists(eventType);
     };
 
     const unregister = () => {
-        const current = registry.get(options.key);
-        if (current?.componentId === componentId) {
-            registry.delete(options.key);
-            cleanupIfEmpty(eventType);
-        }
+        registry.delete(eventId);
+        cleanupIfEmpty(eventType);
     };
 
     onMounted(register);
     onUnmounted(unregister);
     onActivated(register);
     onDeactivated(unregister);
-};
-
-export const useGlobalKeydown = (
-    handler: (event: KeyboardEvent) => void,
-    options: { key: string }
-) => {
-    useGlobalEvent(
-        "keydown",
-        (event) => {
-            if (event instanceof KeyboardEvent) {
-                handler(event);
-            }
-        },
-        options
-    );
 };

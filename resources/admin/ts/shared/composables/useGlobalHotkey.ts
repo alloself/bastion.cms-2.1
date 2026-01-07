@@ -1,4 +1,6 @@
-import { useGlobalKeydown } from "./useGlobalEvents";
+import { inject } from "vue";
+import { useGlobalEvent } from "./useGlobalEvents";
+import { ACTIVE_SCREEN_KEY } from "../const";
 
 interface IHotkeyOptions {
     ctrl?: boolean;
@@ -6,27 +8,6 @@ interface IHotkeyOptions {
     alt?: boolean;
     meta?: boolean;
 }
-
-const buildHotkeyKey = (code: string, options: IHotkeyOptions) => {
-    const modifiers: Array<string> = [];
-
-    if (options.ctrl) {
-        modifiers.push("ctrl");
-    }
-    if (options.shift) {
-        modifiers.push("shift");
-    }
-    if (options.alt) {
-        modifiers.push("alt");
-    }
-    if (options.meta) {
-        modifiers.push("meta");
-    }
-
-    modifiers.push(code);
-
-    return modifiers.join("+");
-};
 
 const matchesHotkey = (
     event: KeyboardEvent,
@@ -58,15 +39,20 @@ export const useGlobalHotkey = (
     handler: () => void,
     options: IHotkeyOptions = {}
 ) => {
-    const hotkeyKey = buildHotkeyKey(code, options);
+    const isContextActive = inject(ACTIVE_SCREEN_KEY, () => false);
 
-    useGlobalKeydown(
-        (event) => {
-            if (matchesHotkey(event, code, options)) {
-                event.preventDefault();
-                handler();
-            }
-        },
-        { key: hotkeyKey }
-    );
+    useGlobalEvent("keydown", (event) => {
+        if (!(event instanceof KeyboardEvent)) {
+            return;
+        }
+
+        if (!isContextActive()) {
+            return;
+        }
+
+        if (matchesHotkey(event, code, options)) {
+            event.preventDefault();
+            handler();
+        }
+    });
 };
