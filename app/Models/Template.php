@@ -6,5 +6,5 @@ class Template extends CRUDModel
 {
     protected $fillable = ['name', 'value'];
 
-    protected array $searchable = ['name', 'id'];
+    protected array $searchable = ['name'];
 }
