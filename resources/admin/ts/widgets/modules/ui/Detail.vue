@@ -77,6 +77,7 @@ import type { FormContext } from "vee-validate";
 import { capitalize, computed, onActivated, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useModuleDetailQuery } from "../queries/detail";
+import { useGlobalHotkey } from "@/ts/shared/composables";
 
 type TAction = {
     key: string;
@@ -250,6 +251,18 @@ watch(
     (newData) => {
         tab.title = module.getDetailTabTitle(newData);
     }
+);
+
+useGlobalHotkey(
+    "KeyS",
+    () => {
+        if (id) {
+            handleSaveClick();
+        } else {
+            handleCreateClick();
+        }
+    },
+    { ctrl: true }
 );
 
 onActivated(() => {
