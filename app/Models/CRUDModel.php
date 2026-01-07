@@ -13,6 +13,13 @@ abstract class CRUDModel extends Model implements AuditableContract
 {
     use Auditable, HasUuids, SoftDeletes;
 
+    protected array $searchable = [];
+
+    public static function getSearchableFields(): array
+    {
+        return (new static())->searchable;
+    }
+
     public function isRelatedTo(string $relationName): bool
     {
         return method_exists($this, $relationName)

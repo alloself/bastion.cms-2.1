@@ -24,6 +24,18 @@ abstract class CRUDController extends Controller
         $paginator = DB::transaction(function () use ($modelClass, $request) {
             $query = $modelClass::query();
 
+            $search = $request->input('search');
+            if ($search !== null && $search !== '') {
+                $searchableFields = $modelClass::getSearchableFields();
+                if (count($searchableFields) > 0) {
+                    $query->where(function ($subQuery) use ($searchableFields, $search) {
+                        foreach ($searchableFields as $field) {
+                            $subQuery->orWhere($field, 'LIKE', "%{$search}%");
+                        }
+                    });
+                }
+            }
+
             $sortby = $request->input('sortBy', []);
             foreach ($sortby as $param) {
                 $parts = explode(':', $param);
