@@ -25,7 +25,7 @@ abstract class CRUDController extends Controller
             $query = $modelClass::query();
 
             $search = $request->input('search');
-            if ($search !== null && $search !== '') {
+            if ($search) {
                 $searchableFields = $modelClass::getSearchableFields();
                 if (count($searchableFields) > 0) {
                     $query->where(function ($subQuery) use ($searchableFields, $search) {
