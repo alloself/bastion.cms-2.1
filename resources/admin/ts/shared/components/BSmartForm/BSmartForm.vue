@@ -141,7 +141,6 @@ const formGridStyle = computed<Record<string, string> | undefined>(() => {
         ),
         gridTemplateColumns: `repeat(${maxColumns}, minmax(0, 1fr))`,
         gridAutoRows: "min-content",
-        gap: "8px",
     };
 });
 
