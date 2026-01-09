@@ -36,10 +36,6 @@
 </template>
 
 <script setup lang="ts">
-defineOptions({
-    name: "BCodeEditor",
-});
-
 import {
     computed,
     onBeforeUnmount,

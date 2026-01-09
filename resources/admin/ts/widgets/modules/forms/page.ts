@@ -1,6 +1,7 @@
 import { computed } from "vue";
 import type { ISmartFormField } from "@/ts/shared/types";
 import type { Page } from "@shared/types/models";
+import { BJSONEditor } from "@/ts/shared/components";
 
 export const usePageForm = (entity?: Page) => {
     const fields = computed<ISmartFormField[]>(() => {
@@ -30,17 +31,10 @@ export const usePageForm = (entity?: Page) => {
                 },
             },
             {
-                component: "v-textarea",
+                component: BJSONEditor,
                 key: "meta",
                 props: {
                     name: "meta",
-                    label: "Meta",
-                    density: "compact",
-                    variant: "filled",
-                    rounded: "0",
-                    clearable: true,
-                    autoGrow: true,
-                    rows: 3,
                 },
             },
         ];

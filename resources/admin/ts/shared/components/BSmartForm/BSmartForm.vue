@@ -1,11 +1,11 @@
 <template>
-    <form class="smart-form" :style="formGridStyle" @submit.prevent>
+    <form class="b-smart-form" :style="formGridStyle" @submit.prevent>
         <div
             v-for="schemeField in fields"
             :key="schemeField.key"
-            class="smart-form__field"
+            class="b-smart-form__field"
             :class="{
-                'smart-form__field--grow': schemeField.isGrow,
+                'b-smart-form__field--grow': schemeField.isGrow,
             }"
             :style="{ gridArea: schemeField.key }"
         >
@@ -27,7 +27,7 @@
                         v-bind="schemeField.props || {}"
                         v-on="schemeField.events || {}"
                         class="mb-1"
-                    ></Component>
+                    />
                 </Field>
             </slot>
         </div>
@@ -37,18 +37,12 @@
 <script
     lang="ts"
     setup
-    generic="T extends GenericObject,K extends GenericObject"
+    generic="T extends GenericObject, K extends GenericObject"
 >
 import { computed, watch } from "vue";
-import {
-    useForm,
-    Field,
-    type FormContext,
-    type GenericObject,
-} from "vee-validate";
+import { useForm, Field, type GenericObject } from "vee-validate";
 import { z } from "zod";
-import type { PartialDeep } from "type-fest";
-import type { ISmartFormField } from "../types";
+import type { TBSmartFormProps } from "./BSmartForm.types";
 
 const {
     fields = [],
@@ -56,18 +50,10 @@ const {
     readonly = false,
     loading = false,
     layout,
-} = defineProps<{
-    fields: ISmartFormField[];
-    form?: FormContext<T, K>;
-    initialValues?: PartialDeep<T>;
-    loading?: boolean;
-    readonly?: boolean;
-    layout?: string;
-    initialItems?: Record<string, unknown>;
-}>();
+} = defineProps<TBSmartFormProps<T, K>>();
 
 const emits = defineEmits<{
-    "update:form": [value: FormContext<T, K>];
+    "update:form": [value: ReturnType<typeof useForm<T, K>>];
 }>();
 
 const mergedValidationSchema = computed(() => {
@@ -145,7 +131,9 @@ const formGridStyle = computed<Record<string, string> | undefined>(() => {
 
     return {
         display: "grid",
-        gridTemplateAreas: [...gridTemplateAreaRows, ...additionalRows].join("\n"),
+        gridTemplateAreas: [...gridTemplateAreaRows, ...additionalRows].join(
+            "\n"
+        ),
         gridTemplateColumns: `repeat(${maxColumns}, minmax(0, 1fr))`,
         gap: "8px",
     };
@@ -174,21 +162,21 @@ watch(
 </script>
 
 <style lang="scss" scoped>
-.smart-form {
+.b-smart-form {
     display: flex;
     flex-direction: column;
     height: 100%;
     min-height: 0;
-}
 
-.smart-form__field {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-}
+    &__field {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
 
-.smart-form__field--grow {
-    flex: 1 1 auto;
-    min-height: 0;
+        &--grow {
+            flex: 1 1 auto;
+            min-height: 0;
+        }
+    }
 }
 </style>
