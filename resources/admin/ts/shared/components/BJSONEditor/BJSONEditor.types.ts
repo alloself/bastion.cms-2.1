@@ -10,4 +10,5 @@ export type TBJSONEditorProps = {
     modelValue?: string;
     readonly?: boolean;
     errorMessages?: TBJSONEditorErrorMessages;
+    label?: string;
 };

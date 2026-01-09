@@ -35,6 +35,7 @@ export const usePageForm = (entity?: Page) => {
                 key: "meta",
                 props: {
                     name: "meta",
+                    label: "Мета-теги",
                 },
             },
         ];

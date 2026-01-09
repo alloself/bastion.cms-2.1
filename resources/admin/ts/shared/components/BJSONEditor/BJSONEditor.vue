@@ -15,6 +15,12 @@
             hide-default-footer
             :items-per-page="-1"
         >
+            <template v-if="label" #top>
+                <div class="b-json-editor__label">
+                    {{ label }}
+                </div>
+            </template>
+
             <template #item.key="{ item }">
                 <VTextField
                     :model-value="item.key"
@@ -99,6 +105,7 @@ const {
     modelValue = "",
     readonly = false,
     errorMessages,
+    label,
 } = defineProps<TBJSONEditorProps>();
 
 const emits = defineEmits<{
@@ -216,6 +223,14 @@ watch(
 <style scoped lang="scss">
 .b-json-editor {
     width: 100%;
+
+    &__label {
+        padding: 8px 16px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.7);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    }
 
     &__table {
         border: 1px solid rgba(255, 255, 255, 0.12);
