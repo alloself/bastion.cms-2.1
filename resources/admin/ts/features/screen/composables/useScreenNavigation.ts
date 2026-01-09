@@ -33,15 +33,22 @@ export const useScreenNavigation = () => {
         route: RouteLocationRaw | string,
         event?: Event
     ) => {
-        await router.push(route);
-        await nextTick();
+        const shouldOpenInNewTab =
+            event instanceof MouseEvent && isModifierKeyPressed(event);
 
-        if (event instanceof MouseEvent && isModifierKeyPressed(event)) {
+        if (shouldOpenInNewTab) {
             const activeScreen = screenStore.activeScreen;
             if (activeScreen) {
-                return screenStore.openRouteTab(activeScreen, router.currentRoute.value);
+                const resolvedRoute = router.resolve(route);
+                if (!resolvedRoute) {
+                    return;
+                }
+                return screenStore.openRouteTab(activeScreen, resolvedRoute);
             }
         }
+
+        await router.push(route);
+        await nextTick();
 
         return screenStore.setActiveTabRoute(router.currentRoute.value);
     };

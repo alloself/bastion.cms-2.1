@@ -1,9 +1,13 @@
 import { defineStore } from "pinia";
 import { computed, reactive, ref, watch } from "vue";
 import type { IScreen, ITab, IScreenStateSerializable } from "./types";
-import type { RouteLocationNormalizedLoaded } from "vue-router";
+
 import type { TUUID } from "@/ts/shared/types";
 import { defaultTabConfig } from "@/ts/shared/const";
+import type {
+    RouteLocationNormalizedLoadedGeneric,
+    RouteLocationResolvedGeneric,
+} from "vue-router";
 
 const STORAGE_KEY = "screen-store";
 
@@ -52,7 +56,7 @@ const loadFromStorage = () => {
         return { screens: new Map(), activeScreenId: null };
     }
     const parsed = JSON.parse(stored) as IScreenStateSerializable;
-    
+
     if (!parsed.screens) {
         return { screens: new Map(), activeScreenId: null };
     }
@@ -180,7 +184,9 @@ export const useScreenStore = defineStore("screen", () => {
 
     const openRouteTab = (
         screen: IScreen,
-        route: RouteLocationNormalizedLoaded
+        route:
+            | RouteLocationNormalizedLoadedGeneric
+            | RouteLocationResolvedGeneric
     ) => {
         const module = route.meta.module;
 
@@ -194,7 +200,11 @@ export const useScreenStore = defineStore("screen", () => {
         return tab;
     };
 
-    const setActiveTabRoute = (route: RouteLocationNormalizedLoaded) => {
+    const setActiveTabRoute = (
+        route:
+            | RouteLocationNormalizedLoadedGeneric
+            | RouteLocationResolvedGeneric
+    ) => {
         const module = route.meta.module;
         if (!activeScreen.value) {
             return null;
@@ -203,7 +213,11 @@ export const useScreenStore = defineStore("screen", () => {
         if (!activeTabId) {
             return openRouteTab(activeScreen.value, route);
         }
-        const tab = activeScreen.value.tabs.get(activeTabId) as ITab;
+        const tab = activeScreen.value.tabs.get(activeTabId);
+
+        if (!tab) {
+            return;
+        }
 
         const previousTabRoute = tab.route;
         const nextFullPath = route.fullPath;

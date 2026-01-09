@@ -1,6 +1,7 @@
 import "@mdi/font/css/materialdesignicons.css";
 import { type ThemeDefinition, createVuetify } from "vuetify";
 import {
+    VAutocomplete,
     VTextField,
     VCheckbox,
     VFileInput,
@@ -46,6 +47,7 @@ export default createVuetify({
         },
     },
     components: {
+        VAutocomplete,
         VDataTable,
         VTextField,
         VCheckbox,

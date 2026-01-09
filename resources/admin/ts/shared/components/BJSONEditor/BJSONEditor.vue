@@ -187,7 +187,7 @@ const handleAddRow = () => {
 };
 
 const handleRemoveRow = (rowId: string) => {
-    const rowIndex = rows.value.findIndex((row) => row.id === rowId);
+    const rowIndex = rows.value.findIndex(({ id }) => id === rowId);
     if (rowIndex !== -1) {
         rows.value.splice(rowIndex, 1);
         emitUpdate();
@@ -199,7 +199,7 @@ const handleUpdateRow = (
     field: "key" | "value",
     newValue: string
 ) => {
-    const row = rows.value.find((row) => row.id === rowId);
+    const row = rows.value.find(({ id }) => id === rowId);
     if (row) {
         row[field] = newValue;
         emitUpdate();
