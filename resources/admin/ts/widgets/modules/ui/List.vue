@@ -306,6 +306,7 @@ const onDelete = () => {
             box-shadow: none;
         }
     }
+    
     &__search-hotkey {
         cursor: pointer;
         user-select: none;

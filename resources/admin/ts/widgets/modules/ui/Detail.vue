@@ -328,12 +328,14 @@ onActivated(() => {
     &__footer {
         position: sticky;
         bottom: 0;
+        height: 57px;
         border-top: 1px solid
             rgba(var(--v-border-color), var(--v-border-opacity));
         margin: 0 -8px;
         padding: 0 16px;
         background: rgb(var(--v-theme-surface));
         z-index: 1;
+
         &-actions {
             width: 100%;
         }
