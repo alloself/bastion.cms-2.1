@@ -32,12 +32,33 @@ export const usePageForm = (entity?: Page) => {
             },
             {
                 component: BRelationAutocomplete,
+                key: "parent_id",
+                props: {
+                    endpoint: "page",
+                    itemTitle: "link.title",
+                    label: "Родительская страница",
+                    placeholder: "Выберите родителя",
+                    clearable: true,
+                },
+            },
+            {
+                component: BRelationAutocomplete,
                 key: "template_id",
                 props: {
                     endpoint: "template",
                     itemTitle: "name",
                     label: "Шаблон",
                     placeholder: "Выберите шаблон",
+                },
+            },
+            {
+                component: "v-checkbox",
+                key: "index",
+                props: {
+                    name: "index",
+                    label: "Индексировать",
+                    density: "compact",
+                    hideDetails: true,
                 },
             },
             {
@@ -52,12 +73,16 @@ export const usePageForm = (entity?: Page) => {
     });
 
     const layout = `
-        "link.title link.url"
+        "link.title link.title"
+        "link.url link.url" 
+        "index template_id"
+        "parent_id parent_id"
     `;
 
     const createInitialValues = () => {
         return {
             index: false,
+            parent_id: null,
             link: {
                 title: "",
                 url: "",
