@@ -57,11 +57,9 @@
         </VCardTitle>
         <VDivider />
 
-        <KeepAlive
-            v-if="activeTabComponent && activeTab && activeTabKey"
-            :key="activeTabKey"
-        >
+        <KeepAlive v-if="activeTabComponent && activeTab && activeTabKey">
             <component
+                :key="activeTabKey"
                 :is="activeTabComponent"
                 v-bind="activeTabProps"
                 :tab="activeTab"
@@ -188,7 +186,10 @@ const activeTab = computed(() => {
 });
 
 const activeTabKey = computed(() => {
-    return activeTab.value?.id || null;
+    if (!activeTab.value) {
+        return null;
+    }
+    return `${activeTab.value.id}-${activeTab.value.route}`;
 });
 
 const resolvedTabRoute = computed(() => {
