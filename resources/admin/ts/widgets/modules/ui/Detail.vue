@@ -33,6 +33,7 @@
                 class="module-detail__form"
                 :loading="isLoading"
                 :fields="fields"
+                :layout="layout"
                 :initial-values="initialValues"
                 v-model:form="form"
             />
@@ -209,6 +210,7 @@ const actions = computed<Array<TAction>>(() => {
 });
 
 const fields = computed(() => moduleFormContext.value.fields.value);
+const layout = computed(() => moduleFormContext.value.layout);
 
 const initialValues = computed(() => {
     return moduleFormContext.value.createInitialValues();

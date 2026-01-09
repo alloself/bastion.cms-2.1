@@ -7,7 +7,7 @@
             :class="{
                 'b-smart-form__field--grow': schemeField.isGrow,
             }"
-            :style="{ gridArea: schemeField.key }"
+            :style="{ gridArea: toGridAreaName(schemeField.key) }"
         >
             <slot :name="schemeField.key">
                 <Field
@@ -55,6 +55,10 @@ const {
 const emits = defineEmits<{
     "update:form": [value: ReturnType<typeof useForm<T, K>>];
 }>();
+
+const toGridAreaName = (key: string): string => {
+    return key.replace(/\./g, "-");
+};
 
 const mergedValidationSchema = computed(() => {
     const schemaShape = fields.reduce<Record<string, z.ZodType>>(
@@ -113,7 +117,7 @@ const formGridStyle = computed<Record<string, string> | undefined>(() => {
 
     const gridTemplateAreaRows = tokenRows.map((rowTokens) => {
         const paddedTokens = [
-            ...rowTokens,
+            ...rowTokens.map(toGridAreaName),
             ...new Array<string>(maxColumns - rowTokens.length).fill("."),
         ];
 
@@ -122,8 +126,9 @@ const formGridStyle = computed<Record<string, string> | undefined>(() => {
 
     const additionalRows = fields.reduce<string[]>((rows, field) => {
         if (!usedFieldKeySet.has(field.key)) {
+            const areaName = toGridAreaName(field.key);
             rows.push(
-                `"${new Array<string>(maxColumns).fill(field.key).join(" ")}"`
+                `"${new Array<string>(maxColumns).fill(areaName).join(" ")}"`
             );
         }
         return rows;
@@ -135,6 +140,7 @@ const formGridStyle = computed<Record<string, string> | undefined>(() => {
             "\n"
         ),
         gridTemplateColumns: `repeat(${maxColumns}, minmax(0, 1fr))`,
+        gridAutoRows: "min-content",
         gap: "8px",
     };
 });

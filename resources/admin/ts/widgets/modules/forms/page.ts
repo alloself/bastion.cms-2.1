@@ -51,6 +51,10 @@ export const usePageForm = (entity?: Page) => {
         ];
     });
 
+    const layout = `
+        "link.title link.url"
+    `;
+
     const createInitialValues = () => {
         return {
             index: false,
@@ -60,8 +64,10 @@ export const usePageForm = (entity?: Page) => {
             },
         };
     };
+
     return {
         fields,
+        layout,
         createInitialValues,
     };
 };

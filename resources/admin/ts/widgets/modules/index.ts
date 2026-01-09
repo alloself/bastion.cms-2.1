@@ -13,6 +13,7 @@ import type { PartialDeep } from "type-fest";
 
 export interface IModuleForm<T extends IBaseEntity> {
     fields: ComputedRef<ISmartFormField[]>;
+    layout?: string;
     createInitialValues: () => PartialDeep<T>;
 }
 
