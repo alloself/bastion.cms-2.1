@@ -12,7 +12,6 @@ return new class extends Migration
             $table->uuid('id')->primary()->unique();
             $table->string('title');
             $table->longText('subtitle')->nullable();
-            $table->string('slug');
             $table->string('url')->nullable();
             $table->uuid('linkable_id')->nullable();
             $table->string('linkable_type')->nullable();
