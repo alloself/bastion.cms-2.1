@@ -17,7 +17,8 @@
         >
             <template v-if="label" #top>
                 <div class="b-json-editor__label">
-                    {{ label }}
+                    <VIcon size="small" icon="mdi-code-json" class="mr-2"></VIcon>
+                    <span>{{ label }}</span>
                 </div>
             </template>
 

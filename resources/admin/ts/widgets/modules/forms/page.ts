@@ -73,10 +73,10 @@ export const usePageForm = (entity?: Page) => {
     });
 
     const layout = `
-        "link.title link.title"
-        "link.url link.url" 
-        "index template_id"
-        "parent_id parent_id"
+        "link.title link.title link.title"
+        "link.url link.url link.url" 
+        "index template_id template_id"
+        "parent_id parent_id parent_id"
     `;
 
     const createInitialValues = () => {
