@@ -34,3 +34,17 @@ export interface Page {
   deleted_at: string | null
   template_id: string | null
 }
+
+export interface Link {
+  // columns
+  id: number
+  title: string
+  subtitle: string | null
+  slug: string
+  url: string | null
+  linkable_id: string | null
+  linkable_type: string | null
+  deleted_at: string | null
+  created_at: string | null
+  updated_at: string | null
+}
