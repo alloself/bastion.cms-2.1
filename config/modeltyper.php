@@ -166,7 +166,7 @@ return [
     | Determines whether to exclude the `exists` property from model TypeScript
     | definitions.
     */
-    'no-exists' => false,
+    'no-exists' => true,
 
     /*
     |--------------------------------------------------------------------------
