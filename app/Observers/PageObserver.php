@@ -17,4 +17,12 @@ class PageObserver
             ->when($page->exists, fn ($query) => $query->where('id', '!=', $page->id))
             ->update(['index' => false]);
     }
+
+    public function updated(Page $page): void
+    {
+        if ($page->wasChanged('index')) {
+            $page->regenerateLinksUrl();
+            $page->updateDescendantLinks();
+        }
+    }
 }

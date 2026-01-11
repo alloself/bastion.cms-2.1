@@ -100,9 +100,13 @@ class Page extends CRUDModel
 
         $this->update($data);
 
+        if ($this->wasChanged('index')) {
+            unset($linkData['url']);
+        }
+
         if (!empty($linkData)) {
             $existingLink = $this->link;
-
+            
             if ($existingLink) {
                 $existingLink->update($linkData);
             } else {

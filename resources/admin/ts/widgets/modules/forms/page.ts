@@ -57,7 +57,7 @@ export const usePageForm = (entity?: Page) => {
                 key: "index",
                 props: {
                     name: "index",
-                    label: "Индексировать",
+                    label: "Главная",
                     density: "compact",
                     hideDetails: true,
                 },

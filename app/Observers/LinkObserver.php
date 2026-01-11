@@ -23,11 +23,15 @@ class LinkObserver
 
     private function generateUrlIfNeeded(Link $link): void
     {
-        $isUrlManuallySet = $link->isDirty('url') && $link->url;
-
         $linkable = $link->linkable;
 
-        if (!$linkable || $isUrlManuallySet) {
+        if (!$linkable) {
+            return;
+        }
+
+        $isUrlManuallySet = $link->isDirty('url') && $link->url;
+
+        if ($isUrlManuallySet) {
             return;
         }
 

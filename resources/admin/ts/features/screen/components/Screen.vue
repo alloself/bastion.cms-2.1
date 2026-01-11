@@ -233,11 +233,17 @@ const isTabCloseDisabled = computed(() => {
 });
 
 const handleActivateScreen = () => {
+    const wasAlreadyActive = screenStore.activeScreen?.id === screen.id;
     screenStore.setActiveScreen(screen.id);
-    
-    if (activeTab.value?.route) {
-        router.push(activeTab.value.route);
+
+    if (wasAlreadyActive || !activeTab.value?.route) {
+        return;
     }
+
+    const targetRoute = activeTab.value.route;
+    requestAnimationFrame(() => {
+        router.push(targetRoute);
+    });
 };
 
 const isTabToggleDisabled = computed(() => {
@@ -254,13 +260,18 @@ const onTabClick = (toggle: () => void, tab: ITab) => {
     }
     toggle();
     screenStore.setActiveTab(screen.id, tab.id);
-    router.push(tab.route);
+
+    requestAnimationFrame(() => {
+        router.push(tab.route);
+    });
 };
 
 const onCloseTabClick = (tab: ITab) => {
     const nextTab = screenStore.removeTab(screen.id, tab.id);
     if (nextTab) {
-        router.push(nextTab.route);
+        requestAnimationFrame(() => {
+            router.push(nextTab.route);
+        });
     }
 };
 
@@ -290,7 +301,9 @@ watch(
             const tab = screen.tabs.get(newId);
             if (tab) {
                 screenStore.setActiveTab(screen.id, newId);
-                router.push(tab.route);
+                requestAnimationFrame(() => {
+                    router.push(tab.route);
+                });
             }
         }
     }
