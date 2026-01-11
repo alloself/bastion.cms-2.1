@@ -109,6 +109,8 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
                     key: ["list", moduleValue.key],
                 });
             }
+
+            moduleValue.onEntityUpdate?.(data, queryCache);
         },
     });
 

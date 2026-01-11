@@ -1,10 +1,12 @@
 import type { Page, Template } from "@shared/types/models";
 import type { ComputedRef } from "vue";
+import type { QueryCache } from "@pinia/colada";
 import type {
     IBaseEntity,
     ISmartFormField,
     ITableHeader,
 } from "@/ts/shared/types";
+
 import { capitalize } from "lodash";
 import { toKebabCase } from "@/ts/shared/helpers";
 import type {
@@ -32,6 +34,7 @@ export interface IModule<T extends IBaseEntity = IBaseEntity> {
     getDetailTabTitle(entity?: T | null): string;
     createForm: (entity?: T) => IModuleForm<T>;
     relations?: string[];
+    onEntityUpdate?: (entity: T, queryCache: QueryCache) => void;
 }
 const pageModule: IModule<Page> = {
     key: "page",
@@ -57,6 +60,37 @@ const pageModule: IModule<Page> = {
     },
     createForm: usePageForm,
     relations: ["template", "link"],
+    onEntityUpdate: (page, queryCache) => {
+        const findDescendantsInCache = (parentId: string): string[] => {
+            const descendants: string[] = [];
+            const entries = queryCache.getEntries({ key: ["detail", "page"] });
+
+            entries.forEach((entry) => {
+                const cachedPage = entry.state.value.data as Page;
+                if (cachedPage && cachedPage.parent_id === parentId) {
+                    descendants.push(cachedPage.id);
+                    descendants.push(...findDescendantsInCache(cachedPage.id));
+                }
+            });
+
+            return descendants;
+        };
+
+        const descendantIds = findDescendantsInCache(page.id);
+
+        descendantIds.forEach((descendantId) => {
+            queryCache.invalidateQueries({
+                key: ["detail", "page", descendantId],
+                exact: true,
+            });
+        });
+
+        if (descendantIds.length) {
+            queryCache.invalidateQueries({
+                key: ["list", "page"],
+            });
+        }
+    },
 };
 
 const templateModule: IModule<Template> = {

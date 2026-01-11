@@ -41,9 +41,12 @@ class LinkObserver
     private function regenerateChildLinksIfNeeded(Link $link): void
     {
         $linkable = $link->linkable;
-        $shouldRegenerate = $linkable->shouldRegenerateChildLinks ?? false;
 
-        if (!$linkable || !$link->wasChanged('url') || !$shouldRegenerate) {
+        if (!$linkable || !$link->wasChanged('url')) {
+            return;
+        }
+
+        if (!$linkable->shouldRegenerateChildLinks()) {
             return;
         }
 

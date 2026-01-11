@@ -11,7 +11,10 @@ class Page extends CRUDModel
 {
     use NodeTrait, HasLink;
 
-    protected bool $shouldRegenerateChildLinks = true;
+    public function shouldRegenerateChildLinks(): bool
+    {
+        return true;
+    }
 
     protected $fillable = ['index', 'meta', 'parent_id', 'template_id'];
 
@@ -106,7 +109,7 @@ class Page extends CRUDModel
 
         if (!empty($linkData)) {
             $existingLink = $this->link;
-            
+
             if ($existingLink) {
                 $existingLink->update($linkData);
             } else {
