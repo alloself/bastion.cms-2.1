@@ -39,6 +39,7 @@ export const usePageForm = (entity?: Page) => {
                     label: "Родительская страница",
                     placeholder: "Выберите родителя",
                     clearable: true,
+                    relations: ["link"],
                 },
             },
             {
@@ -83,6 +84,8 @@ export const usePageForm = (entity?: Page) => {
         return {
             index: false,
             parent_id: null,
+            template_id: null,
+            meta: null,
             link: {
                 title: "",
                 url: "",

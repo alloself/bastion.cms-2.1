@@ -15,6 +15,27 @@ abstract class CRUDController extends Controller
         return JsonResource::class;
     }
 
+    protected function validationRules(): array
+    {
+        return [];
+    }
+
+    protected function validationMessages(): array
+    {
+        return [];
+    }
+
+    protected function getValidatedData(Request $request): array
+    {
+        $rules = $this->validationRules();
+
+        if (count($rules) === 0) {
+            return $request->all();
+        }
+
+        return $request->validate($rules, $this->validationMessages());
+    }
+
     public function index(Request $request)
     {
         $modelClass = $this->model();
@@ -46,7 +67,10 @@ abstract class CRUDController extends Controller
                     }
                 }
             }
-
+            $relations = array_filter(explode(',', $request->input('relations', '')));
+            if (count($relations) > 0) {
+                $query->with($relations);
+            }
             $perPage = $request->input('per_page', 15);
             $paginator = $query->paginate($perPage);
             $paginator->appends($request->query());
@@ -61,8 +85,9 @@ abstract class CRUDController extends Controller
     {
         $modelClass = $this->model();
 
-        $entity = DB::transaction(function () use ($modelClass, $id) {
-            return $modelClass::showEntity($id);
+        $relations = array_filter(explode(',', $request->input('relations', '')));
+        $entity = DB::transaction(function () use ($modelClass, $id, $relations) {
+            return $modelClass::showEntity($id, $relations);
         });
 
         $resourceClass = $this->resource();
@@ -72,10 +97,11 @@ abstract class CRUDController extends Controller
 
     public function store(Request $request)
     {
+        $data = $this->getValidatedData($request);
         $modelClass = $this->model();
 
-        $entity = DB::transaction(function () use ($modelClass, $request) {
-            return $modelClass::createEntity($request->all());
+        $entity = DB::transaction(function () use ($modelClass, $data) {
+            return $modelClass::createEntity($data);
         });
 
         $resourceClass = $this->resource();
@@ -85,11 +111,12 @@ abstract class CRUDController extends Controller
 
     public function update(Request $request, string $id)
     {
+        $data = $this->getValidatedData($request);
         $modelClass = $this->model();
 
-        $entity = DB::transaction(function () use ($modelClass, $id, $request) {
+        $entity = DB::transaction(function () use ($modelClass, $id, $data) {
             $entity = $modelClass::showEntity($id);
-            $entity->updateEntity($request->all());
+            $entity->updateEntity($data);
 
             return $entity;
         });

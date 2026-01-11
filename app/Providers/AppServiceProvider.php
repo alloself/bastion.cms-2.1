@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Link;
+use App\Models\Page;
+use App\Observers\LinkObserver;
+use App\Observers\PageObserver;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
@@ -22,5 +26,8 @@ class AppServiceProvider extends ServiceProvider
         View::addNamespace('site', resource_path('site/views'));
         View::addNamespace('admin', resource_path('admin/views'));
         JsonResource::withoutWrapping();
+
+        Link::observe(LinkObserver::class);
+        Page::observe(PageObserver::class);
     }
 }

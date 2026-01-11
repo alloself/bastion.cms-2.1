@@ -9,30 +9,42 @@ export interface IModuleListQueryParams {
     search?: string;
 }
 
-const buildQueryString = (params: IModuleListQueryParams) => {
-    const searchParams = new URLSearchParams();
-    searchParams.set("page", params.page.toString());
-    searchParams.set("per_page", params.perPage.toString());
+const buildListRequestParams = (
+    module: Pick<IModule<IBaseEntity>, "key" | "relations">,
+    queryParams: IModuleListQueryParams
+) => {
+    const params: Record<string, unknown> = {
+        page: queryParams.page.toString(),
+        per_page: queryParams.perPage.toString(),
+    };
 
-    if (params.sortBy && params.sortBy.length > 0) {
-        params.sortBy.forEach((sort) => {
-            searchParams.append("sortBy[]", `${sort.key}:${sort.order}`);
-        });
+    if (queryParams.sortBy && queryParams.sortBy.length) {
+        params["sortBy[]"] = queryParams.sortBy.map(
+            (sort) => `${sort.key}:${sort.order}`
+        );
     }
 
-    if (params.search && params.search.trim() !== "") {
-        searchParams.set("search", params.search);
+    if (queryParams.search && queryParams.search.trim() !== "") {
+        params.search = queryParams.search.trim();
     }
 
-    return searchParams.toString();
+    if (module.relations && module.relations.length) {
+        params.relations = module.relations.join(",");
+    }
+
+    return params;
 };
 
 export const getModuleListQuery = async <T extends IBaseEntity>(
     module: IModule<T>,
-    params: IModuleListQueryParams
+    queryParams: IModuleListQueryParams
 ) => {
-    const url = `/api/admin/${module.key}?${buildQueryString(params)}`;
-    const { data } = await client.get<IServerDataList<T>>(url);
+    const { data } = await client.get<IServerDataList<T>>(
+        `/api/admin/${module.key}`,
+        {
+            params: buildListRequestParams(module, queryParams),
+        }
+    );
     return data;
 };
 
@@ -41,7 +53,11 @@ export const getModuleDetailQuery = async <T extends IBaseEntity>(
     id: TUUID
 ) => {
     const url = `/api/admin/${module.key}/${id}`;
-    const { data } = await client.get<T>(url);
+    const { data } = await client.get<T>(url,{
+        params: {
+            relations: module.relations?.join(","),
+        },
+    });
     return data;
 };
 

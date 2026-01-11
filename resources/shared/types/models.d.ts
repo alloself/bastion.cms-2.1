@@ -50,11 +50,24 @@ export interface Page {
   index: boolean
   _lft: number
   _rgt: number
-  parent_id: string | null
   created_at: string | null
   updated_at: string | null
   deleted_at: string | null
   template_id: string | null
+  // overrides
+  parent_id: string | null
+  // relations
+  template?: Template
+  link?: Link
+  parent?: Page
+  children?: Page[]
+  links?: Link[]
+  // exists
+  template_exists: boolean
+  link_exists: boolean
+  parent_exists: boolean
+  children_exists: boolean
+  links_exists: boolean
 }
 
 export interface Link {

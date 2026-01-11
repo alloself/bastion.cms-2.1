@@ -75,6 +75,7 @@ const {
     loading = false,
     errorMessages,
     debounceMs = DEFAULT_DEBOUNCE_MS,
+    relations = [],
 } = defineProps<TBRelationAutocompleteProps>();
 
 const emits = defineEmits<{
@@ -88,7 +89,8 @@ const debouncedSearch = refDebounced(searchInput, debounceMs);
 
 const { data: searchResults, asyncStatus } = useRelationSearch<IBaseEntity>(
     endpoint,
-    debouncedSearch
+    debouncedSearch,
+    relations
 );
 
 const items = computed(() => searchResults.value?.data ?? []);

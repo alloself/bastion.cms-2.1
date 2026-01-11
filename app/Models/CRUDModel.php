@@ -26,14 +26,19 @@ abstract class CRUDModel extends Model implements AuditableContract
             && $this->{$relationName}() instanceof Relation;
     }
 
-    public static function createEntity(array $data): self
+    public static function createEntity(array $data, array $relations = []): self
     {
-        return static::query()->create($data);
+        $entity = static::query()->create($data);
+        
+        if (!empty($relations)) {
+            $entity->load($relations);
+        }
+        return $entity;
     }
 
-    public static function showEntity($id, array $with = []): self
+    public static function showEntity($id, array $relations = []): self
     {
-        $entity = static::with($with)->findOrFail($id);
+        $entity = static::with($relations)->findOrFail($id);
 
         return $entity;
     }

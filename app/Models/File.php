@@ -29,7 +29,7 @@ class File extends CRUDModel
         return $this->delete();
     }
 
-    public static function createEntity(array $values): File
+    public static function createEntity(array $values, array $relations = []): File
     {
         $originalFile = $values['file'];
         $name = $originalFile->getClientOriginalName();

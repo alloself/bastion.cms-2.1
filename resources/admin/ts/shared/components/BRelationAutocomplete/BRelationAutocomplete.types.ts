@@ -11,4 +11,5 @@ export type TBRelationAutocompleteProps = {
     loading?: boolean;
     errorMessages?: TBRelationAutocompleteErrorMessages;
     debounceMs?: number;
+    relations?: string[];
 };

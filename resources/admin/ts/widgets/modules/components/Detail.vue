@@ -104,9 +104,11 @@ import type { IBaseEntity, TUUID } from "@/ts/shared/types";
 import { BSmartForm } from "@/ts/shared/components";
 import type { FormContext } from "vee-validate";
 import { capitalize, computed, onActivated, ref, watch } from "vue";
+import { isAxiosError } from "axios";
 import { useRouter } from "vue-router";
 import { useModuleDetailQuery } from "../queries/detail";
 import { useGlobalHotkey } from "@/ts/shared/composables";
+import type { PartialDeep } from "type-fest";
 
 type TAction = {
     key: string;
@@ -213,6 +215,9 @@ const fields = computed(() => moduleFormContext.value.fields.value);
 const layout = computed(() => moduleFormContext.value.layout);
 
 const initialValues = computed(() => {
+    if (id && detailQuery.data.value) {
+        return detailQuery.data.value as PartialDeep<T>;
+    }
     return moduleFormContext.value.createInitialValues();
 });
 
@@ -261,10 +266,19 @@ const handleSaveClick = async () => {
         return;
     }
 
-    await updateMutation.mutateAsync({
-        id,
-        payload: formContext.values,
-    });
+    try {
+        await updateMutation.mutateAsync({
+            id,
+            payload: formContext.values,
+        });
+    } catch (error: unknown) {
+        if (isAxiosError(error)) {
+            const formErrors = error.response?.data?.errors;
+            if (formErrors) {
+                formContext.setErrors(formErrors);
+            }
+        }
+    }
 };
 
 const handleCreateClick = async () => {
@@ -278,15 +292,24 @@ const handleCreateClick = async () => {
         return;
     }
 
-    const createdEntity = await createMutation.mutateAsync(formContext.values);
-    if (!createdEntity.id) {
-        return;
-    }
+    try {
+        const createdEntity = await createMutation.mutateAsync(formContext.values);
+        if (!createdEntity.id) {
+            return;
+        }
 
-    await toScreenRoute({
-        name: `${capitalize(module.key)}Detail`,
-        params: { id: createdEntity.id },
-    });
+        await toScreenRoute({
+            name: `${capitalize(module.key)}Detail`,
+            params: { id: createdEntity.id },
+        });
+    } catch (error: unknown) {
+        if (isAxiosError(error)) {
+            const formErrors = error.response?.data?.errors;
+            if (formErrors) {
+                formContext.setErrors(formErrors);
+            }
+        }
+    }
 };
 
 watch(

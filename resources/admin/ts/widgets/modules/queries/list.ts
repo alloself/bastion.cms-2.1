@@ -1,4 +1,4 @@
-import { computed, toValue, type MaybeRefOrGetter } from "vue";
+import { toValue, type MaybeRefOrGetter } from "vue";
 import type { IModule } from "..";
 import type { IBaseEntity } from "@/ts/shared/types";
 import { useQuery } from "@pinia/colada";
@@ -9,12 +9,11 @@ export const useModuleListQuery = <T extends IBaseEntity>(
     queryParams: MaybeRefOrGetter<IModuleListQueryParams>
 ) => {
     const moduleValue = toValue(module);
-
-    const key = computed(() => ["list", moduleValue.key, toValue(queryParams)]);
+    const queryParamsValue = toValue(queryParams);
 
     const listQuery = useQuery({
-        key,
-        query: () => getModuleListQuery(moduleValue, toValue(queryParams)),
+        key: () => ["list", moduleValue.key, queryParamsValue],
+        query: () => getModuleListQuery(moduleValue, queryParamsValue),
     });
 
     return listQuery;

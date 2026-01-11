@@ -2,6 +2,7 @@ import { computed, toValue, type MaybeRefOrGetter } from "vue";
 import { useQuery } from "@pinia/colada";
 import { client } from "@/ts/shared/api/client";
 import type { IBaseEntity, IServerDataList } from "@/ts/shared/types";
+import type { IModule } from "@/ts/widgets";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_PER_PAGE = 10;
@@ -27,8 +28,10 @@ const buildQueryString = (params: IRelationSearchQueryParams): string => {
 
 export const useRelationSearch = <T extends IBaseEntity>(
     endpoint: MaybeRefOrGetter<string>,
-    search: MaybeRefOrGetter<string>
+    search: MaybeRefOrGetter<string>,
+    relations: MaybeRefOrGetter<string[]>
 ) => {
+    const relationsValue = toValue(relations);
     const queryParams = computed<IRelationSearchQueryParams>(() => ({
         page: DEFAULT_PAGE,
         perPage: DEFAULT_PER_PAGE,
@@ -36,18 +39,22 @@ export const useRelationSearch = <T extends IBaseEntity>(
         sortBy: [],
     }));
 
-    const key = computed(() => [
-        "list",
-        toValue(endpoint),
-        queryParams.value,
-    ]);
+    const key = computed(() => ["list", toValue(endpoint), queryParams.value]);
 
     return useQuery({
         key,
         query: async () => {
             const endpointValue = toValue(endpoint);
-            const url = `/api/admin/${endpointValue}?${buildQueryString(queryParams.value)}`;
-            const { data } = await client.get<IServerDataList<T>>(url);
+            const queryString = buildQueryString(queryParams.value);
+            const { data } = await client.get<IServerDataList<T>>(
+                `/api/admin/${endpointValue}?${queryString}`,
+                {
+                    params: {
+                        ...queryParams.value,
+                        relations: relationsValue.join(","),
+                    },
+                }
+            );
             return data;
         },
     });
