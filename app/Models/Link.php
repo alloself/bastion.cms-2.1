@@ -26,7 +26,7 @@ class Link extends CRUDModel
         return $this->morphTo();
     }
 
-    public function getSlugOptions()
+    public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()
             ->generateSlugsFrom('title')

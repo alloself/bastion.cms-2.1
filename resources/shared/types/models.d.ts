@@ -11,6 +11,28 @@ export interface User {
   deleted_at: string | null
 }
 
+export interface Fileable {
+  // relations
+  fileable?: Fileable
+  file?: File
+  // exists
+  file_exists: boolean
+}
+
+export interface File {
+  // columns
+  id: string
+  url: unknown
+  name: string
+  extension: string
+  created_at: string | null
+  updated_at: string | null
+  // relations
+  fileables?: Fileable[]
+  // exists
+  fileables_exists: boolean
+}
+
 export interface Template {
   // columns
   id: string
@@ -37,7 +59,7 @@ export interface Page {
 
 export interface Link {
   // columns
-  id: number
+  id: string
   title: string
   subtitle: string | null
   slug: string
@@ -47,4 +69,7 @@ export interface Link {
   deleted_at: string | null
   created_at: string | null
   updated_at: string | null
+  // relations
+  linkable?: Link
+  // exists
 }
