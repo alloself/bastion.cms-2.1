@@ -333,6 +333,11 @@ useGlobalHotkey(
 
 onActivated(() => {
     tab.title = module.getDetailTabTitle(detailQuery.data.value);
+
+    if (!id) {
+        const emptyInitialValues = moduleFormContext.value.createInitialValues();
+        form.value?.resetForm({ values: emptyInitialValues });
+    }
 });
 </script>
 
