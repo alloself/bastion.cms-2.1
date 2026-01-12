@@ -15,8 +15,6 @@ export interface Fileable {
   // relations
   fileable?: Fileable
   file?: File
-  // exists
-  file_exists: boolean
 }
 
 export interface File {
@@ -29,8 +27,6 @@ export interface File {
   updated_at: string | null
   // relations
   fileables?: Fileable[]
-  // exists
-  fileables_exists: boolean
 }
 
 export interface Template {
@@ -56,18 +52,13 @@ export interface Page {
   template_id: string | null
   // overrides
   parent_id: string | null
+  has_children: boolean | null
   // relations
   template?: Template
   link?: Link
   parent?: Page
   children?: Page[]
   links?: Link[]
-  // exists
-  template_exists: boolean
-  link_exists: boolean
-  parent_exists: boolean
-  children_exists: boolean
-  links_exists: boolean
 }
 
 export interface Link {
@@ -84,5 +75,4 @@ export interface Link {
   updated_at: string | null
   // relations
   linkable?: Link
-  // exists
 }

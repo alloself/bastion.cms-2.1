@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\PageResource;
 use App\Models\Page;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PageController extends CRUDController
 {
@@ -38,5 +40,23 @@ class PageController extends CRUDController
             'link.title.string' => 'Заголовок страницы должен быть строкой.',
             'link.title.max' => 'Заголовок страницы не должен превышать 255 символов.',
         ];
+    }
+
+    public function children(Request $request, string $id)
+    {
+        $relations = array_filter(explode(',', $request->input('relations', '')));
+        
+        $children = DB::transaction(function () use ($id, $relations) {
+            $page = Page::findOrFail($id);
+            $query = $page->children();
+            
+            if (count($relations)) {
+                $query->with($relations);
+            }
+            
+            return $query->get();
+        });
+
+        return PageResource::collection($children);
     }
 }

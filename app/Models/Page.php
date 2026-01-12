@@ -23,6 +23,9 @@ class Page extends CRUDModel
         'parent_id' => [
             'type' => 'string | null',
         ],
+        'has_children' => [
+            'type' => 'boolean | null',
+        ],
     ];
 
     protected array $searchable = ['id'];
