@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\PageResource;
 use App\Models\Page;
 
 class PageController extends CRUDController
@@ -9,6 +10,11 @@ class PageController extends CRUDController
     public function model(): string
     {
         return Page::class;
+    }
+
+    protected function resource(): string
+    {
+        return PageResource::class;
     }
 
     protected function validationRules(): array

@@ -2,64 +2,47 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\LinkResource;
 use App\Models\Link;
-use Illuminate\Http\Request;
 
-class LinkController extends Controller
+class LinkController extends CRUDController
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function model(): string
     {
-        //
+        return Link::class;
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    protected function resource(): string
     {
-        //
+        return LinkResource::class;
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    protected function validationRules(): array
     {
-        //
+        return [
+            'title' => ['required', 'string', 'max:255'],
+            'subtitle' => ['nullable', 'string', 'max:255'],
+            'slug' => ['nullable', 'string', 'max:255'],
+            'url' => ['nullable', 'string', 'max:255'],
+
+        ];
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Link $link)
+    protected function validationMessages(): array
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Link $link)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Link $link)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Link $link)
-    {
-        //
+        return [
+            'title.required' => 'Заголовок ссылки обязателен для заполнения.',
+            'title.string' => 'Заголовок ссылки должен быть строкой.',
+            'title.max' => 'Заголовок ссылки не должен превышать 255 символов.',
+            'subtitle.string' => 'Подзаголовок ссылки должен быть строкой.',
+            'subtitle.max' => 'Подзаголовок ссылки не должен превышать 255 символов.',
+            'slug.string' => 'Slug ссылки должен быть строкой.',
+            'slug.max' => 'Slug ссылки не должен превышать 255 символов.',
+            'url.string' => 'URL ссылки должен быть строкой.',
+            'url.max' => 'URL ссылки не должен превышать 255 символов.',
+            'linkable_id.uuid' => 'ID связанного объекта должен быть валидным UUID.',
+            'linkable_type.string' => 'Тип связанного объекта должен быть строкой.',
+            'linkable_type.max' => 'Тип связанного объекта не должен превышать 255 символов.',
+        ];
     }
 }
