@@ -30,13 +30,13 @@
             </VList>
             <template #append>
                 <VList density="compact" nav>
-                    <VListItem
-                        nav
-                        :prepend-icon="
-                            railMode ? 'mdi-chevron-right' : 'mdi-chevron-left'
-                        "
-                        @click="toggleRailMode"
-                    />
+                    <VListItem nav @click="toggleRailMode">
+                        <template #prepend>
+                            <VIcon class="opacity-100">
+                                {{ railMode ? 'mdi-chevron-right' : 'mdi-chevron-left' }}
+                            </VIcon>
+                        </template>
+                    </VListItem>
                 </VList>
             </template>
         </VNavigationDrawer>

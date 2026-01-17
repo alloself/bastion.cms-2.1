@@ -47,11 +47,18 @@ abstract class CRUDController extends Controller
 
             $search = $request->input('search');
             if ($search) {
-                $searchableFields = $modelClass::getSearchableFields();
-                if (count($searchableFields) > 0) {
-                    $query->where(function ($subQuery) use ($searchableFields, $search) {
-                        foreach ($searchableFields as $field) {
-                            $subQuery->orWhere($field, 'LIKE', "%{$search}%");
+                $searchable_fields = $modelClass::getSearchableFields();
+                if (count($searchable_fields) > 0) {
+                    $query->where(function ($sub_query) use ($searchable_fields, $search) {
+                        foreach ($searchable_fields as $field) {
+                            if (str_contains($field, '.')) {
+                                [$relation, $column] = explode('.', $field, 2);
+                                $sub_query->orWhereHas($relation, function ($relation_query) use ($column, $search) {
+                                    $relation_query->where($column, 'LIKE', "%{$search}%");
+                                });
+                            } else {
+                                $sub_query->orWhere($field, 'LIKE', "%{$search}%");
+                            }
                         }
                     });
                 }
@@ -75,7 +82,7 @@ abstract class CRUDController extends Controller
             if (count($relations) > 0) {
                 $query->with($relations);
             }
-            $perPage = $request->input('per_page', 15);
+            $perPage = $request->input('per_page', 5);
             $paginator = $query->paginate($perPage);
             $paginator->appends($request->query());
 

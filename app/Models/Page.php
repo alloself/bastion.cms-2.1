@@ -28,7 +28,7 @@ class Page extends CRUDModel
         ],
     ];
 
-    protected array $searchable = ['id'];
+    protected array $searchable = ['link.title'];
 
     protected $casts = [
         'index' => 'boolean',

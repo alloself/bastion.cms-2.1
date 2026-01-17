@@ -49,32 +49,42 @@
                 </template>
             </VTooltip>
         </template>
+        <template #append-item>
+            <div
+                v-if="hasMore"
+                v-intersect="handleIntersect"
+                class="b-relation-autocomplete__load-more"
+            >
+                <VProgressCircular
+                    v-if="isLoadingMore"
+                    indeterminate
+                    size="24"
+                    width="2"
+                />
+            </div>
+        </template>
     </VAutocomplete>
 </template>
 
 <script setup lang="ts">
 import { capitalize, computed, ref } from "vue";
 import { refDebounced } from "@vueuse/core";
-import { useRelationSearch } from "@/ts/shared/composables";
+import { useInfiniteRelationSearch } from "@/ts/shared/composables";
 import { useScreenNavigation } from "@/ts/features/screen";
 import type { TBRelationAutocompleteProps } from "./BRelationAutocomplete.types";
-import type { IBaseEntity } from "@/ts/shared/types";
-
-const DEFAULT_DEBOUNCE_MS = 300;
-const DEFAULT_ITEM_TITLE = "name";
-const DEFAULT_ITEM_VALUE = "id";
+import type { IBaseEntity } from "../..";
 
 const {
     modelValue,
     endpoint,
-    itemTitle = DEFAULT_ITEM_TITLE,
-    itemValue = DEFAULT_ITEM_VALUE,
+    itemTitle = 'name',
+    itemValue = 'id',
     label,
     placeholder,
     readonly = false,
     loading = false,
     errorMessages,
-    debounceMs = DEFAULT_DEBOUNCE_MS,
+    debounceMs = 300,
     relations = [],
 } = defineProps<TBRelationAutocompleteProps>();
 
@@ -87,18 +97,20 @@ const { toScreenRoute } = useScreenNavigation();
 const searchInput = ref("");
 const debouncedSearch = refDebounced(searchInput, debounceMs);
 
-const { data: searchResults, asyncStatus } = useRelationSearch<IBaseEntity>(
-    endpoint,
-    debouncedSearch,
-    relations
+const {
+    items,
+    hasMore,
+    isLoadingMore,
+    isInitialLoading,
+    loadMore,
+} = useInfiniteRelationSearch<IBaseEntity>(endpoint, debouncedSearch, relations);
+
+const isLoading = computed(
+    () => loading || isInitialLoading.value
 );
 
-const items = computed(() => searchResults.value?.data ?? []);
-
-const isLoading = computed(() => loading || asyncStatus.value === "loading");
-
 const noDataText = computed(() => {
-    if (asyncStatus.value === "loading") {
+    if (isInitialLoading.value) {
         return "Загрузка...";
     }
     return "Ничего не найдено";
@@ -110,6 +122,12 @@ const handleUpdateModelValue = (value: string | null) => {
 
 const handleSearchUpdate = (value: string = "") => {
     searchInput.value = value;
+};
+
+const handleIntersect = (isIntersecting: boolean) => {
+    if (isIntersecting) {
+        loadMore();
+    }
 };
 
 const handleEditClick = async (event: MouseEvent) => {
@@ -134,3 +152,15 @@ const handleCreateClick = async (event: MouseEvent) => {
     );
 };
 </script>
+
+<style scoped lang="scss">
+.b-relation-autocomplete {
+    &__load-more {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 8px;
+        min-height: 40px;
+    }
+}
+</style>

@@ -1,10 +1,10 @@
 <template>
-    <div
-        class="b-json-editor"
-        :class="{
-            'b-json-editor--has-errors': normalizedErrorMessages.length > 0,
-            'b-json-editor--readonly': readonly,
-        }"
+    <BTableLikeFieldWrapper
+        :label="label"
+        label-icon="mdi-code-json"
+        :readonly="readonly"
+        :has-errors="normalizedErrorMessages.length > 0"
+        :error-messages="normalizedErrorMessages"
     >
         <VDataTable
             :headers="tableHeaders"
@@ -13,15 +13,9 @@
             class="b-json-editor__table"
             density="compact"
             hide-default-footer
+            no-data-text="Нет данных"
             :items-per-page="-1"
         >
-            <template v-if="label" #top>
-                <div class="b-json-editor__label">
-                    <VIcon size="small" icon="mdi-code-json" class="mr-2"></VIcon>
-                    <span>{{ label }}</span>
-                </div>
-            </template>
-
             <template #item.key="{ item }">
                 <VTextField
                     :model-value="item.key"
@@ -60,47 +54,31 @@
                     <VIcon>mdi-delete</VIcon>
                 </VBtn>
             </template>
-
-            <template #bottom>
-                <div v-if="!readonly" class="b-json-editor__actions">
-                    <VTooltip location="top" text="Добавить поле">
-                        <template #activator="{ props: activatorProps }">
-                            <VBtn
-                                icon
-                                size="x-small"
-                                variant="flat"
-                                color="primary"
-                                v-bind="activatorProps"
-                                @click="handleAddRow"
-                            >
-                                <VIcon>mdi-plus</VIcon>
-                            </VBtn>
-                        </template>
-                    </VTooltip>
-                </div>
-            </template>
         </VDataTable>
 
-        <ul
-            v-if="normalizedErrorMessages.length > 0"
-            class="b-json-editor__errors"
-        >
-            <li
-                v-for="(
-                    errorMessage, errorMessageIndex
-                ) in normalizedErrorMessages"
-                :key="errorMessageIndex"
-                class="b-json-editor__error"
-            >
-                {{ errorMessage }}
-            </li>
-        </ul>
-    </div>
+        <template #actions>
+            <VTooltip v-if="!readonly" location="top" text="Добавить поле">
+                <template #activator="{ props: activatorProps }">
+                    <VBtn
+                        icon="mdi-plus"
+                        size="x-small"
+                        variant="flat"
+                        color="primary"
+                        v-bind="activatorProps"
+                        @click="handleAddRow"
+                    />
+                </template>
+            </VTooltip>
+        </template>
+    </BTableLikeFieldWrapper>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { ref, watch } from "vue";
+import { isPlainObject } from "lodash";
 import type { TBJSONEditorProps, TJSONEditorRow } from "./BJSONEditor.types";
+import { useNormalizedErrors } from "@/ts/shared/composables";
+import BTableLikeFieldWrapper from "@/ts/shared/components/BTableLikeFieldWrapper/BTableLikeFieldWrapper.vue";
 
 const {
     modelValue = "",
@@ -125,11 +103,7 @@ const parseFromJson = (jsonString?: string): TJSONEditorRow[] => {
     try {
         const parsed = JSON.parse(jsonString);
 
-        if (
-            typeof parsed !== "object" ||
-            parsed === null ||
-            Array.isArray(parsed)
-        ) {
+        if (!isPlainObject(parsed)) {
             return [];
         }
 
@@ -151,15 +125,7 @@ const tableHeaders = [
     { title: "Действия", key: "actions", sortable: false, width: "60px" },
 ];
 
-const normalizedErrorMessages = computed<string[]>(() => {
-    if (!errorMessages) {
-        return [];
-    }
-    if (Array.isArray(errorMessages)) {
-        return errorMessages;
-    }
-    return [errorMessages];
-});
+const normalizedErrorMessages = useNormalizedErrors(() => errorMessages);
 
 const serializeToJson = (rowsData: TJSONEditorRow[]): string => {
     const result: Record<string, string> = {};
@@ -223,48 +189,12 @@ watch(
 
 <style scoped lang="scss">
 .b-json-editor {
-    width: 100%;
-
-    &__label {
-        padding: 8px 16px;
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: rgba(255, 255, 255, 0.7);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-    }
-
     &__table {
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        border-radius: 4px;
+        border: none;
     }
 
     &__input {
         margin: 4px 0;
-    }
-
-    &__actions {
-        display: flex;
-        justify-content: flex-end;
-        padding: 12px 16px;
-        border-top: 1px solid rgba(255, 255, 255, 0.12);
-    }
-
-    &__errors {
-        margin: 8px 0 0;
-        padding: 0;
-        list-style: none;
-        color: rgb(var(--v-theme-error));
-        font-size: 0.75rem;
-    }
-
-    &__error {
-        margin: 2px 0 0;
-    }
-
-    &--has-errors {
-        .b-json-editor__table {
-            border-color: rgb(var(--v-theme-error));
-        }
     }
 }
 </style>

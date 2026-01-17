@@ -27,9 +27,9 @@ class PageResource extends JsonResource
             'parent' => $this->whenLoaded('parent', function () {
                 return new PageResource($this->parent);
             }),
-            'has_children' => $this->when($request->has('check_children'), function () {
-                return $this->children()->exists();
-            }),
+            'has_children' => $this->relationLoaded('children') 
+                ? $this->children->isNotEmpty() 
+                : $this->children()->exists(),
             'children' => $this->whenLoaded('children', function () {
                 return PageResource::collection($this->children);
             }),

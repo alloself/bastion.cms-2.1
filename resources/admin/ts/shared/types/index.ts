@@ -2,6 +2,11 @@ export interface IBaseEntity {
     id?: string;
 }
 
+export interface IBaseTreeEntity extends IBaseEntity {
+    children?: IBaseTreeEntity[];
+    has_children: boolean;
+}
+
 export type { IBSmartFormField as ISmartFormField } from "../components/BSmartForm/BSmartForm.types";
 
 export interface ITableHeader {

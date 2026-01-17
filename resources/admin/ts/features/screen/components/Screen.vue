@@ -58,6 +58,7 @@
         <VDivider />
         <Component
             :is="activeTabComponent"
+            :key="activeTabKey"
             v-bind="activeTabProps"
             :tab="activeTab"
         />

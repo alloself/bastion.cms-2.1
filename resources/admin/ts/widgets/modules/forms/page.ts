@@ -1,10 +1,15 @@
 import { computed } from "vue";
+import type { Page } from "@shared/types/models";
 import type { ISmartFormField } from "@/ts/shared/types";
-import { BJSONEditor, BRelationAutocomplete } from "@/ts/shared/components";
+import {
+    BJSONEditor,
+    BRelationAutocomplete,
+    BRelationTree,
+} from "@/ts/shared/components";
 
-export const usePageForm = () => {
+export const usePageForm = (entity?: Page) => {
     const fields = computed<ISmartFormField[]>(() => {
-        return [
+        const baseFields: ISmartFormField[] = [
             {
                 component: "v-text-field",
                 key: "link.title",
@@ -70,6 +75,22 @@ export const usePageForm = () => {
                 },
             },
         ];
+
+        if (entity?.id) {
+            baseFields.push({
+                component: BRelationTree,
+                key: "children",
+                props: {
+                    endpoint: "page",
+                    parentId: entity.id,
+                    itemTitle: "link.title",
+                    label: "Дочерние страницы",
+                    relations: ["link"],
+                },
+            });
+        }
+
+        return baseFields;
     });
 
     const layout = `
@@ -77,6 +98,7 @@ export const usePageForm = () => {
         "link.url link.url link.url" 
         "index template_id template_id"
         "parent_id parent_id parent_id"
+        "children children children"
     `;
 
     const createInitialValues = () => {
