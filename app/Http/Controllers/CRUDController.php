@@ -63,7 +63,11 @@ abstract class CRUDController extends Controller
                 if (count($parts) === 2) {
                     [$key, $order] = $parts;
                     if (in_array($order, ['asc', 'desc'], true)) {
-                        $query->orderBy($key, $order);
+                        if (str_contains($key, '.')) {
+                            $query->orderByPowerJoins($key, $order);
+                        } else {
+                            $query->orderBy($key, $order);
+                        }
                     }
                 }
             }

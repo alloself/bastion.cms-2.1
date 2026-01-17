@@ -11,8 +11,8 @@
     },
     "devDependencies": {
         "@pinia/colada-devtools": "^0.4.1",
-        "@types/lodash": "^4.17.21",
-        "@types/node": "^25.0.3",
+        "@types/lodash": "^4.17.23",
+        "@types/node": "^25.0.9",
         "@vitejs/plugin-vue": "^6.0.3",
         "@vue/tsconfig": "^0.8.1",
         "concurrently": "^9.2.1",
@@ -27,7 +27,7 @@
     },
     "dependencies": {
         "@mdi/font": "^7.4.47",
-        "@pinia/colada": "^0.21.0",
+        "@pinia/colada": "^0.21.1",
         "@vueuse/core": "^14.1.0",
         "axios": "^1.13.2",
         "lodash": "^4.17.21",

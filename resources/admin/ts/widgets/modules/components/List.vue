@@ -8,6 +8,7 @@
         show-select
         v-model="selectedItems"
         v-model:sort-by="tableState.sortBy"
+        :multi-sort="{ mode: 'append', modifier: 'alt' }"
         density="compact"
         @click:row="handleRowClick"
         striped="even"
@@ -195,30 +196,40 @@ const itemsLength = computed(() => state.value?.data?.meta?.total ?? 0);
 const pagesCount = computed(() => state.value?.data?.meta?.last_page ?? 1);
 const isLoading = computed(() => asyncStatus.value === "loading");
 
-const buildQueryParams = () => {
-    const params = new URLSearchParams();
+const buildQuery = () => {
+    const query: Record<string, string | string[]> = {};
 
     if (tableState.page !== 1) {
-        params.set("page", String(tableState.page));
+        query.page = String(tableState.page);
     }
     if (tableState.perPage !== 10) {
-        params.set("per_page", String(tableState.perPage));
+        query.per_page = String(tableState.perPage);
     }
     if (tableState.search.trim() !== "") {
-        params.set("search", tableState.search.trim());
+        query.search = tableState.search.trim();
     }
     if (tableState.sortBy.length) {
-        tableState.sortBy.forEach((sort) => {
-            params.append("sortBy[]", `${sort.key}:${sort.order}`);
-        });
+        query["sortBy[]"] = tableState.sortBy.map(
+            (sort) => `${sort.key}:${sort.order}`
+        );
     }
 
-    return params;
+    return query;
 };
 
 const syncTableStateToUrl = async () => {
     const currentRoute = router.currentRoute.value;
-    const queryParams = buildQueryParams();
+    const query = buildQuery();
+    const queryParams = new URLSearchParams();
+    
+    Object.entries(query).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+            value.forEach((item) => queryParams.append(key, item));
+        } else {
+            queryParams.set(key, value);
+        }
+    });
+
     const queryString = queryParams.toString();
     const basePath = currentRoute.path;
     const newFullPath = queryString ? `${basePath}?${queryString}` : basePath;
@@ -229,7 +240,7 @@ const syncTableStateToUrl = async () => {
 
     await router.replace({
         path: basePath,
-        query: Object.fromEntries(queryParams),
+        query,
     });
     screenStore.setActiveTabRoute(router.currentRoute.value);
 };

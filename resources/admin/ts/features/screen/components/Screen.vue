@@ -57,14 +57,16 @@
         </VCardTitle>
         <VDivider />
 
-        <KeepAlive v-if="activeTabComponent && activeTab && activeTabKey">
-            <component
-                :key="activeTabKey"
-                :is="activeTabComponent"
-                v-bind="activeTabProps"
-                :tab="activeTab"
-            />
-        </KeepAlive>
+        <template v-if="activeTabComponent && activeTab && activeTabKey">
+            <KeepAlive>
+                <component
+                    :key="activeTabKey"
+                    :is="activeTabComponent"
+                    v-bind="activeTabProps"
+                    :tab="activeTab"
+                />
+            </KeepAlive>
+        </template>
     </VCard>
     <div
         v-if="!isLast && nextScreen"
@@ -242,7 +244,7 @@ const handleActivateScreen = () => {
 
     const targetRoute = activeTab.value.route;
     requestAnimationFrame(() => {
-        router.push(targetRoute);
+        router.replace(targetRoute);
     });
 };
 
@@ -262,7 +264,7 @@ const onTabClick = (toggle: () => void, tab: ITab) => {
     screenStore.setActiveTab(screen.id, tab.id);
 
     requestAnimationFrame(() => {
-        router.push(tab.route);
+        router.replace(tab.route);
     });
 };
 
@@ -302,7 +304,7 @@ watch(
             if (tab) {
                 screenStore.setActiveTab(screen.id, newId);
                 requestAnimationFrame(() => {
-                    router.push(tab.route);
+                    router.replace(tab.route);
                 });
             }
         }
