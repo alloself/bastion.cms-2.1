@@ -28,8 +28,8 @@ const buildListRequestParams = (
         params.search = queryParams.search.trim();
     }
 
-    if (module.relations && module.relations.length) {
-        params.relations = module.relations.join(",");
+    if (module.relations?.list && module.relations.list.length) {
+        params.relations = module.relations.list.join(",");
     }
 
     return params;
@@ -55,7 +55,7 @@ export const getModuleDetailQuery = async <T extends IBaseEntity>(
     const url = `/api/admin/${module.key}/${id}`;
     const { data } = await client.get<T>(url,{
         params: {
-            relations: module.relations?.join(","),
+            relations: module.relations?.detail?.join(","),
         },
     });
     return data;

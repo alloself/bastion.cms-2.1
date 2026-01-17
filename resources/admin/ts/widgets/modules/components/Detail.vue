@@ -103,7 +103,7 @@ import type { IModule } from "..";
 import type { IBaseEntity, TUUID } from "@/ts/shared/types";
 import { BSmartForm } from "@/ts/shared/components";
 import type { FormContext } from "vee-validate";
-import { capitalize, computed, onActivated, ref, watch } from "vue";
+import { capitalize, computed, onMounted, ref, watch } from "vue";
 import { isAxiosError } from "axios";
 import { useRouter } from "vue-router";
 import { useModuleDetailQuery } from "../queries/detail";
@@ -331,7 +331,7 @@ useGlobalHotkey(
     { ctrl: true }
 );
 
-onActivated(() => {
+onMounted(() => {
     tab.title = module.getDetailTabTitle(detailQuery.data.value);
 
     if (!id) {

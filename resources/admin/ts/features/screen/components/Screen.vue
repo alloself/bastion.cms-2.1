@@ -56,17 +56,11 @@
             />
         </VCardTitle>
         <VDivider />
-
-        <template v-if="activeTabComponent && activeTab && activeTabKey">
-            <KeepAlive>
-                <component
-                    :key="activeTabKey"
-                    :is="activeTabComponent"
-                    v-bind="activeTabProps"
-                    :tab="activeTab"
-                />
-            </KeepAlive>
-        </template>
+        <Component
+            :is="activeTabComponent"
+            v-bind="activeTabProps"
+            :tab="activeTab"
+        />
     </VCard>
     <div
         v-if="!isLast && nextScreen"

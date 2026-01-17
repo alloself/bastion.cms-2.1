@@ -33,7 +33,10 @@ export interface IModule<T extends IBaseEntity = IBaseEntity> {
     headers: ITableHeader[];
     getDetailTabTitle(entity?: T | null): string;
     createForm: (entity?: T) => IModuleForm<T>;
-    relations?: string[];
+    relations?: {
+        list?: string[];
+        detail?: string[];
+    };
     onEntityUpdate?: (entity: T, queryCache: QueryCache) => void;
 }
 const pageModule: IModule<Page> = {
@@ -59,7 +62,10 @@ const pageModule: IModule<Page> = {
         return `Страница ${entity.link?.title}`;
     },
     createForm: usePageForm,
-    relations: ["template", "link"],
+    relations: {
+        list: ["template", "link"],
+        detail: ["template", "link", "children", "parent"],
+    },
     onEntityUpdate: (page, queryCache) => {
         const findDescendantsInCache = (parentId: string): string[] => {
             const descendants: string[] = [];
@@ -148,7 +154,8 @@ export const createModulesRoutes = (): RouteRecordRaw[] => {
                 meta: {
                     module: item,
                 },
-                component: () => import(`@/ts/widgets/modules/components/List.vue`),
+                component: () =>
+                    import(`@/ts/widgets/modules/components/List.vue`),
             };
             if (item.isDefault) {
                 listRoute.alias = "/";
@@ -165,7 +172,8 @@ export const createModulesRoutes = (): RouteRecordRaw[] => {
                 meta: {
                     module: item,
                 },
-                component: () => import(`@/ts/widgets/modules/components/Detail.vue`),
+                component: () =>
+                    import(`@/ts/widgets/modules/components/Detail.vue`),
             },
             {
                 path: `/${toKebabCase(item.key)}/:id`,
@@ -177,7 +185,8 @@ export const createModulesRoutes = (): RouteRecordRaw[] => {
                 meta: {
                     module: item,
                 },
-                component: () => import(`@/ts/widgets/modules/components/Detail.vue`),
+                component: () =>
+                    import(`@/ts/widgets/modules/components/Detail.vue`),
             }
         );
 

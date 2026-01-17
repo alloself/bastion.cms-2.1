@@ -1,4 +1,4 @@
-import { onActivated, onDeactivated, onMounted, onUnmounted } from "vue";
+import { onMounted, onUnmounted } from "vue";
 
 interface IEventRegistration {
     handler: (event: Event) => void;
@@ -85,6 +85,4 @@ export const useGlobalEvent = (
 
     onMounted(register);
     onUnmounted(unregister);
-    onActivated(register);
-    onDeactivated(unregister);
 };

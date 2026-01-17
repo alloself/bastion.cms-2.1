@@ -2,7 +2,6 @@ import { computed, toValue, type MaybeRefOrGetter } from "vue";
 import { useQuery } from "@pinia/colada";
 import { client } from "@/ts/shared/api/client";
 import type { IBaseEntity, IServerDataList } from "@/ts/shared/types";
-import type { IModule } from "@/ts/widgets";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_PER_PAGE = 10;

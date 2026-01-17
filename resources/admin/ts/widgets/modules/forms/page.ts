@@ -1,9 +1,8 @@
 import { computed } from "vue";
 import type { ISmartFormField } from "@/ts/shared/types";
-import type { Page } from "@shared/types/models";
 import { BJSONEditor, BRelationAutocomplete } from "@/ts/shared/components";
 
-export const usePageForm = (entity?: Page) => {
+export const usePageForm = () => {
     const fields = computed<ISmartFormField[]>(() => {
         return [
             {
