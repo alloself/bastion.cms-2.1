@@ -7,10 +7,13 @@
         "dev:admin": "vite --config vite.admin.config.ts",
         "build:site": "vite build --config vite.site.config.ts",
         "build:admin": "vite build --config vite.admin.config.ts",
-        "dev:all": "concurrently -k -n site,admin -c yellow,cyan \"npm:dev:site\" \"npm:dev:admin\""
+        "dev:all": "concurrently -k -n site,admin -c yellow,cyan \"npm:dev:site\" \"npm:dev:admin\"",
+        "format": "prettier --write \"resources/**/*.{ts,vue,scss,css}\"",
+        "format:check": "prettier --check \"resources/**/*.{ts,vue,scss,css}\""
     },
     "devDependencies": {
         "@pinia/colada-devtools": "^0.4.1",
+        "@trivago/prettier-plugin-sort-imports": "^6.0.2",
         "@types/lodash": "^4.17.23",
         "@types/node": "^25.0.9",
         "@vitejs/plugin-vue": "^6.0.3",
@@ -19,6 +22,7 @@
         "laravel-vite-plugin": "^2.0.1",
         "postcss": "^8.5.6",
         "postcss-nested": "^7.0.2",
+        "prettier": "^3.8.0",
         "sass": "^1.97.2",
         "typescript": "^5.9.3",
         "vite": "^7.3.1",
