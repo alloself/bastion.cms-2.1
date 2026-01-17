@@ -151,6 +151,7 @@ const handleCreateClick = async (event: MouseEvent) => {
     await toScreenRoute(
         {
             name: `${capitalize(endpoint)}Create`,
+            query: { parent_id: parentId },
         },
         event
     );

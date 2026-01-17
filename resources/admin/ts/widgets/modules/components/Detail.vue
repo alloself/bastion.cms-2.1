@@ -105,7 +105,7 @@ import { BSmartForm } from "@/ts/shared/components";
 import type { FormContext } from "vee-validate";
 import { capitalize, computed, onMounted, ref, watch } from "vue";
 import { isAxiosError } from "axios";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useModuleDetailQuery } from "../queries/detail";
 import { useGlobalHotkey } from "@/ts/shared/composables";
 import type { PartialDeep } from "type-fest";
@@ -129,6 +129,7 @@ const { module, id, tab } = defineProps<{
     tab: ITab;
 }>();
 
+const route = useRoute();
 const router = useRouter();
 const { toScreenRoute } = useScreenNavigation();
 
@@ -218,7 +219,17 @@ const initialValues = computed(() => {
     if (id && detailQuery.data.value) {
         return detailQuery.data.value as PartialDeep<T>;
     }
-    return moduleFormContext.value.createInitialValues();
+
+    const baseInitialValues = moduleFormContext.value.createInitialValues();
+
+    if (!Object.keys(route.query).length) {
+        return baseInitialValues;
+    }
+
+    return {
+        ...baseInitialValues,
+        ...route.query,
+    };
 });
 
 const handleRefreshClick = async () => {
@@ -335,8 +346,7 @@ onMounted(() => {
     tab.title = module.getDetailTabTitle(detailQuery.data.value);
 
     if (!id) {
-        const emptyInitialValues = moduleFormContext.value.createInitialValues();
-        form.value?.resetForm({ values: emptyInitialValues });
+        form.value?.resetForm({ values: initialValues.value });
     }
 });
 </script>
