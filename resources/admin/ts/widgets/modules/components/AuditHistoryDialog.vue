@@ -1,16 +1,67 @@
 <template>
-    <VDialog v-model="showDialog" width="auto" scrollable>
-        <VCard>
-            <VCardTitle>История изменений</VCardTitle>
-            <VCardText>
-                <v-expansion-panels>
-                    <v-expansion-panel
-                        v-for="i in 3"
-                        :key="i"
-                        text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
-                        title="Item"
-                    ></v-expansion-panel>
-                </v-expansion-panels>
+    <VDialog v-model="showDialog" width="800" max-width="95vw" scrollable>
+        <VCard class="audit-history-dialog">
+            <VCardTitle class="audit-history-dialog__title">
+                История изменений
+                <VBtn
+                    icon
+                    variant="text"
+                    size="small"
+                    class="audit-history-dialog__close"
+                    @click="showDialog = false"
+                >
+                    <VIcon>mdi-close</VIcon>
+                </VBtn>
+            </VCardTitle>
+            <VCardText class="audit-history-dialog__content">
+                <VExpansionPanels variant="accordion" flat>
+                    <VExpansionPanel
+                        v-for="audit in audits"
+                        :key="audit.id"
+                        class="audit-history-dialog__panel"
+                        elevation="0"
+                    >
+                        <VExpansionPanelTitle class="audit-history-dialog__panel-title">
+                            <div class="audit-history-dialog__panel-header">
+                                <span class="audit-history-dialog__panel-date">
+                                    {{ formatDate(audit.created_at) }}
+                                </span>
+                                <VChip
+                                    size="small"
+                                    :color="getEventColor(audit.event)"
+                                    class="audit-history-dialog__panel-event"
+                                >
+                                    {{ getEventLabel(audit.event) }}
+                                </VChip>
+                                <span class="audit-history-dialog__panel-user">
+                                    {{ getUserEmail(audit) }}
+                                </span>
+                            </div>
+                        </VExpansionPanelTitle>
+                        <VExpansionPanelText>
+                            <VDataTable
+                                density="compact"
+                                class="audit-history-dialog__table"
+                                :headers="tableHeaders"
+                                :items="getChangedFields(audit)"
+                                item-value="key"
+                                :items-per-page="-1"
+                                hide-default-footer
+                            >
+                                <template #item.oldValue="{ value }">
+                                    <span class="audit-history-dialog__table-cell--old">
+                                        {{ value }}
+                                    </span>
+                                </template>
+                                <template #item.newValue="{ value }">
+                                    <span class="audit-history-dialog__table-cell--new">
+                                        {{ value }}
+                                    </span>
+                                </template>
+                            </VDataTable>
+                        </VExpansionPanelText>
+                    </VExpansionPanel>
+                </VExpansionPanels>
             </VCardText>
         </VCard>
     </VDialog>
@@ -21,7 +72,14 @@ import { computed } from 'vue'
 
 import type { IBSmartFormField, IBaseEntity, TAuditModelWithResolved } from '@/ts/shared'
 
-const { audits = [], fields = [], ignoredFields = ['id','_lft','_rgt'] } = defineProps<{
+interface IChangedField {
+    key: string
+    label: string
+    oldValue: string
+    newValue: string
+}
+
+const { audits = [], fields = [], ignoredFields = ['id', '_lft', '_rgt'] } = defineProps<{
     audits: TAuditModelWithResolved[]
     fields: IBSmartFormField[]
     ignoredFields?: string[]
@@ -36,13 +94,177 @@ const fieldMap = computed(() => {
     }, {})
 })
 
+const tableHeaders = [
+    { title: 'Поле', key: 'label', sortable: false },
+    { title: 'Старое значение', key: 'oldValue', sortable: false },
+    { title: 'Новое значение', key: 'newValue', sortable: false },
+]
+
+const formatDate = (dateString?: string | null) => {
+    if (!dateString) {
+        return '—'
+    }
+    const date = new Date(dateString)
+    return date.toLocaleString('ru-RU')
+}
+
+const getEventLabel = (event: string) => {
+    switch (event) {
+        case 'created':
+            return 'Создано'
+        case 'updated':
+            return 'Изменено'
+        case 'deleted':
+            return 'Удалено'
+        case 'restored':
+            return 'Восстановлено'
+        default:
+            return event
+    }
+}
+
+const getEventColor = (event: string) => {
+    switch (event) {
+        case 'created':
+            return 'success'
+        case 'updated':
+            return 'info'
+        case 'deleted':
+            return 'error'
+        case 'restored':
+            return 'warning'
+        default:
+            return 'grey'
+    }
+}
+
 const getFieldLabel = (key: string) => {
     const field = fieldMap.value[key]
     if (!field || !field.props?.label) {
         return key
     }
-    return field.props.label
+    return String(field.props.label)
+}
+
+const formatValue = (value: unknown) => {
+    if (!value) {
+        return '—'
+    }
+    if (typeof value === 'boolean') {
+        return value ? 'Да' : 'Нет'
+    }
+    if (typeof value === 'object') {
+        return JSON.stringify(value)
+    }
+    return String(value)
+}
+
+const getChangedFields = (audit: TAuditModelWithResolved) => {
+    const changedFields: IChangedField[] = []
+    const allKeys = new Set<string>()
+
+    if (audit.old_values) {
+        Object.keys(audit.old_values).forEach((key) => allKeys.add(key))
+    }
+    if (audit.new_values) {
+        Object.keys(audit.new_values).forEach((key) => allKeys.add(key))
+    }
+
+    allKeys.forEach((key) => {
+        if (ignoredFields.includes(key)) {
+            return
+        }
+
+        const resolved = audit.resolved_values?.[key]
+        const oldRaw = audit.old_values?.[key]
+        const newRaw = audit.new_values?.[key]
+
+        const oldValue = resolved?.old ?? formatValue(oldRaw)
+        const newValue = resolved?.new ?? formatValue(newRaw)
+
+        changedFields.push({
+            key,
+            label: getFieldLabel(key),
+            oldValue,
+            newValue,
+        })
+    })
+
+    return changedFields
+}
+
+const getUserEmail = (audit: TAuditModelWithResolved) => {
+    return audit.user?.email ?? 'Система'
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.audit-history-dialog {
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh;
+
+    &__title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+    }
+
+    &__close {
+        flex-shrink: 0;
+    }
+
+    &__content {
+        overflow-y: auto;
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+
+    &__panel-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    &__panel-date {
+        font-weight: 500;
+        min-width: 140px;
+    }
+
+    &__panel-event {
+        flex-shrink: 0;
+    }
+
+    &__panel-user {
+        color: rgba(var(--v-theme-on-surface), 0.6);
+        font-size: 0.875rem;
+        margin-left: auto;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    &__panel {
+        border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+    }
+
+    &__table {
+        border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+        border-radius: 4px;
+    }
+
+    &__table-cell {
+        &--old {
+            color: rgba(var(--v-theme-error), 0.8);
+        }
+
+        &--new {
+            color: rgba(var(--v-theme-success), 0.8);
+        }
+    }
+}
+</style>
