@@ -20,9 +20,11 @@
                 <VTextField
                     :model-value="item.key"
                     @update:model-value="(newValue: string) => handleUpdateRow(item.id, 'key', newValue)"
+                    @blur="() => handleKeyBlur(item.id, item.key)"
                     density="compact"
                     variant="outlined"
                     placeholder="Введите ключ"
+                    :error="isDuplicateKey(item.id, item.key)"
                     hide-details
                     :readonly="readonly"
                     class="b-json-editor__input"
@@ -75,49 +77,39 @@
 
 <script setup lang="ts">
 import { ref, watch } from "vue";
-import { isPlainObject } from "lodash";
-import type { TBJSONEditorProps, TJSONEditorRow } from "./BJSONEditor.types";
+import { isEqual, isPlainObject } from "lodash";
+import type { TBJSONEditorProps, TJSONEditorRow, TJSONEditorValue } from "./BJSONEditor.types";
 import { useNormalizedErrors } from "@/ts/shared/composables";
 import BTableLikeFieldWrapper from "@/ts/shared/components/BTableLikeFieldWrapper/BTableLikeFieldWrapper.vue";
 
 const {
-    modelValue = "",
+    modelValue = null,
     readonly = false,
     errorMessages,
     label,
 } = defineProps<TBJSONEditorProps>();
 
 const emits = defineEmits<{
-    "update:modelValue": [value: string];
+    "update:modelValue": [value: TJSONEditorValue];
 }>();
 
 const generateRowId = (): string => {
     return crypto.randomUUID();
 };
 
-const parseFromJson = (jsonString?: string): TJSONEditorRow[] => {
-    if (!jsonString || jsonString.trim() === "") {
+const parseFromObject = (value: TJSONEditorValue): TJSONEditorRow[] => {
+    if (!value || !isPlainObject(value)) {
         return [];
     }
 
-    try {
-        const parsed = JSON.parse(jsonString);
-
-        if (!isPlainObject(parsed)) {
-            return [];
-        }
-
-        return Object.entries(parsed).map(([key, value]) => ({
-            id: generateRowId(),
-            key,
-            value: String(value ?? ""),
-        }));
-    } catch {
-        return [];
-    }
+    return Object.entries(value).map(([key, rowValue]) => ({
+        id: generateRowId(),
+        key,
+        value: String(rowValue ?? ""),
+    }));
 };
 
-const rows = ref<TJSONEditorRow[]>(parseFromJson(modelValue ?? ""));
+const rows = ref<TJSONEditorRow[]>(parseFromObject(modelValue));
 
 const tableHeaders = [
     { title: "Ключ", key: "key", sortable: false },
@@ -127,7 +119,16 @@ const tableHeaders = [
 
 const normalizedErrorMessages = useNormalizedErrors(() => errorMessages);
 
-const serializeToJson = (rowsData: TJSONEditorRow[]): string => {
+const isDuplicateKey = (rowId: string, key: string): boolean => {
+    const trimmedKey = key.trim();
+    if (trimmedKey === "") {
+        return false;
+    }
+    const firstRowWithSameKey = rows.value.find(row => row.key.trim() === trimmedKey);
+    return firstRowWithSameKey !== undefined && firstRowWithSameKey.id !== rowId;
+};
+
+const serializeToObject = (rowsData: TJSONEditorRow[]): TJSONEditorValue => {
     const result: Record<string, string> = {};
 
     for (const row of rowsData) {
@@ -136,12 +137,12 @@ const serializeToJson = (rowsData: TJSONEditorRow[]): string => {
         }
     }
 
-    return JSON.stringify(result);
+    return Object.keys(result).length ? result : {};
 };
 
 const emitUpdate = () => {
-    const jsonString = serializeToJson(rows.value);
-    emits("update:modelValue", jsonString);
+    const value = serializeToObject(rows.value);
+    emits("update:modelValue", value);
 };
 
 const handleAddRow = () => {
@@ -173,16 +174,29 @@ const handleUpdateRow = (
     }
 };
 
+const handleKeyBlur = (rowId: string, key: string) => {
+    const trimmedKey = key.trim();
+    if (!trimmedKey) {
+        return;
+    }
+    const duplicateRowIndex = rows.value.findIndex(
+        row => row.id !== rowId && row.key.trim() === trimmedKey
+    );
+    if (duplicateRowIndex !== -1) {
+        rows.value.splice(duplicateRowIndex, 1);
+        emitUpdate();
+    }
+};
+
 watch(
     () => modelValue,
     (nextModelValue) => {
-        const currentJson = serializeToJson(rows.value);
-        const nextJson = nextModelValue ?? "";
+        const currentObject = serializeToObject(rows.value);
 
-        if (currentJson === nextJson) {
+        if (isEqual(currentObject, nextModelValue)) {
             return;
         }
-        rows.value = parseFromJson(nextJson);
+        rows.value = parseFromObject(nextModelValue);
     }
 );
 </script>

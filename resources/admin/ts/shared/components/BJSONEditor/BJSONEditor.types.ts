@@ -6,8 +6,10 @@ export type TJSONEditorRow = {
 
 export type TBJSONEditorErrorMessages = string | string[] | undefined;
 
+export type TJSONEditorValue = Record<string, string> | null;
+
 export type TBJSONEditorProps = {
-    modelValue?: string;
+    modelValue?: TJSONEditorValue;
     readonly?: boolean;
     errorMessages?: TBJSONEditorErrorMessages;
     label?: string;
