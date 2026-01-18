@@ -46,10 +46,6 @@ class LinkObserver
             return;
         }
 
-        if (!$linkable->shouldRegenerateChildLinks()) {
-            return;
-        }
-
         $linkable->updateDescendantLinks();
     }
 }

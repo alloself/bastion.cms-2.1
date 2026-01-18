@@ -11,8 +11,6 @@ trait HasLink
 
     abstract public function updateDescendantLinks(): void;
 
-    abstract public function shouldRegenerateChildLinks(): bool;
-
     public function links(): MorphMany
     {
         return $this->morphMany(Link::class, 'linkable');

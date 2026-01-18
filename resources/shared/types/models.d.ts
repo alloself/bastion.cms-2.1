@@ -27,6 +27,28 @@ export interface File {
   updated_at: string | null
   // relations
   fileables?: Fileable[]
+  audits?: AuditModel[]
+}
+
+export interface AuditModel {
+  // columns
+  id: string
+  user_type: string | null
+  user_id: string | null
+  event: string
+  auditable_type: string
+  auditable_id: string
+  old_values: Record<string, unknown> | null
+  new_values: Record<string, unknown> | null
+  url: string | null
+  ip_address: string | null
+  user_agent: string | null
+  tags: string | null
+  created_at: string | null
+  updated_at: string | null
+  // relations
+  auditable?: AuditModel
+  user?: AuditModel
 }
 
 export interface Template {
@@ -37,6 +59,8 @@ export interface Template {
   deleted_at: string | null
   created_at: string | null
   updated_at: string | null
+  // relations
+  audits?: AuditModel[]
 }
 
 export interface Page {
@@ -56,6 +80,7 @@ export interface Page {
   // relations
   template?: Template
   link?: Link
+  audits?: AuditModel[]
   parent?: Page
   children?: Page[]
   links?: Link[]
@@ -75,4 +100,5 @@ export interface Link {
   updated_at: string | null
   // relations
   linkable?: Link
+  audits?: AuditModel[]
 }

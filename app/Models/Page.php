@@ -11,11 +11,6 @@ class Page extends CRUDModel
 {
     use NodeTrait, HasLink;
 
-    public function shouldRegenerateChildLinks(): bool
-    {
-        return true;
-    }
-
     protected $fillable = ['index', 'meta', 'parent_id', 'template_id'];
 
 

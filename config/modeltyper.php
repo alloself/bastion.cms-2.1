@@ -339,8 +339,6 @@ return [
         // Models to ignore
         Illuminate\Notifications\DatabaseNotification::class,
         Laravel\Sanctum\PersonalAccessToken::class,
-        App\Models\AuditModel::class,
-        App\Models\CRUDModel::class,
         App\Models\Permission::class,
         App\Models\Role::class
     ],
