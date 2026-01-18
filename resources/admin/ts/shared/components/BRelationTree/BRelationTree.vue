@@ -10,9 +10,9 @@
             <VTextField
                 v-model="searchQuery"
                 density="compact"
-                variant="outlined"
+                variant="solo"
                 placeholder="Поиск..."
-                prepend-inner-icon="mdi-magnify"
+                append-inner-icon="mdi-magnify"
                 hide-details
                 clearable
                 single-line
@@ -226,6 +226,12 @@ watch(
         text-align: center;
         color: rgba(255, 255, 255, 0.5);
         font-size: 0.875rem;
+    }
+
+    &__search {
+        :deep(.v-field) {
+            box-shadow: none;
+        }
     }
 }
 </style>
