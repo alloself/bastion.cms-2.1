@@ -71,7 +71,7 @@
     <AuditHistoryDialog
         v-model="isAuditDialogVisible"
         :audits="audits"
-        :form-context="moduleFormContext"
+        :fields="fields"
     />
 </template>
 
