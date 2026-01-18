@@ -45,21 +45,17 @@
                     width="2"
                     class="mr-1"
                 />
-                <VIcon v-else size="small">
-                    {{ getNodeIcon(item, isOpen) }}
-                </VIcon>
+                <VIcon v-else size="small" :icon="getNodeIcon(item, isOpen)" />
             </template>
 
             <template #append="{ item }">
                 <VBtn
                     v-if="!readonly"
-                    icon
+                    icon="mdi-pencil"
                     variant="text"
                     size="x-small"
                     @click.stop="handleEditClick(item, $event)"
-                >
-                    <VIcon size="small">mdi-pencil</VIcon>
-                </VBtn>
+                />
             </template>
         </VTreeview>
 
