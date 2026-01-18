@@ -33,6 +33,7 @@ class PageResource extends JsonResource
             'children' => $this->whenLoaded('children', function () {
                 return PageResource::collection($this->children);
             }),
+            'audits' => $this->whenLoaded('audits'),
         ];
     }
 }

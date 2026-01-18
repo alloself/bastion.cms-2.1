@@ -35,8 +35,8 @@ export const pageModule: IModule<Page> = {
     },
     createForm: usePageForm,
     relations: {
-        list: ["template", "link"],
-        detail: ["template", "link", "children.link", "parent.link"],
+        list: ["link"],
+        detail: ["template", "link", "children.link", "parent.link",'audits.user'],
     },
     onEntityUpdate: (page, queryCache) => {
         const findDescendantsInCache = (parentId: string): string[] => {
