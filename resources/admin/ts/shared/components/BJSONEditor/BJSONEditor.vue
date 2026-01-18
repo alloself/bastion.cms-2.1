@@ -19,7 +19,9 @@
             <template #item.key="{ item }">
                 <VTextField
                     :model-value="item.key"
-                    @update:model-value="(newValue: string) => handleUpdateRow(item.id, 'key', newValue)"
+                    @update:model-value="
+                        (newValue: string) => handleUpdateRow(item.id, 'key', newValue)
+                    "
                     @blur="() => handleKeyBlur(item.id, item.key)"
                     density="compact"
                     variant="outlined"
@@ -34,7 +36,9 @@
             <template #item.value="{ item }">
                 <VTextField
                     :model-value="item.value"
-                    @update:model-value="(newValue: string) => handleUpdateRow(item.id, 'value', newValue)"
+                    @update:model-value="
+                        (newValue: string) => handleUpdateRow(item.id, 'value', newValue)
+                    "
                     density="compact"
                     variant="outlined"
                     placeholder="Введите значение"
@@ -47,14 +51,12 @@
             <template #item.actions="{ item }">
                 <VBtn
                     v-if="!readonly"
-                    icon
-                    variant="text"
-                    size="small"
+                    icon="mdi-delete"
+                    variant="flat"
+                    size="x-small"
                     color="error"
                     @click="handleRemoveRow(item.id)"
-                >
-                    <VIcon>mdi-delete</VIcon>
-                </VBtn>
+                />
             </template>
         </VDataTable>
 
@@ -76,129 +78,127 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
-import { isEqual, isPlainObject } from "lodash";
-import type { TBJSONEditorProps, TJSONEditorRow, TJSONEditorValue } from "./BJSONEditor.types";
-import { useNormalizedErrors } from "@/ts/shared/composables";
-import BTableLikeFieldWrapper from "@/ts/shared/components/BTableLikeFieldWrapper/BTableLikeFieldWrapper.vue";
+import { isEqual, isPlainObject } from 'lodash'
+import { ref, watch } from 'vue'
+
+import BTableLikeFieldWrapper from '@/ts/shared/components/BTableLikeFieldWrapper/BTableLikeFieldWrapper.vue'
+import { useNormalizedErrors } from '@/ts/shared/composables'
+
+import type { TBJSONEditorProps, TJSONEditorRow, TJSONEditorValue } from './BJSONEditor.types'
 
 const {
     modelValue = null,
     readonly = false,
     errorMessages,
     label,
-} = defineProps<TBJSONEditorProps>();
+} = defineProps<TBJSONEditorProps>()
 
 const emits = defineEmits<{
-    "update:modelValue": [value: TJSONEditorValue];
-}>();
+    'update:modelValue': [value: TJSONEditorValue]
+}>()
 
 const generateRowId = (): string => {
-    return crypto.randomUUID();
-};
+    return crypto.randomUUID()
+}
 
 const parseFromObject = (value: TJSONEditorValue): TJSONEditorRow[] => {
     if (!value || !isPlainObject(value)) {
-        return [];
+        return []
     }
 
     return Object.entries(value).map(([key, rowValue]) => ({
         id: generateRowId(),
         key,
-        value: String(rowValue ?? ""),
-    }));
-};
+        value: String(rowValue ?? ''),
+    }))
+}
 
-const rows = ref<TJSONEditorRow[]>(parseFromObject(modelValue));
+const rows = ref<TJSONEditorRow[]>(parseFromObject(modelValue))
 
 const tableHeaders = [
-    { title: "Ключ", key: "key", sortable: false },
-    { title: "Значение", key: "value", sortable: false },
-    { title: "Действия", key: "actions", sortable: false, width: "60px" },
-];
+    { title: 'Ключ', key: 'key', sortable: false },
+    { title: 'Значение', key: 'value', sortable: false },
+    { title: 'Действия', key: 'actions', sortable: false, width: '60px' },
+]
 
-const normalizedErrorMessages = useNormalizedErrors(() => errorMessages);
+const normalizedErrorMessages = useNormalizedErrors(() => errorMessages)
 
 const isDuplicateKey = (rowId: string, key: string): boolean => {
-    const trimmedKey = key.trim();
-    if (trimmedKey === "") {
-        return false;
+    const trimmedKey = key.trim()
+    if (trimmedKey === '') {
+        return false
     }
-    const firstRowWithSameKey = rows.value.find(row => row.key.trim() === trimmedKey);
-    return firstRowWithSameKey !== undefined && firstRowWithSameKey.id !== rowId;
-};
+    const firstRowWithSameKey = rows.value.find((row) => row.key.trim() === trimmedKey)
+    return firstRowWithSameKey !== undefined && firstRowWithSameKey.id !== rowId
+}
 
 const serializeToObject = (rowsData: TJSONEditorRow[]): TJSONEditorValue => {
-    const result: Record<string, string> = {};
+    const result: Record<string, string> = {}
 
     for (const row of rowsData) {
-        if (row.key.trim() !== "") {
-            result[row.key] = row.value;
+        if (row.key.trim() !== '') {
+            result[row.key] = row.value
         }
     }
 
-    return Object.keys(result).length ? result : {};
-};
+    return Object.keys(result).length ? result : {}
+}
 
 const emitUpdate = () => {
-    const value = serializeToObject(rows.value);
-    emits("update:modelValue", value);
-};
+    const value = serializeToObject(rows.value)
+    emits('update:modelValue', value)
+}
 
 const handleAddRow = () => {
     rows.value.push({
         id: generateRowId(),
-        key: "",
-        value: "",
-    });
-    emitUpdate();
-};
+        key: '',
+        value: '',
+    })
+    emitUpdate()
+}
 
 const handleRemoveRow = (rowId: string) => {
-    const rowIndex = rows.value.findIndex(({ id }) => id === rowId);
+    const rowIndex = rows.value.findIndex(({ id }) => id === rowId)
     if (rowIndex !== -1) {
-        rows.value.splice(rowIndex, 1);
-        emitUpdate();
+        rows.value.splice(rowIndex, 1)
+        emitUpdate()
     }
-};
+}
 
-const handleUpdateRow = (
-    rowId: string,
-    field: "key" | "value",
-    newValue: string
-) => {
-    const row = rows.value.find(({ id }) => id === rowId);
+const handleUpdateRow = (rowId: string, field: 'key' | 'value', newValue: string) => {
+    const row = rows.value.find(({ id }) => id === rowId)
     if (row) {
-        row[field] = newValue;
-        emitUpdate();
+        row[field] = newValue
+        emitUpdate()
     }
-};
+}
 
 const handleKeyBlur = (rowId: string, key: string) => {
-    const trimmedKey = key.trim();
+    const trimmedKey = key.trim()
     if (!trimmedKey) {
-        return;
+        return
     }
     const duplicateRowIndex = rows.value.findIndex(
-        row => row.id !== rowId && row.key.trim() === trimmedKey
-    );
+        (row) => row.id !== rowId && row.key.trim() === trimmedKey,
+    )
     if (duplicateRowIndex !== -1) {
-        rows.value.splice(duplicateRowIndex, 1);
-        emitUpdate();
+        rows.value.splice(duplicateRowIndex, 1)
+        emitUpdate()
     }
-};
+}
 
 watch(
     () => modelValue,
     (nextModelValue) => {
-        const currentObject = serializeToObject(rows.value);
+        const currentObject = serializeToObject(rows.value)
 
         if (isEqual(currentObject, nextModelValue)) {
-            return;
+            return
         }
-        rows.value = parseFromObject(nextModelValue);
-    }
-);
+        rows.value = parseFromObject(nextModelValue)
+    },
+)
 </script>
 
 <style scoped lang="scss">
