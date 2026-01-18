@@ -24,7 +24,7 @@
                         :readonly="readonly || schemeField.readonly"
                         @update:modelValue="handleChange"
                         :error-messages="errors"
-                        v-bind="schemeField.props || {}"
+                        v-bind="resolveFieldProps(schemeField.props)"
                         v-on="schemeField.events || {}"
                         class="mb-1"
                     />
@@ -34,15 +34,12 @@
     </form>
 </template>
 
-<script
-    lang="ts"
-    setup
-    generic="T extends GenericObject, K extends GenericObject"
->
-import { computed, watch } from "vue";
-import { useForm, Field, type GenericObject } from "vee-validate";
-import { z } from "zod";
-import type { TBSmartFormProps } from "./BSmartForm.types";
+<script lang="ts" setup generic="T extends GenericObject, K extends GenericObject">
+import { Field, type GenericObject, useForm } from 'vee-validate'
+import { computed, watch } from 'vue'
+import { z } from 'zod'
+
+import type { TBSmartFormProps, TFieldProps } from './BSmartForm.types'
 
 const {
     fields = [],
@@ -50,109 +47,113 @@ const {
     readonly = false,
     loading = false,
     layout,
-} = defineProps<TBSmartFormProps<T, K>>();
+} = defineProps<TBSmartFormProps<T, K>>()
 
 const emits = defineEmits<{
-    "update:form": [value: ReturnType<typeof useForm<T, K>>];
-}>();
+    'update:form': [value: ReturnType<typeof useForm<T, K>>]
+}>()
 
 const toGridAreaName = (key: string): string => {
-    return key.replace(/\./g, "-");
-};
+    return key.replace(/\./g, '-')
+}
 
 const mergedValidationSchema = computed(() => {
-    const schemaShape = fields.reduce<Record<string, z.ZodType>>(
-        (shape, field) => {
-            if (!field.rule) {
-                return shape;
-            }
-
-            return {
-                ...shape,
-                [field.key]: field.rule,
-            };
-        },
-        {}
-    );
-
-    return z.object(schemaShape);
-});
-
-const formGridStyle = computed<Record<string, string> | undefined>(() => {
-    const trimmedLayout = layout?.trim();
-    if (!trimmedLayout) {
-        return undefined;
-    }
-
-    const rowStrings = trimmedLayout.match(/"[^"]*"/g) ?? [];
-    const tokenRows = rowStrings.reduce<string[][]>((rows, rowString) => {
-        const rowTokens = rowString
-            .slice(1, -1)
-            .trim()
-            .split(/\s+/)
-            .filter(Boolean);
-
-        if (rowTokens.length > 0) {
-            rows.push(rowTokens);
+    const schemaShape = fields.reduce<Record<string, z.ZodType>>((shape, field) => {
+        if (!field.rule) {
+            return shape
         }
 
-        return rows;
-    }, []);
+        return {
+            ...shape,
+            [field.key]: field.rule,
+        }
+    }, {})
+
+    return z.object(schemaShape)
+})
+
+const formGridStyle = computed<Record<string, string> | undefined>(() => {
+    const trimmedLayout = layout?.trim()
+    if (!trimmedLayout) {
+        return undefined
+    }
+
+    const rowStrings = trimmedLayout.match(/"[^"]*"/g) ?? []
+    const tokenRows = rowStrings.reduce<string[][]>((rows, rowString) => {
+        const rowTokens = rowString.slice(1, -1).trim().split(/\s+/).filter(Boolean)
+
+        if (rowTokens.length > 0) {
+            rows.push(rowTokens)
+        }
+
+        return rows
+    }, [])
 
     const maxColumns = tokenRows.reduce<number>((currentMax, rowTokens) => {
-        return Math.max(currentMax, rowTokens.length);
-    }, 0);
+        return Math.max(currentMax, rowTokens.length)
+    }, 0)
     if (maxColumns === 0) {
-        return undefined;
+        return undefined
     }
 
     const usedFieldKeySet = new Set<string>(
         tokenRows
-            .reduce<string[]>(
-                (flatTokens, rowTokens) => flatTokens.concat(rowTokens),
-                []
-            )
-            .filter((token) => token !== ".")
-    );
+            .reduce<string[]>((flatTokens, rowTokens) => flatTokens.concat(rowTokens), [])
+            .filter((token) => token !== '.'),
+    )
 
     const gridTemplateAreaRows = tokenRows.map((rowTokens) => {
         const paddedTokens = [
             ...rowTokens.map(toGridAreaName),
-            ...new Array<string>(maxColumns - rowTokens.length).fill("."),
-        ];
+            ...new Array<string>(maxColumns - rowTokens.length).fill('.'),
+        ]
 
-        return `"${paddedTokens.join(" ")}"`;
-    });
+        return `"${paddedTokens.join(' ')}"`
+    })
 
     const additionalRows = fields.reduce<string[]>((rows, field) => {
         if (!usedFieldKeySet.has(field.key)) {
-            const areaName = toGridAreaName(field.key);
-            rows.push(
-                `"${new Array<string>(maxColumns).fill(areaName).join(" ")}"`
-            );
+            const areaName = toGridAreaName(field.key)
+            rows.push(`"${new Array<string>(maxColumns).fill(areaName).join(' ')}"`)
         }
-        return rows;
-    }, []);
+        return rows
+    }, [])
 
     return {
-        display: "grid",
-        gridTemplateAreas: [...gridTemplateAreaRows, ...additionalRows].join(
-            "\n"
-        ),
+        display: 'grid',
+        gridTemplateAreas: [...gridTemplateAreaRows, ...additionalRows].join('\n'),
         gridTemplateColumns: `repeat(${maxColumns}, minmax(0, 1fr))`,
-        gridAutoRows: "min-content",
-        columnGap: "8px",
-    };
-});
+        gridAutoRows: 'min-content',
+        columnGap: '8px',
+    }
+})
 
 const formContext = useForm<T, K>({
     validationSchema: mergedValidationSchema,
     initialValues: initialValues,
     keepValuesOnUnmount: true,
     validateOnMount: false,
-});
+})
 
-emits("update:form", formContext);
+const resolveFieldProps = (fieldProps: TFieldProps | undefined) => {
+    if (!fieldProps) {
+        return {}
+    }
+
+    return Object.entries(fieldProps).reduce<Record<string, unknown>>(
+        (resolvedProps, [propKey, propValue]) => {
+            if (typeof propValue === 'function') {
+                resolvedProps[propKey] = propValue(formContext.values)
+            } else {
+                resolvedProps[propKey] = propValue
+            }
+            return resolvedProps
+        },
+        {},
+    )
+}
+
+emits('update:form', formContext)
 
 watch(
     () => initialValues,
@@ -160,11 +161,11 @@ watch(
         if (newValues) {
             formContext.resetForm({
                 values: newValues,
-            });
+            })
         }
     },
-    { deep: true }
-);
+    { deep: true },
+)
 </script>
 
 <style lang="scss" scoped>

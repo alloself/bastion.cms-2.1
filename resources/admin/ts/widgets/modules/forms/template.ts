@@ -1,8 +1,7 @@
 import { computed } from "vue";
 import { z } from "zod";
 import type { Template } from "@shared/types/models";
-import type { ISmartFormField } from "@/ts/shared/types";
-import { BCodeEditor } from "@/ts/shared/components";
+import { BCodeEditor, type IBSmartFormField } from "@/ts/shared/components";
 
 const nameSchema = z
     .string()
@@ -21,7 +20,7 @@ export const templateSchema = z.object({
 export type TemplateFormValues = z.infer<typeof templateSchema>;
 
 export const useTemplateForm = (entity?: Template) => {
-    const fields = computed<ISmartFormField[]>(() => {
+    const fields = computed<IBSmartFormField[]>(() => {
         return [
             {
                 component: "v-text-field",

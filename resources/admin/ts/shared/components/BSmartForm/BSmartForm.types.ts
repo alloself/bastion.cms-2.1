@@ -3,10 +3,16 @@ import type { FormContext, GenericObject } from "vee-validate";
 import type { PartialDeep } from "type-fest";
 import type { z } from "zod";
 
+export type TDynamicPropValue<TValue = unknown> = (
+    formValues: GenericObject
+) => TValue;
+
+export type TFieldProps = Record<string, unknown | TDynamicPropValue>;
+
 export interface IBSmartFormField {
     component: Component | string;
     key: string;
-    props?: Record<string, unknown>;
+    props?: TFieldProps;
     events?: Record<string, Function>;
     rule?: z.ZodType;
     readonly?: boolean;

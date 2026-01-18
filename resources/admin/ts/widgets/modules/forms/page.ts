@@ -1,97 +1,101 @@
-import { computed } from "vue";
-import type { Page } from "@shared/types/models";
-import type { ISmartFormField } from "@/ts/shared/types";
+import type { Page } from '@shared/types/models'
+import { computed } from 'vue'
+
 import {
     BJSONEditor,
     BRelationAutocomplete,
     BRelationTree,
-} from "@/ts/shared/components";
+    type IBSmartFormField,
+} from '@/ts/shared/components'
+
+import { pageModule } from '..'
 
 export const usePageForm = (entity?: Page) => {
-    const fields = computed<ISmartFormField[]>(() => {
-        const baseFields: ISmartFormField[] = [
+    const fields = computed<IBSmartFormField[]>(() => {
+        const baseFields: IBSmartFormField[] = [
             {
-                component: "v-text-field",
-                key: "link.title",
+                component: 'v-text-field',
+                key: 'link.title',
                 props: {
-                    name: "link.title",
-                    label: "Заголовок",
-                    density: "compact",
-                    variant: "filled",
-                    rounded: "0",
+                    name: 'link.title',
+                    label: 'Заголовок',
+                    density: 'compact',
+                    variant: 'filled',
+                    rounded: '0',
                     clearable: true,
                 },
             },
             {
-                component: "v-text-field",
-                key: "link.url",
+                component: 'v-text-field',
+                key: 'link.url',
                 props: {
-                    name: "link.url",
-                    label: "Ссылка",
-                    density: "compact",
-                    variant: "filled",
-                    rounded: "0",
+                    name: 'link.url',
+                    label: 'Ссылка',
+                    density: 'compact',
+                    variant: 'filled',
+                    rounded: '0',
                     clearable: true,
                 },
             },
             {
                 component: BRelationAutocomplete,
-                key: "parent_id",
+                key: 'parent_id',
                 props: {
-                    endpoint: "page",
-                    itemTitle: "link.title",
-                    label: "Родительская страница",
-                    placeholder: "Выберите родителя",
+                    endpoint: 'page',
+                    itemTitle: 'link.title',
+                    label: 'Родительская страница',
+                    placeholder: 'Выберите родителя',
                     clearable: true,
-                    relations: ["link"],
+                    relations: ['link'],
+                    disabled: (formValues: Partial<Page>) => !!formValues.index,
                 },
             },
             {
                 component: BRelationAutocomplete,
-                key: "template_id",
+                key: 'template_id',
                 props: {
-                    endpoint: "template",
-                    itemTitle: "name",
-                    label: "Шаблон",
-                    placeholder: "Выберите шаблон",
+                    endpoint: 'template',
+                    itemTitle: 'name',
+                    label: 'Шаблон',
+                    placeholder: 'Выберите шаблон',
                 },
             },
             {
-                component: "v-checkbox",
-                key: "index",
+                component: 'v-checkbox',
+                key: 'index',
                 props: {
-                    name: "index",
-                    label: "Главная",
-                    density: "compact",
+                    name: 'index',
+                    label: 'Главная',
+                    density: 'compact',
                     hideDetails: true,
                 },
             },
             {
                 component: BJSONEditor,
-                key: "meta",
+                key: 'meta',
                 props: {
-                    name: "meta",
-                    label: "Мета-теги",
+                    name: 'meta',
+                    label: 'Мета-теги',
                 },
             },
-        ];
+        ]
 
         if (entity?.id) {
             baseFields.push({
                 component: BRelationTree,
-                key: "children",
+                key: 'children',
                 props: {
-                    endpoint: "page",
+                    module: pageModule,
                     parentId: entity.id,
-                    itemTitle: "link.title",
-                    label: "Дочерние страницы",
-                    relations: ["link"],
+                    itemTitle: 'link.title',
+                    label: 'Дочерние страницы',
+                    relations: ['link'],
                 },
-            });
+            })
         }
 
-        return baseFields;
-    });
+        return baseFields
+    })
 
     const layout = `
         "link.title link.title link.title"
@@ -99,7 +103,7 @@ export const usePageForm = (entity?: Page) => {
         "index template_id template_id"
         "parent_id parent_id parent_id"
         "children children children"
-    `;
+    `
 
     const createInitialValues = () => {
         return {
@@ -108,15 +112,15 @@ export const usePageForm = (entity?: Page) => {
             template_id: null,
             meta: null,
             link: {
-                title: "",
-                url: "",
+                title: '',
+                url: '',
             },
-        };
-    };
+        }
+    }
 
     return {
         fields,
         layout,
         createInitialValues,
-    };
-};
+    }
+}

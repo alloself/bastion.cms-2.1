@@ -136,8 +136,7 @@
 <script setup lang="ts" generic="T extends IBaseEntity">
 import { capitalize, computed, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
-import type { IModule } from "..";
-import type { IBaseEntity, ISortBy, TUUID } from "@/ts/shared/types";
+import type { IBaseEntity, IModule, ISortBy, TUUID } from "@/ts/shared/types";
 import {
     type ITab,
     useScreenNavigation,

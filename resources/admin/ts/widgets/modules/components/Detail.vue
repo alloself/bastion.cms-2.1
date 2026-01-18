@@ -99,8 +99,7 @@
 
 <script setup lang="ts" generic="T extends IBaseEntity">
 import { type ITab, useScreenNavigation } from "@/ts/features/screen";
-import type { IModule } from "..";
-import type { IBaseEntity, TUUID } from "@/ts/shared/types";
+import type { IBaseEntity, IModule, TUUID } from "@/ts/shared/types";
 import { BSmartForm } from "@/ts/shared/components";
 import type { FormContext } from "vee-validate";
 import { capitalize, computed, onMounted, ref, watch } from "vue";

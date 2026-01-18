@@ -1,6 +1,6 @@
 import { ref, computed } from "vue";
 import { z } from "zod";
-import type { ISmartFormField } from "../types";
+import type { IBSmartFormField } from "../components";
 
 const emailSchema = z
     .string()
@@ -27,7 +27,7 @@ export const useLoginFormFields = () => {
         showPassword.value = !showPassword.value;
     };
 
-    const fields = computed<ISmartFormField[]>(() => [
+    const fields = computed<IBSmartFormField[]>(() => [
         {
             component: "v-text-field",
             key: "email",

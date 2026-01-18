@@ -1,18 +1,45 @@
+import type { ComputedRef } from "vue";
+import type { QueryCache } from "@pinia/colada";
+import type { PartialDeep } from "type-fest";
+import type { IBSmartFormField } from "../components/BSmartForm";
+
+
 export interface IBaseEntity {
     id?: string;
 }
 
-export interface IBaseTreeEntity extends IBaseEntity {
-    children?: IBaseTreeEntity[];
+export interface IBaseTreeEntity<T extends IBaseEntity = IBaseEntity> extends IBaseEntity {
+    children?: T[];
     has_children: boolean;
 }
-
-export type { IBSmartFormField as ISmartFormField } from "../components/BSmartForm/BSmartForm.types";
 
 export interface ITableHeader {
     title: string;
     key: string;
     sortable?: boolean;
+}
+
+export interface IModuleForm<T extends IBaseEntity> {
+    fields: ComputedRef<IBSmartFormField[]>;
+    layout?: string;
+    createInitialValues: () => PartialDeep<T>;
+}
+
+export interface IModule<T extends IBaseEntity = IBaseEntity> {
+    key: string;
+    title: string;
+    icon?: string;
+    to?: string;
+    showInNavigation?: boolean;
+    isDefault?: boolean;
+    headers: ITableHeader[];
+    getDetailTabTitle(entity?: T | null): string;
+    createForm: (entity?: T) => IModuleForm<T>;
+    relations?: {
+        list?: string[];
+        detail?: string[];
+    };
+    onEntityUpdate?: (entity: T, queryCache: QueryCache) => void;
 }
 
 export type TUUID = `${string}-${string}-${string}-${string}-${string}`;

@@ -1,11 +1,5 @@
 import type { Page, Template } from "@shared/types/models";
-import type { ComputedRef } from "vue";
-import type { QueryCache } from "@pinia/colada";
-import type {
-    IBaseEntity,
-    ISmartFormField,
-    ITableHeader,
-} from "@/ts/shared/types";
+import type { IModule } from "@/ts/shared/types";
 
 import { capitalize } from "lodash";
 import { toKebabCase } from "@/ts/shared/helpers";
@@ -15,31 +9,9 @@ import type {
     RouteLocationNormalized,
 } from "vue-router";
 import { usePageForm, useTemplateForm } from "./forms";
-import type { PartialDeep } from "type-fest";
 
-export interface IModuleForm<T extends IBaseEntity> {
-    fields: ComputedRef<ISmartFormField[]>;
-    layout?: string;
-    createInitialValues: () => PartialDeep<T>;
-}
 
-export interface IModule<T extends IBaseEntity = IBaseEntity> {
-    key: string;
-    title: string;
-    icon?: string;
-    to?: string;
-    showInNavigation?: boolean;
-    isDefault?: boolean;
-    headers: ITableHeader[];
-    getDetailTabTitle(entity?: T | null): string;
-    createForm: (entity?: T) => IModuleForm<T>;
-    relations?: {
-        list?: string[];
-        detail?: string[];
-    };
-    onEntityUpdate?: (entity: T, queryCache: QueryCache) => void;
-}
-const pageModule: IModule<Page> = {
+export const pageModule: IModule<Page> = {
     key: "page",
     title: "Страницы",
     icon: "mdi-file",
