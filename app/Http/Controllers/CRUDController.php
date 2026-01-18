@@ -110,9 +110,16 @@ abstract class CRUDController extends Controller
     {
         $data = $this->getValidatedData($request);
         $modelClass = $this->model();
+        $relations = array_filter(explode(',', $request->input('relations', '')));
 
-        $entity = DB::transaction(function () use ($modelClass, $data) {
-            return $modelClass::createEntity($data);
+        $entity = DB::transaction(function () use ($modelClass, $data, $relations) {
+            $entity = $modelClass::createEntity($data);
+
+            if (count($relations) > 0) {
+                $entity->load($relations);
+            }
+
+            return $entity;
         });
 
         $resourceClass = $this->resource();
@@ -124,10 +131,15 @@ abstract class CRUDController extends Controller
     {
         $data = $this->getValidatedData($request);
         $modelClass = $this->model();
+        $relations = array_filter(explode(',', $request->input('relations', '')));
 
-        $entity = DB::transaction(function () use ($modelClass, $id, $data) {
+        $entity = DB::transaction(function () use ($modelClass, $id, $data, $relations) {
             $entity = $modelClass::showEntity($id);
             $entity->updateEntity($data);
+
+            if (count($relations) > 0) {
+                $entity->load($relations);
+            }
 
             return $entity;
         });

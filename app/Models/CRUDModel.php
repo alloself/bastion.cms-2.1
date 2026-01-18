@@ -8,10 +8,11 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use App\Models\Traits\HasAuditFieldsResolvers;
 
 abstract class CRUDModel extends Model implements AuditableContract
 {
-    use Auditable, HasUuids, SoftDeletes;
+    use Auditable, HasUuids, SoftDeletes, HasAuditFieldsResolvers;
 
     protected array $searchable = [];
 

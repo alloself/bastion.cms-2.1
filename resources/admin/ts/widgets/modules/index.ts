@@ -10,7 +10,6 @@ import type {
 } from "vue-router";
 import { usePageForm, useTemplateForm } from "./forms";
 
-
 export const pageModule: IModule<Page> = {
     key: "page",
     title: "Страницы",

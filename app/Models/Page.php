@@ -30,6 +30,14 @@ class Page extends CRUDModel
         'meta' => 'object',
     ];
 
+    protected function getAuditFieldResolvers(): array
+    {
+        return [
+            'template_id' => fn($id) => Template::find($id)?->name,
+            'parent_id' => fn($id) => self::with('link')->find($id)?->link?->title,
+        ];
+    }
+
     public function template(): BelongsTo
     {
         return $this->belongsTo(Template::class);

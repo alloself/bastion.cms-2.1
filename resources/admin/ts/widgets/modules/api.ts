@@ -60,18 +60,26 @@ export const createModuleDetailQuery = async <T extends IBaseEntity>(
     payload: Partial<T>,
 ) => {
     const url = `/api/admin/${module.key}`
-    const { data } = await client.post<T>(url, payload)
+    const { data } = await client.post<T>(url, payload, {
+        params: {
+            relations: module.relations?.detail?.join(','),
+        },
+    })
     return data
 }
 
 export const updateModuleDetailQuery = async <T extends IBaseEntity>(
     module: IModule<T>,
     id: TUUID,
-    data: Partial<T>,
+    payload: Partial<T>,
 ) => {
     const url = `/api/admin/${module.key}/${id}`
-    const { data: updatedData } = await client.patch<T>(url, data)
-    return updatedData
+    const { data } = await client.patch<T>(url, payload, {
+        params: {
+            relations: module.relations?.detail?.join(','),
+        },
+    })
+    return data
 }
 
 export const deleteModuleDetailQuery = async <T extends IBaseEntity>(
