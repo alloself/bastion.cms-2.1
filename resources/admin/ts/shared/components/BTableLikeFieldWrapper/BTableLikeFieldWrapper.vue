@@ -7,6 +7,7 @@
         }"
     >
         <div class="b-table-like-field-wrapper__container">
+            <div v-if="label || hasHeaderAppendSlot" class="b-table-like-field-wrapper__header">
             <div v-if="label" class="b-table-like-field-wrapper__label">
                 <VIcon
                     v-if="labelIcon"
@@ -16,6 +17,10 @@
                 />
                 <span>{{ label }}</span>
             </div>
+            <div v-if="hasHeaderAppendSlot" class="b-table-like-field-wrapper__header-append">
+                <slot name="header-append" />
+            </div>
+        </div>
 
             <div class="b-table-like-field-wrapper__content">
                 <slot />
@@ -58,11 +63,13 @@ defineProps<{
 defineSlots<{
     default(): unknown;
     actions(): unknown;
+    "header-append"(): unknown;
 }>();
 
 const slots = useSlots();
 
 const hasActionsSlot = computed(() => !!slots.actions);
+const hasHeaderAppendSlot = computed(() => !!slots["header-append"]);
 </script>
 
 <style scoped lang="scss">
@@ -75,14 +82,28 @@ const hasActionsSlot = computed(() => !!slots.actions);
         overflow: hidden;
     }
 
-    &__label {
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
         padding: 8px 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    &__label {
         font-size: 0.875rem;
         font-weight: 500;
         color: rgba(255, 255, 255, 0.7);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
         display: flex;
         align-items: center;
+        flex-shrink: 0;
+    }
+
+    &__header-append {
+        flex: 1;
+        max-width: 250px;
+        margin-left: auto;
     }
 
     &__content {

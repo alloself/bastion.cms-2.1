@@ -6,13 +6,30 @@
         :has-errors="normalizedErrorMessages.length > 0"
         :error-messages="normalizedErrorMessages"
     >
+        <template #header-append>
+            <VTextField
+                v-model="searchQuery"
+                density="compact"
+                variant="outlined"
+                placeholder="Поиск..."
+                prepend-inner-icon="mdi-magnify"
+                hide-details
+                clearable
+                single-line
+                class="b-relation-tree__search"
+            />
+        </template>
+
         <div v-if="!treeItems.length" class="b-relation-tree__empty">Нет дочерних элементов</div>
 
         <VTreeview
             v-else
             v-model:opened="openedNodes"
             :items="treeItems"
+            :search="searchQuery"
+            separate-roots
             :item-title="itemTitle"
+            indent-lines
             :item-value="itemValue"
             :item-children="itemChildren"
             :load-children="handleLoadChildren"
@@ -106,6 +123,7 @@ const { fetchChildren } = useFetchRelationTreeChildren()
 const treeItems = shallowRef<T[]>([])
 const openedNodes = ref<string[]>([])
 const loadingNodes = reactive<Set<string>>(new Set())
+const searchQuery = ref('')
 
 const prepareNodesForLazyLoad = (nodes: T[]) => {
     return nodes.map((node) => {
