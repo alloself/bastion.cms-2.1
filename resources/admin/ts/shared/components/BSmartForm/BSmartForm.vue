@@ -135,11 +135,7 @@ const formContext = useForm<T, K>({
     validateOnMount: false,
 })
 
-const resolveFieldProps = (fieldProps: TFieldProps | undefined) => {
-    if (!fieldProps) {
-        return {}
-    }
-
+const resolveFieldProps = (fieldProps: TFieldProps = {}) => {
     return Object.entries(fieldProps).reduce<Record<string, unknown>>(
         (resolvedProps, [propKey, propValue]) => {
             if (typeof propValue === 'function') {
