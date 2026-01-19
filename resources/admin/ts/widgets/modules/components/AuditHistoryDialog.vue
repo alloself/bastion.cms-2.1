@@ -159,38 +159,27 @@ const formatValue = (value: unknown) => {
     return String(value)
 }
 
-const getChangedFields = (audit: TAuditModelWithResolved) => {
-    const changedFields: IChangedField[] = []
-    const allKeys = new Set<string>()
+const getChangedFields = (audit: TAuditModelWithResolved): IChangedField[] => {
+    const oldKeys = Object.keys(audit.old_values ?? {})
+    const newKeys = Object.keys(audit.new_values ?? {})
+    const uniqueKeys = [...new Set([...oldKeys, ...newKeys])]
 
-    if (audit.old_values) {
-        Object.keys(audit.old_values).forEach((key) => allKeys.add(key))
-    }
-    if (audit.new_values) {
-        Object.keys(audit.new_values).forEach((key) => allKeys.add(key))
-    }
-
-    allKeys.forEach((key) => {
+    return uniqueKeys.reduce<IChangedField[]>((acc, key) => {
         if (ignoredFields.includes(key)) {
-            return
+            return acc
         }
 
         const resolved = audit.resolved_values?.[key]
-        const oldRaw = audit.old_values?.[key]
-        const newRaw = audit.new_values?.[key]
 
-        const oldValue = resolved?.old ?? formatValue(oldRaw)
-        const newValue = resolved?.new ?? formatValue(newRaw)
-
-        changedFields.push({
+        acc.push({
             key,
             label: getFieldLabel(key),
-            oldValue,
-            newValue,
+            oldValue: resolved?.old ?? formatValue(audit.old_values?.[key]),
+            newValue: resolved?.new ?? formatValue(audit.new_values?.[key]),
         })
-    })
 
-    return changedFields
+        return acc
+    }, [])
 }
 
 const getUserEmail = (audit: TAuditModelWithResolved) => {
