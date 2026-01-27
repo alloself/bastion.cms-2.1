@@ -280,11 +280,14 @@ const handleCreateClick = (event: MouseEvent) => {
     toScreenRoute({ name: `${capitalize(module.key)}Create` }, event);
 };
 
-const handleRowClick = async (_event: MouseEvent, { item }: { item: T }) => {
-    await toScreenRoute({
-        name: `${capitalize(module.key)}Detail`,
-        params: { id: item.id },
-    });
+const handleRowClick = async (event: MouseEvent, { item }: { item: T }) => {
+    await toScreenRoute(
+        {
+            name: `${capitalize(module.key)}Detail`,
+            params: { id: item.id },
+        },
+        event
+    );
 };
 
 const onDelete = () => {

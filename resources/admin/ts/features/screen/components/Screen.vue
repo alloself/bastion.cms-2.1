@@ -9,29 +9,26 @@
         @pointerdown="handleActivateScreen"
     >
         <VCardTitle
-            class="d-flex align-center px-2"
-            :class="{ 'ga-2': screen.tabs.size > 0 }"
+            ref="cardTitleRef"
+            class="d-flex align-center px-2 screen-card-title"
+            :class="{
+                'ga-2': screen.tabs.size > 0,
+                'screen-card-title--drop-target': isScreenDropTarget,
+            }"
         >
             <VSlideGroup v-model="selectedTabId" show-arrows item-value="id">
-                <VSlideGroupItem
-                    v-for="tab in screen.tabs.values()"
+                <DraggableTab
+                    v-for="(tab, tabIndex) in tabsArray"
                     :key="tab.id"
-                    :value="tab.id"
-                    v-slot="{ isSelected, toggle }"
-                >
-                    <VChip
-                        class="screen-chip mr-2"
-                        :color="isSelected ? 'primary' : ''"
-                        :prepend-icon="tab.icon"
-                        size="small"
-                        @click.stop="onTabClick(toggle, tab)"
-                        :closable="!isTabCloseDisabled"
-                        @click:close.prevent="onCloseTabClick(tab)"
-                        label
-                    >
-                        {{ tab.title }}
-                    </VChip>
-                </VSlideGroupItem>
+                    :tab="tab"
+                    :screen-id="screen.id"
+                    :index="tabIndex"
+                    :is-selected="screen.activeTabId === tab.id"
+                    :closable="!isTabCloseDisabled"
+                    :can-drag="canDragTab"
+                    @click="onDraggableTabClick(tab)"
+                    @close="onCloseTabClick(tab)"
+                />
             </VSlideGroup>
 
             <VBtn
@@ -90,10 +87,12 @@ import {
     useScreenResize,
     isVueComponent,
     resolveComponentExport,
+    useDroppableScreen,
 } from "../composables";
 
-import type { VCard } from "vuetify/components";
+import type { VCard, VCardTitle } from "vuetify/components";
 import ScreenTabLoading from "./ScreenTabLoading.vue";
+import DraggableTab from "./DraggableTab.vue";
 import { isObject } from "lodash";
 import { ACTIVE_SCREEN_KEY } from "@/ts/shared/const";
 
@@ -110,11 +109,19 @@ provide(ACTIVE_SCREEN_KEY, () => screenStore.activeScreen?.id === screen.id);
 
 const screenCardRef =
     useTemplateRef<InstanceType<typeof VCard>>("screenCardRef");
+const cardTitleRef =
+    useTemplateRef<InstanceType<typeof VCardTitle>>("cardTitleRef");
 
 const { isDragging, handleResizerPointerDown } = useScreenResize({
     screen: () => screen,
     nextScreen: () => nextScreen,
     screenCardRef,
+});
+
+const { isScreenDropTarget } = useDroppableScreen({
+    element: cardTitleRef,
+    screenId: screen.id,
+    tabsCount: screen.tabs.size,
 });
 
 const selectedTabId = ref<TUUID | null>(screen.activeTabId);
@@ -229,6 +236,12 @@ const isTabCloseDisabled = computed(() => {
     return screen.tabs.size <= 1;
 });
 
+const tabsArray = computed(() => Array.from(screen.tabs.values()));
+
+const canDragTab = computed(() => {
+    return screen.tabs.size > 1 || screenStore.screens.size > 1;
+});
+
 const handleActivateScreen = () => {
     const wasAlreadyActive = screenStore.activeScreen?.id === screen.id;
     screenStore.setActiveScreen(screen.id);
@@ -247,16 +260,12 @@ const isTabToggleDisabled = computed(() => {
     return screen.tabs.size === 1;
 });
 
-const onTabClick = (toggle: () => void, tab: ITab) => {
-    if (
-        isTabToggleDisabled.value ||
-        screen.activeTabId === tab.id ||
-        !tab.route
-    ) {
+const onDraggableTabClick = (tab: ITab) => {
+    if (isTabToggleDisabled.value || screen.activeTabId === tab.id || !tab.route) {
         return;
     }
-    toggle();
     screenStore.setActiveTab(screen.id, tab.id);
+    selectedTabId.value = tab.id;
 
     requestAnimationFrame(() => {
         router.replace(tab.route);
@@ -308,6 +317,14 @@ watch(
 </script>
 
 <style scoped lang="scss">
+.screen-card-title {
+    transition: background-color 0.2s ease;
+
+    &--drop-target {
+        background-color: rgba(var(--v-theme-primary), 0.1);
+    }
+}
+
 .screen {
     &-chip {
         cursor: pointer;
