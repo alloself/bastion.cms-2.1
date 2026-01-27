@@ -1,8 +1,7 @@
 export type TBRelationAutocompleteErrorMessages = string | string[] | undefined;
 
 export type TBRelationAutocompleteProps = {
-    modelValue?: string;
-    endpoint: string;
+    moduleKey: string;
     itemTitle?: string;
     itemValue?: string;
     label?: string;

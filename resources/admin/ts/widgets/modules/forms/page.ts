@@ -8,7 +8,7 @@ import {
     type IBSmartFormField,
 } from '@/ts/shared/components'
 
-import { pageModule } from '..'
+import { pageModule, templateModule } from '..'
 
 export const usePageForm = (entity?: Page) => {
     const fields = computed<IBSmartFormField[]>(() => {
@@ -41,7 +41,7 @@ export const usePageForm = (entity?: Page) => {
                 component: BRelationAutocomplete,
                 key: 'parent_id',
                 props: {
-                    endpoint: 'page',
+                    moduleKey: pageModule.key,
                     itemTitle: 'link.title',
                     label: 'Родительская страница',
                     placeholder: 'Выберите родителя',
@@ -54,7 +54,7 @@ export const usePageForm = (entity?: Page) => {
                 component: BRelationAutocomplete,
                 key: 'template_id',
                 props: {
-                    endpoint: 'template',
+                    moduleKey: templateModule.key,
                     itemTitle: 'name',
                     label: 'Шаблон',
                     placeholder: 'Выберите шаблон',

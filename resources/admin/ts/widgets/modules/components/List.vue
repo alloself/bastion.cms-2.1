@@ -143,6 +143,7 @@ import {
     useScreenStore,
 } from "@/ts/features/screen";
 import { useModuleListQuery } from "../queries";
+import { DEFAULT_PAGINATION_PARAMS } from "../const";
 
 const { module, tab } = defineProps<{
     module: IModule<T>;
@@ -151,7 +152,7 @@ const { module, tab } = defineProps<{
 
 const selectedItems = ref<TUUID[]>([]);
 
-const parseSortByFromUrl = (url: URL): ISortBy[] => {
+const parseSortByFromUrl = (url: URL) => {
     const sortByParams = url.searchParams.getAll("sortBy[]");
 
     return sortByParams.reduce<ISortBy[]>((result, param) => {
@@ -166,9 +167,9 @@ const parseSortByFromUrl = (url: URL): ISortBy[] => {
 const parseQueryTableState = (tab: ITab) => {
     const url = new URL(tab.route, window.location.origin);
 
-    const page = parseInt(url.searchParams.get("page") || "1");
-    const perPage = parseInt(url.searchParams.get("per_page") || "10");
-    const search = url.searchParams.get("search") ?? "";
+    const page = parseInt(url.searchParams.get("page") || String(DEFAULT_PAGINATION_PARAMS.page));
+    const perPage = parseInt(url.searchParams.get("per_page") || String(DEFAULT_PAGINATION_PARAMS.perPage));
+    const search = url.searchParams.get("search") ?? DEFAULT_PAGINATION_PARAMS.search;
     const sortBy = parseSortByFromUrl(url);
 
     return {
@@ -198,10 +199,10 @@ const isLoading = computed(() => asyncStatus.value === "loading");
 const buildQuery = () => {
     const query: Record<string, string | string[]> = {};
 
-    if (tableState.page !== 1) {
+    if (tableState.page !== DEFAULT_PAGINATION_PARAMS.page) {
         query.page = String(tableState.page);
     }
-    if (tableState.perPage !== 10) {
+    if (tableState.perPage !== DEFAULT_PAGINATION_PARAMS.perPage) {
         query.per_page = String(tableState.perPage);
     }
     if (tableState.search.trim() !== "") {

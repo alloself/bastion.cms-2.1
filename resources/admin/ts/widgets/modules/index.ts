@@ -70,7 +70,7 @@ export const pageModule: IModule<Page> = {
     },
 };
 
-const templateModule: IModule<Template> = {
+export const templateModule: IModule<Template> = {
     key: "template",
     title: "Шаблоны",
     icon: "mdi-code-greater-than-or-equal",

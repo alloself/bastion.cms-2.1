@@ -1,10 +1,9 @@
 <template>
     <VAutocomplete
         class="b-relation-autocomplete"
-        :model-value="modelValue"
         :items="items"
         :item-title="itemTitle"
-        :item-value="itemValue"
+        item-value="id"
         :label="label"
         :placeholder="placeholder"
         :readonly="readonly"
@@ -15,7 +14,7 @@
         variant="filled"
         rounded="0"
         clearable
-        @update:model-value="handleUpdateModelValue"
+        v-model="modelValue"
         @update:search="handleSearchUpdate"
     >
         <template #prepend>
@@ -55,30 +54,25 @@
                 v-intersect="handleIntersect"
                 class="b-relation-autocomplete__load-more"
             >
-                <VProgressCircular
-                    v-if="isLoadingMore"
-                    indeterminate
-                    size="24"
-                    width="2"
-                />
+                <VProgressCircular v-if="isLoadingMore" indeterminate size="24" width="2" />
             </div>
         </template>
     </VAutocomplete>
 </template>
 
 <script setup lang="ts">
-import { capitalize, computed, ref } from "vue";
-import { refDebounced } from "@vueuse/core";
-import { useInfiniteRelationSearch } from "@/ts/shared/composables";
-import { useScreenNavigation } from "@/ts/features/screen";
-import type { TBRelationAutocompleteProps } from "./BRelationAutocomplete.types";
-import type { IBaseEntity } from "../..";
+import { refDebounced } from '@vueuse/core'
+import { capitalize, computed, ref } from 'vue'
+
+import { useScreenNavigation } from '@/ts/features/screen'
+import { useInfiniteRelationSearch } from '@/ts/shared/composables'
+
+import type { IBaseEntity } from '../..'
+import type { TBRelationAutocompleteProps } from './BRelationAutocomplete.types'
 
 const {
-    modelValue,
-    endpoint,
+    moduleKey,
     itemTitle = 'name',
-    itemValue = 'id',
     label,
     placeholder,
     readonly = false,
@@ -86,71 +80,58 @@ const {
     errorMessages,
     debounceMs = 300,
     relations = [],
-} = defineProps<TBRelationAutocompleteProps>();
+} = defineProps<TBRelationAutocompleteProps>()
 
-const emits = defineEmits<{
-    "update:modelValue": [value: string | undefined];
-}>();
+const modelValue = defineModel<IBaseEntity['id'] | undefined>()
 
-const { toScreenRoute } = useScreenNavigation();
+const { toScreenRoute } = useScreenNavigation()
 
-const searchInput = ref("");
-const debouncedSearch = refDebounced(searchInput, debounceMs);
+const searchInput = ref('')
+const debouncedSearch = refDebounced(searchInput, debounceMs)
 
-const {
-    items,
-    hasMore,
-    isLoadingMore,
-    isInitialLoading,
-    loadMore,
-} = useInfiniteRelationSearch<IBaseEntity>(endpoint, debouncedSearch, relations);
+const { items, hasMore, isLoadingMore, isInitialLoading, loadMore } =
+    useInfiniteRelationSearch<IBaseEntity>(moduleKey, debouncedSearch, relations)
 
-const isLoading = computed(
-    () => loading || isInitialLoading.value
-);
+const isLoading = computed(() => loading || isInitialLoading.value)
 
 const noDataText = computed(() => {
     if (isInitialLoading.value) {
-        return "Загрузка...";
+        return 'Загрузка...'
     }
-    return "Ничего не найдено";
-});
+    return 'Ничего не найдено'
+})
 
-const handleUpdateModelValue = (value: string | null) => {
-    emits("update:modelValue", value ?? undefined);
-};
-
-const handleSearchUpdate = (value: string = "") => {
-    searchInput.value = value;
-};
+const handleSearchUpdate = (value: string = '') => {
+    searchInput.value = value
+}
 
 const handleIntersect = (isIntersecting: boolean) => {
     if (isIntersecting) {
-        loadMore();
+        loadMore()
     }
-};
+}
 
 const handleEditClick = async (event: MouseEvent) => {
     if (!modelValue) {
-        return;
+        return
     }
     await toScreenRoute(
         {
-            name: `${capitalize(endpoint)}Detail`,
-            params: { id: modelValue },
+            name: `${capitalize(moduleKey)}Detail`,
+            params: { id: modelValue.value },
         },
-        event
-    );
-};
+        event,
+    )
+}
 
 const handleCreateClick = async (event: MouseEvent) => {
     await toScreenRoute(
         {
-            name: `${capitalize(endpoint)}Create`,
+            name: `${capitalize(moduleKey)}Create`,
         },
-        event
-    );
-};
+        event,
+    )
+}
 </script>
 
 <style scoped lang="scss">

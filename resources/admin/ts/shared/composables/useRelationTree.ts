@@ -33,6 +33,7 @@ export const useFetchRelationTreeChildren = () => {
         const entry = queryCache.ensure({
             key: queryKey,
             query: () => fetchTreeChildren<T>(endpoint, parentId, relations),
+            gcTime:  1000 * 60 * 5,
         })
 
         await queryCache.refresh(entry)
