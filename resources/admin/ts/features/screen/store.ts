@@ -90,7 +90,7 @@ export const useScreenStore = defineStore("screen", () => {
         () => activeScreenId.value && screens.get(activeScreenId.value)
     );
 
-    const getScreenWidth = (screenId: TUUID): number => {
+    const getScreenWidth = (screenId: TUUID) => {
         const screen = screens.get(screenId);
         if (!screen) {
             return 0;
@@ -102,7 +102,7 @@ export const useScreenStore = defineStore("screen", () => {
         return totalScreens > 0 ? 100 / totalScreens : 100;
     };
 
-    const cloneActiveTabFromActiveScreen = (): ITab | null => {
+    const cloneActiveTabFromActiveScreen = () => {
         const activeTabId = activeScreen.value?.activeTabId;
         if (!activeScreen.value || !activeTabId) {
             return null;
@@ -249,7 +249,7 @@ export const useScreenStore = defineStore("screen", () => {
         }
     };
 
-    const removeTab = (screenId: TUUID, tabId: TUUID): ITab | null => {
+    const removeTab = (screenId: TUUID, tabId: TUUID) => {
         const screen = screens.get(screenId);
         if (!screen) {
             return null;
@@ -301,7 +301,7 @@ export const useScreenStore = defineStore("screen", () => {
         deltaPercent: number,
         startScreenWidth: number,
         startNextScreenWidth: number
-    ): number | null => {
+    ) => {
         const screen = screens.get(screenId);
         const nextScreen = screens.get(nextScreenId);
         if (!screen || !nextScreen) {
