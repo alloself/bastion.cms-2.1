@@ -295,117 +295,6 @@ export const useScreenStore = defineStore("screen", () => {
         normalizeScreenWidths();
     };
 
-    const reorderTabs = (
-        screenId: TUUID,
-        fromIndex: number,
-        toIndex: number
-    ) => {
-        const screen = screens.get(screenId);
-        if (!screen) {
-            return;
-        }
-
-        const tabsArray = Array.from(screen.tabs.values());
-        if (fromIndex < 0 || fromIndex >= tabsArray.length) {
-            return;
-        }
-        if (toIndex < 0 || toIndex >= tabsArray.length) {
-            return;
-        }
-        if (fromIndex === toIndex) {
-            return;
-        }
-
-        const [movedTab] = tabsArray.splice(fromIndex, 1);
-        if (!movedTab) {
-            return;
-        }
-        tabsArray.splice(toIndex, 0, movedTab);
-
-        screen.tabs = new Map(tabsArray.map((tab) => [tab.id, tab]));
-    };
-
-    const moveTabToScreen = (
-        sourceScreenId: TUUID,
-        tabId: TUUID,
-        targetScreenId: TUUID,
-        targetIndex: number
-    ) => {
-        const sourceScreen = screens.get(sourceScreenId);
-        const targetScreen = screens.get(targetScreenId);
-
-        if (!sourceScreen || !targetScreen) {
-            return;
-        }
-
-        if (sourceScreen.tabs.size <= 1) {
-            return;
-        }
-
-        const tab = sourceScreen.tabs.get(tabId);
-        if (!tab) {
-            return;
-        }
-
-        const wasActiveInSource = sourceScreen.activeTabId === tabId;
-        sourceScreen.tabs.delete(tabId);
-
-        if (wasActiveInSource) {
-            const remainingTabs = Array.from(sourceScreen.tabs.values());
-            sourceScreen.activeTabId = remainingTabs[0]?.id ?? null;
-        }
-
-        const targetTabsArray = Array.from(targetScreen.tabs.values());
-        const clampedIndex = Math.max(
-            0,
-            Math.min(targetIndex, targetTabsArray.length)
-        );
-        targetTabsArray.splice(clampedIndex, 0, tab);
-
-        targetScreen.tabs = new Map(targetTabsArray.map((t) => [t.id, t]));
-        targetScreen.activeTabId = tab.id;
-        activeScreenId.value = targetScreenId;
-    };
-
-    const cloneTabToScreen = (
-        sourceScreenId: TUUID,
-        tabId: TUUID,
-        targetScreenId: TUUID,
-        targetIndex: number
-    ) => {
-        const sourceScreen = screens.get(sourceScreenId);
-        const targetScreen = screens.get(targetScreenId);
-
-        if (!sourceScreen || !targetScreen) {
-            return null;
-        }
-
-        const sourceTab = sourceScreen.tabs.get(tabId);
-        if (!sourceTab) {
-            return null;
-        }
-
-        const clonedTab: ITab = {
-            id: crypto.randomUUID(),
-            title: sourceTab.title,
-            route: sourceTab.route,
-            icon: sourceTab.icon,
-        };
-
-        const targetTabsArray = Array.from(targetScreen.tabs.values());
-        const clampedIndex = Math.max(
-            0,
-            Math.min(targetIndex, targetTabsArray.length)
-        );
-        targetTabsArray.splice(clampedIndex, 0, clonedTab);
-
-        targetScreen.tabs = new Map(targetTabsArray.map((t) => [t.id, t]));
-        targetScreen.activeTabId = clonedTab.id;
-        activeScreenId.value = targetScreenId;
-
-        return clonedTab;
-    };
-
     const resizeScreens = (
         screenId: TUUID,
         nextScreenId: TUUID,
@@ -455,8 +344,5 @@ export const useScreenStore = defineStore("screen", () => {
         normalizeScreenWidths,
         getScreenWidth,
         resizeScreens,
-        reorderTabs,
-        moveTabToScreen,
-        cloneTabToScreen,
     };
 });

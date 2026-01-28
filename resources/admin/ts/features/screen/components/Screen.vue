@@ -12,31 +12,32 @@
             ref="cardTitleRef"
             class="d-flex align-center px-2 screen-card-title"
             :class="{
-                'ga-2': screen.tabs.size > 0,
-                'screen-card-title--drop-target': isScreenDropTarget,
+                'ga-2': screen.tabs.size,
             }"
         >
             <VSlideGroup v-model="selectedTabId" show-arrows item-value="id">
-                <DraggableTab
-                    v-for="(tab, tabIndex) in tabsArray"
+                <VSlideGroupItem
+                    v-for="tab in screen.tabs.values()"
                     :key="tab.id"
-                    :tab="tab"
-                    :screen-id="screen.id"
-                    :index="tabIndex"
-                    :is-selected="screen.activeTabId === tab.id"
-                    :closable="!isTabCloseDisabled"
-                    :can-drag="canDragTab"
-                    @click="onDraggableTabClick(tab)"
-                    @close="onCloseTabClick(tab)"
-                />
+                    :value="tab.id"
+                    v-slot="{ isSelected, toggle }"
+                >
+                    <VChip
+                        class="screen-chip mr-2"
+                        :color="isSelected ? 'primary' : ''"
+                        :prepend-icon="tab.icon"
+                        size="small"
+                        @click.stop="onTabClick(toggle, tab)"
+                        :closable="!isTabCloseDisabled"
+                        @click:close.prevent="onCloseTabClick(tab)"
+                        label
+                    >
+                        {{ tab.title }}
+                    </VChip>
+                </VSlideGroupItem>
             </VSlideGroup>
 
-            <VBtn
-                size="x-small"
-                icon="mdi-plus"
-                variant="flat"
-                @click="onAddTabClick"
-            />
+            <VBtn size="x-small" icon="mdi-plus" variant="flat" @click="onAddTabClick" />
             <VSpacer></VSpacer>
             <VBtn
                 size="x-small"
@@ -71,260 +72,217 @@
 </template>
 
 <script setup lang="ts">
-import {
-    computed,
-    defineAsyncComponent,
-    ref,
-    watch,
-    useTemplateRef,
-    provide,
-} from "vue";
-import type { Component } from "vue";
-import { useRouter, type RouteLocationResolved } from "vue-router";
-import { useScreenStore, type IScreen, type ITab } from "..";
-import type { TUUID } from "@/ts/shared/types";
-import {
-    useScreenResize,
-    isVueComponent,
-    resolveComponentExport,
-    useDroppableScreen,
-} from "../composables";
+import { isObject } from 'lodash'
+import { computed, defineAsyncComponent, provide, ref, useTemplateRef, watch } from 'vue'
+import type { Component } from 'vue'
+import { type RouteLocationResolved, useRouter } from 'vue-router'
+import type { VCard, VCardTitle } from 'vuetify/components'
 
-import type { VCard, VCardTitle } from "vuetify/components";
-import ScreenTabLoading from "./ScreenTabLoading.vue";
-import DraggableTab from "./DraggableTab.vue";
-import { isObject } from "lodash";
-import { ACTIVE_SCREEN_KEY } from "@/ts/shared/const";
+import { ACTIVE_SCREEN_KEY } from '@/ts/shared/const'
+import type { TUUID } from '@/ts/shared/types'
+
+import { type IScreen, type ITab, useScreenStore } from '..'
+import { isVueComponent, resolveComponentExport, useScreenResize } from '../composables'
+import ScreenTabLoading from './ScreenTabLoading.vue'
 
 const { screen, isLast, nextScreen } = defineProps<{
-    screen: IScreen;
-    isLast: boolean;
-    nextScreen?: IScreen;
-}>();
+    screen: IScreen
+    isLast: boolean
+    nextScreen?: IScreen
+}>()
 
-const screenStore = useScreenStore();
-const router = useRouter();
+const screenStore = useScreenStore()
+const router = useRouter()
 
-provide(ACTIVE_SCREEN_KEY, () => screenStore.activeScreen?.id === screen.id);
+provide(ACTIVE_SCREEN_KEY, () => screenStore.activeScreen?.id === screen.id)
 
-const screenCardRef =
-    useTemplateRef<InstanceType<typeof VCard>>("screenCardRef");
-const cardTitleRef =
-    useTemplateRef<InstanceType<typeof VCardTitle>>("cardTitleRef");
+const screenCardRef = useTemplateRef<InstanceType<typeof VCard>>('screenCardRef')
 
 const { isDragging, handleResizerPointerDown } = useScreenResize({
     screen: () => screen,
     nextScreen: () => nextScreen,
     screenCardRef,
-});
+})
 
-const { isScreenDropTarget } = useDroppableScreen({
-    element: cardTitleRef,
-    screenId: screen.id,
-    tabsCount: screen.tabs.size,
-});
-
-const selectedTabId = ref<TUUID | null>(screen.activeTabId);
+const selectedTabId = ref<TUUID | null>(screen.activeTabId)
 
 const renderComponent = (routeComponent: unknown): Component | null => {
     if (!routeComponent) {
-        return null;
+        return null
     }
 
-    if (typeof routeComponent === "function") {
+    if (typeof routeComponent === 'function') {
         const asyncComponent = defineAsyncComponent({
             loader: async () => {
                 try {
-                    const resolvedExport = resolveComponentExport(
-                        await routeComponent()
-                    );
+                    const resolvedExport = resolveComponentExport(await routeComponent())
 
                     if (isVueComponent(resolvedExport)) {
-                        return resolvedExport;
+                        return resolvedExport
                     }
 
-                    throw new Error("Failed to load screen tab component.");
+                    throw new Error('Failed to load screen tab component.')
                 } catch (error) {
-                    console.error(error);
-                    throw error;
+                    console.error(error)
+                    throw error
                 }
             },
             loadingComponent: ScreenTabLoading,
-        });
+        })
 
-        return asyncComponent;
+        return asyncComponent
     }
 
     if (isVueComponent(routeComponent)) {
-        return routeComponent;
+        return routeComponent
     }
 
-    return null;
-};
+    return null
+}
 
-const extractRouteProps = (
-    propsConfig: unknown,
-    route: RouteLocationResolved
-) => {
+const extractRouteProps = (propsConfig: unknown, route: RouteLocationResolved) => {
     if (!propsConfig) {
-        return {};
+        return {}
     }
-    if (typeof propsConfig === "function") {
-        const result = propsConfig(route);
+    if (typeof propsConfig === 'function') {
+        const result = propsConfig(route)
         if (isObject(result)) {
-            return result;
+            return result
         }
-        return {};
+        return {}
     }
     if (isObject(propsConfig)) {
-        return propsConfig;
+        return propsConfig
     }
-    return {};
-};
+    return {}
+}
 
 const activeTab = computed(() => {
     if (!screen.activeTabId) {
-        return null;
+        return null
     }
-    return screen.tabs.get(screen.activeTabId) || null;
-});
+    return screen.tabs.get(screen.activeTabId) || null
+})
 
 const activeTabKey = computed(() => {
     if (!activeTab.value) {
-        return null;
+        return null
     }
-    return `${activeTab.value.id}-${activeTab.value.route}`;
-});
+    return `${activeTab.value.id}-${activeTab.value.route}`
+})
 
 const resolvedTabRoute = computed(() => {
     if (!activeTab.value) {
-        return null;
+        return null
     }
-    return router.resolve(activeTab.value.route);
-});
+    return router.resolve(activeTab.value.route)
+})
 
 const activeTabRoute = computed(() => {
     if (!resolvedTabRoute.value) {
-        return null;
+        return null
     }
-    const { matched } = resolvedTabRoute.value;
-    return matched[matched.length - 1] ?? null;
-});
+    const { matched } = resolvedTabRoute.value
+    return matched[matched.length - 1] ?? null
+})
 
 const activeTabComponent = computed(() => {
     if (!activeTabRoute.value) {
-        return null;
+        return null
     }
-    const component = activeTabRoute.value.components?.default;
+    const component = activeTabRoute.value.components?.default
     if (!component) {
-        return null;
+        return null
     }
-    return renderComponent(component);
-});
+    return renderComponent(component)
+})
 
 const activeTabProps = computed(() => {
     if (!activeTabRoute.value || !resolvedTabRoute.value) {
-        return {};
+        return {}
     }
-    return extractRouteProps(
-        activeTabRoute.value.props.default,
-        resolvedTabRoute.value
-    );
-});
+    return extractRouteProps(activeTabRoute.value.props.default, resolvedTabRoute.value)
+})
 
 const isTabCloseDisabled = computed(() => {
-    return screen.tabs.size <= 1;
-});
-
-const tabsArray = computed(() => Array.from(screen.tabs.values()));
-
-const canDragTab = computed(() => {
-    return screen.tabs.size > 1 || screenStore.screens.size > 1;
-});
+    return screen.tabs.size <= 1
+})
 
 const handleActivateScreen = () => {
-    const wasAlreadyActive = screenStore.activeScreen?.id === screen.id;
-    screenStore.setActiveScreen(screen.id);
+    const wasAlreadyActive = screenStore.activeScreen?.id === screen.id
+    screenStore.setActiveScreen(screen.id)
 
     if (wasAlreadyActive || !activeTab.value?.route) {
-        return;
+        return
     }
 
-    const targetRoute = activeTab.value.route;
+    const targetRoute = activeTab.value.route
     requestAnimationFrame(() => {
-        router.replace(targetRoute);
-    });
-};
+        router.replace(targetRoute)
+    })
+}
 
 const isTabToggleDisabled = computed(() => {
-    return screen.tabs.size === 1;
-});
+    return screen.tabs.size === 1
+})
 
-const onDraggableTabClick = (tab: ITab) => {
+const onTabClick = (toggle: () => void, tab: ITab) => {
     if (isTabToggleDisabled.value || screen.activeTabId === tab.id || !tab.route) {
-        return;
+        return
     }
-    screenStore.setActiveTab(screen.id, tab.id);
-    selectedTabId.value = tab.id;
+    toggle()
+    screenStore.setActiveTab(screen.id, tab.id)
 
     requestAnimationFrame(() => {
-        router.replace(tab.route);
-    });
-};
+        router.replace(tab.route)
+    })
+}
 
 const onCloseTabClick = (tab: ITab) => {
-    const nextTab = screenStore.removeTab(screen.id, tab.id);
+    const nextTab = screenStore.removeTab(screen.id, tab.id)
     if (nextTab) {
         requestAnimationFrame(() => {
-            router.push(nextTab.route);
-        });
+            router.push(nextTab.route)
+        })
     }
-};
+}
 
 const onAddTabClick = () => {
-    const currentRoute = router.currentRoute.value;
-    screenStore.openRouteTab(screen, currentRoute);
-};
+    const currentRoute = router.currentRoute.value
+    screenStore.openRouteTab(screen, currentRoute)
+}
 
 const onRemoveScreen = () => {
     if (screenStore.screens.size <= 1) {
-        return;
+        return
     }
-    screenStore.removeScreen(screen.id);
-};
+    screenStore.removeScreen(screen.id)
+}
 
 watch(
     () => screen.activeTabId,
     (newId) => {
-        selectedTabId.value = newId;
-    }
-);
+        selectedTabId.value = newId
+    },
+)
 
 watch(
     () => selectedTabId.value,
     (newId) => {
         if (newId && newId !== screen.activeTabId) {
-            const tab = screen.tabs.get(newId);
+            const tab = screen.tabs.get(newId)
             if (tab) {
-                screenStore.setActiveTab(screen.id, newId);
+                screenStore.setActiveTab(screen.id, newId)
                 requestAnimationFrame(() => {
-                    router.replace(tab.route);
-                });
+                    router.replace(tab.route)
+                })
             }
         }
-    }
-);
+    },
+)
 </script>
 
 <style scoped lang="scss">
-.screen-card-title {
-    transition: background-color 0.2s ease;
-
-    &--drop-target {
-        background-color: rgba(var(--v-theme-primary), 0.1);
-    }
-}
-
 .screen {
     &-chip {
         cursor: pointer;
