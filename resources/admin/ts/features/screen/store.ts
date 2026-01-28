@@ -331,6 +331,45 @@ export const useScreenStore = defineStore("screen", () => {
         return newScreenWidth;
     };
 
+    const moveTabToScreen = (
+        tabId: TUUID,
+        sourceScreenId: TUUID,
+        targetScreenId: TUUID
+    ) => {
+        if (sourceScreenId === targetScreenId) {
+            return false;
+        }
+
+        const sourceScreen = screens.get(sourceScreenId);
+        const targetScreen = screens.get(targetScreenId);
+
+        if (!sourceScreen || !targetScreen) {
+            return false;
+        }
+
+        if (sourceScreen.tabs.size <= 1) {
+            return false;
+        }
+
+        const tab = sourceScreen.tabs.get(tabId);
+        if (!tab) {
+            return false;
+        }
+
+        sourceScreen.tabs.delete(tabId);
+
+        if (sourceScreen.activeTabId === tabId) {
+            const [firstRemainingTab] = sourceScreen.tabs.values();
+            sourceScreen.activeTabId = firstRemainingTab?.id ?? null;
+        }
+
+        targetScreen.tabs.set(tabId, tab);
+        targetScreen.activeTabId = tabId;
+        activeScreenId.value = targetScreenId;
+
+        return true;
+    };
+
     return {
         screens,
         activeScreen,
@@ -344,5 +383,6 @@ export const useScreenStore = defineStore("screen", () => {
         normalizeScreenWidths,
         getScreenWidth,
         resizeScreens,
+        moveTabToScreen,
     };
 });

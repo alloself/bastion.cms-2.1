@@ -13,7 +13,12 @@
             class="d-flex align-center px-2 screen-card-title"
             :class="{
                 'ga-2': screen.tabs.size,
+                'screen-card-title--drag-over': isDragOver,
             }"
+            @dragover="handleDragOver"
+            @dragenter="handleDragEnter"
+            @dragleave="handleDragLeave"
+            @drop="handleDrop"
         >
             <VSlideGroup v-model="selectedTabId" show-arrows item-value="id">
                 <VSlideGroupItem
@@ -24,12 +29,17 @@
                 >
                     <VChip
                         class="screen-chip mr-2"
+                        :class="{ 'screen-chip--draggable': !isTabCloseDisabled }"
                         :color="isSelected ? 'primary' : ''"
                         :prepend-icon="tab.icon"
                         size="small"
                         @click.stop="onTabClick(toggle, tab)"
                         :closable="!isTabCloseDisabled"
                         @click:close.prevent="onCloseTabClick(tab)"
+                        :draggable="!isTabCloseDisabled"
+                        @dragstart="handleDragStart($event, tab)"
+                        @drag="handleDrag"
+                        @dragend="handleDragEnd"
                         label
                     >
                         {{ tab.title }}
@@ -82,7 +92,7 @@ import { ACTIVE_SCREEN_KEY } from '@/ts/shared/const'
 import type { TUUID } from '@/ts/shared/types'
 
 import { type IScreen, type ITab, useScreenStore } from '..'
-import { isVueComponent, resolveComponentExport, useScreenResize } from '../composables'
+import { isVueComponent, resolveComponentExport, useScreenResize, useTabDragDrop } from '../composables'
 import ScreenTabLoading from './ScreenTabLoading.vue'
 
 const { screen, isLast, nextScreen } = defineProps<{
@@ -103,6 +113,17 @@ const { isDragging, handleResizerPointerDown } = useScreenResize({
     nextScreen: () => nextScreen,
     screenCardRef,
 })
+
+const {
+    isDragOver,
+    handleDragStart,
+    handleDrag,
+    handleDragEnd,
+    handleDragOver,
+    handleDragEnter,
+    handleDragLeave,
+    handleDrop,
+} = useTabDragDrop(screen)
 
 const selectedTabId = ref<TUUID | null>(screen.activeTabId)
 
@@ -284,9 +305,26 @@ watch(
 
 <style scoped lang="scss">
 .screen {
+    &-card-title {
+        transition: background-color 0.2s ease;
+
+        &--drag-over {
+            background-color: rgba(var(--v-theme-primary), 0.1);
+        }
+    }
+
     &-chip {
         cursor: pointer;
+
+        &--draggable {
+            cursor: grab;
+
+            &:active {
+                cursor: grabbing;
+            }
+        }
     }
+
     &-divider {
         position: relative;
         width: 4px;
