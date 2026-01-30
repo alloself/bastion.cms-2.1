@@ -14,7 +14,8 @@
         variant="filled"
         rounded="0"
         clearable
-        v-model="modelValue"
+        return-object
+        v-model="selectedItem"
         @update:search="handleSearchUpdate"
     >
         <template #prepend>
@@ -60,9 +61,9 @@
     </VAutocomplete>
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" generic="T extends IBaseEntity">
 import { refDebounced } from '@vueuse/core'
-import { capitalize, computed, ref } from 'vue'
+import { capitalize, computed, ref, shallowRef, watch } from 'vue'
 
 import { useScreenNavigation } from '@/ts/features/screen'
 import { useInfiniteRelationSearch } from '@/ts/shared/composables'
@@ -80,17 +81,50 @@ const {
     errorMessages,
     debounceMs = 300,
     relations = [],
-} = defineProps<TBRelationAutocompleteProps>()
+    initialItems = [],
+} = defineProps<TBRelationAutocompleteProps<T>>()
 
-const modelValue = defineModel<IBaseEntity['id'] | undefined>()
+const modelValue = defineModel<T['id']>()
 
 const { toScreenRoute } = useScreenNavigation()
 
 const searchInput = ref('')
 const debouncedSearch = refDebounced(searchInput, debounceMs)
 
-const { items, hasMore, isLoadingMore, isInitialLoading, loadMore } =
-    useInfiniteRelationSearch<IBaseEntity>(moduleKey, debouncedSearch, relations)
+const { items, hasMore, isLoadingMore, isInitialLoading, loadMore } = useInfiniteRelationSearch<T>(
+    moduleKey,
+    debouncedSearch,
+    relations,
+    initialItems,
+)
+
+const selectedItem = shallowRef<T | null>(null)
+
+const findAndSelectItem = (itemId: T['id']) => {
+    if (!itemId) {
+        selectedItem.value = null
+        return
+    }
+    if (selectedItem.value?.id === itemId) {
+        return
+    }
+    const found = items.value.find((item) => item.id === itemId)
+    if (found) {
+        selectedItem.value = found
+    }
+}
+
+watch(() => modelValue.value, findAndSelectItem, { immediate: true })
+
+watch(items, () => {
+    if (modelValue.value && !selectedItem.value) {
+        findAndSelectItem(modelValue.value)
+    }
+})
+
+watch(selectedItem, (newItem) => {
+    modelValue.value = newItem?.id
+})
 
 const isLoading = computed(() => loading || isInitialLoading.value)
 
@@ -112,7 +146,7 @@ const handleIntersect = (isIntersecting: boolean) => {
 }
 
 const handleEditClick = async (event: MouseEvent) => {
-    if (!modelValue) {
+    if (!modelValue.value) {
         return
     }
     await toScreenRoute(

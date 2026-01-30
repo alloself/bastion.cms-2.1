@@ -11,6 +11,7 @@ export const useInfiniteRelationSearch = <T extends IBaseEntity>(
     moduleKey: MaybeRefOrGetter<string>,
     search: MaybeRefOrGetter<string>,
     relations: MaybeRefOrGetter<string[]>,
+    initialItems: MaybeRefOrGetter<T[]>,
 ) => {
     const { state, asyncStatus, hasNextPage, loadNextPage, refetch } = useInfiniteQuery({
         key: () => {
@@ -46,7 +47,15 @@ export const useInfiniteRelationSearch = <T extends IBaseEntity>(
 
     const pages = computed(() => state.value?.data?.pages ?? [])
 
-    const items = computed(() => pages.value.flatMap((page) => page.data))
+    const items = computed(() => {
+        const pagesData = pages.value.flatMap((page) => page.data)
+
+        if (!pagesData.length && toValue(initialItems).length) {
+            return toValue(initialItems)
+        }
+
+        return pagesData
+    })
 
     const isLoadingMore = computed(() => asyncStatus.value === 'loading' && pages.value.length)
 

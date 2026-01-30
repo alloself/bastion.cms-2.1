@@ -48,6 +48,7 @@ export const usePageForm = (entity?: Page) => {
                     clearable: true,
                     relations: ['link'],
                     disabled: (formValues: Partial<Page>) => !!formValues.index,
+                    initialItems: entity?.parent ? [entity.parent] : [],
                 },
             },
             {
@@ -58,6 +59,7 @@ export const usePageForm = (entity?: Page) => {
                     itemTitle: 'name',
                     label: 'Шаблон',
                     placeholder: 'Выберите шаблон',
+                    initialItems: entity?.template ? [entity.template] : [],
                 },
             },
             {

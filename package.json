@@ -16,7 +16,7 @@
         "@pinia/colada-devtools": "^0.4.2",
         "@trivago/prettier-plugin-sort-imports": "^6.0.2",
         "@types/lodash": "^4.17.23",
-        "@types/node": "^25.0.10",
+        "@types/node": "^25.1.0",
         "@vitejs/plugin-vue": "^6.0.3",
         "@vue/tsconfig": "^0.8.1",
         "concurrently": "^9.2.1",
@@ -42,7 +42,7 @@
         "pinia": "^3.0.4",
         "vee-validate": "^5.0.0-beta.0",
         "vue": "^3.5.27",
-        "vue-router": "^4.6.4",
+        "vue-router": "^5.0.1",
         "vuetify": "^3.11.8",
         "zod": "^4.3.6"
     }
