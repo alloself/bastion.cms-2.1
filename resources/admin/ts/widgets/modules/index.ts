@@ -63,6 +63,7 @@ export const pageModule: IModule<Page> = {
         })
 
         const listEntries = queryCache.getEntries({ key: ['list', 'page'] })
+
         listEntries.forEach((entry) => {
             const listData = entry.state.value.data as { data: Page[] }
             if (listData?.data) {
@@ -71,6 +72,7 @@ export const pageModule: IModule<Page> = {
         })
 
         const treeEntries = queryCache.getEntries({ key: ['tree-children', 'page'] })
+        
         treeEntries.forEach((entry) => {
             const treeData = entry.state.value.data as Page[]
             if (treeData) {
