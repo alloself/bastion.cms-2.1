@@ -1,5 +1,5 @@
 import type { QueryCache } from '@pinia/colada'
-import type { AuditModel } from '@shared/types/models'
+import type { AuditModel, Link } from '@shared/types/models'
 import type { PartialDeep } from 'type-fest'
 import type { ComputedRef } from 'vue'
 
@@ -21,9 +21,16 @@ export interface IBaseEntity {
     audits?: TAuditModelWithResolved[]
 }
 
+
+export interface ILinkableEntity<T extends IBaseEntity = IBaseEntity> extends IBaseTreeEntity<T> {
+    link?: Link
+}
+
 export interface IBaseTreeEntity<T extends IBaseEntity = IBaseEntity> extends IBaseEntity {
     children?: T[]
-    has_children: boolean
+    has_children: boolean | null
+    parent_id: string | null
+    parent?: T
 }
 
 export interface ITableHeader {

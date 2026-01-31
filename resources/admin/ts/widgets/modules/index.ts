@@ -1,24 +1,50 @@
+import type { EntryKey, QueryCache } from '@pinia/colada'
 import type { Page, Template } from '@shared/types/models'
-import { capitalize } from 'lodash'
+import { capitalize, isObject } from 'lodash'
 import type { RouteLocation, RouteLocationNormalized, RouteRecordRaw } from 'vue-router'
 
 import { toKebabCase } from '@/ts/shared/helpers'
-import type { IModule } from '@/ts/shared/types'
+import type { ILinkableEntity, IModule, IServerDataList } from '@/ts/shared/types'
 
 import { usePageForm, useTemplateForm } from './forms'
 
-const updateChildrenUrls = (
-    items: Page[],
+const isServerDataList = <T>(data: unknown): data is IServerDataList<T> => {
+    return isObject(data) && 'data' in data && Array.isArray(data.data)
+}
+
+const updateDescendantsUrls = <T extends ILinkableEntity>(
+    queryCache: QueryCache,
     parentId: string,
-    childUrlMap: Map<string, string | null>,
+    parentUrl: string | null,
+    key: EntryKey,
 ) => {
-    items.forEach((item) => {
-        if (item.parent_id === parentId && item.link) {
-            const newUrl = childUrlMap.get(item.id)
-            if (newUrl) {
-                item.link.url = newUrl
+    queryCache.getEntries({ key }).forEach((entry) => {
+        queryCache.setQueryData(entry.key, (oldData: unknown) => {
+            if (!isServerDataList<T>(oldData)) {
+                return oldData
             }
-        }
+
+            const updatedData = oldData.data.map((item) => {
+                if (item.parent_id !== parentId || !item.link || !item.id) {
+                    return item
+                }
+
+                const newUrl = parentUrl ? `${parentUrl}/${item.link.slug}` : null
+
+                return {
+                    ...item,
+                    link: {
+                        ...item.link,
+                        url: newUrl,
+                    },
+                }
+            })
+
+            return {
+                ...oldData,
+                data: updatedData,
+            }
+        })
     })
 }
 
@@ -50,35 +76,10 @@ export const pageModule: IModule<Page> = {
         detail: ['template', 'link', 'children.link', 'parent.link', 'audits.user'],
     },
     onEntityUpdate: (page, queryCache) => {
-        if (!page.children?.length) {
+        if (!page.link?.url) {
             return
         }
-
-        const childUrlMap = new Map<string, string | null>()
-
-        page.children.forEach((child) => {
-            if (child.link) {
-                childUrlMap.set(child.id, child.link.url)
-            }
-        })
-
-        const listEntries = queryCache.getEntries({ key: ['list', 'page'] })
-
-        listEntries.forEach((entry) => {
-            const listData = entry.state.value.data as { data: Page[] }
-            if (listData?.data) {
-                updateChildrenUrls(listData.data, page.id, childUrlMap)
-            }
-        })
-
-        const treeEntries = queryCache.getEntries({ key: ['tree-children', 'page'] })
-        
-        treeEntries.forEach((entry) => {
-            const treeData = entry.state.value.data as Page[]
-            if (treeData) {
-                updateChildrenUrls(treeData, page.id, childUrlMap)
-            }
-        })
+        updateDescendantsUrls<Page>(queryCache, page.id, page.link.url, ['list', 'page'])
     },
 }
 

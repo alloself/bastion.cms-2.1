@@ -13,7 +13,7 @@ export default defineConfig({
     },
     plugins: [
         laravel({
-            input: ['resources/site/css/app.css', 'resources/site/js/main.ts'],
+            input: ['resources/site/css/index.css', 'resources/site/ts/index.ts'],
             refresh: true,
             hotFile: 'storage/framework/vite.site.hot',
             buildDirectory: 'build/site',
