@@ -89,6 +89,7 @@ const hasHeaderAppendSlot = computed(() => !!slots["header-append"]);
         gap: 8px;
         padding: 8px 16px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        min-height: 58px;
     }
 
     &__label {
