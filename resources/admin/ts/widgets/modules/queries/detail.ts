@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import { type MaybeRefOrGetter, toValue } from 'vue'
 
-import type { IBaseEntity, IModule, IServerDataList, ISortBy, TUUID } from '@/ts/shared/types'
+import type { IBaseEntity, IBaseTreeEntity, IModule, IServerDataList, ISortBy, TUUID } from '@/ts/shared/types'
 
 import {
     type IModuleListQueryParams,
@@ -10,6 +10,11 @@ import {
     getModuleDetailQuery,
     updateModuleDetailQuery,
 } from '../api'
+import { isObject } from 'lodash';
+
+const isBaseTreeEntity = <T extends IBaseEntity>(item: unknown): item is IBaseTreeEntity<T> => {
+    return isObject(item) && "id" in item && "has_children" in item && "parent_id" in item;
+};
 
 const compareValues = (valueA: unknown, valueB: unknown, order: 'asc' | 'desc'): number => {
     if (valueA == null && valueB == null) {
@@ -122,7 +127,7 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
             }
 
             const queryParams = JSON.parse(queryKey) as IModuleListQueryParams
-            const listData = entry.state.value.data as IServerDataList<T> | undefined // https://github.com/posva/pinia-colada/issues/431
+            const listData = entry.state.value.data as IServerDataList<T> | undefined //TODO: https://github.com/posva/pinia-colada/issues/431
 
             if (queryParams.search || !listData?.data?.length) {
                 queryCache.invalidateQueries({ key: entry.key, exact: true })
@@ -150,6 +155,19 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
         })
     }
 
+    const updateTreeCacheAfterCreate = (newItem: T) => {
+        if(!newItem.id) {
+            return
+        }
+        const entries = queryCache.getEntries({
+            key: ['tree-children', moduleValue.key],
+        })
+
+        for (const entry of entries) {
+            console.log(entry)
+        }
+    }
+
     const detailQuery = useQuery<T | null>({
         key: () => ['detail', moduleValue.key, getIdValue() ?? 'create'],
         query: async () => {
@@ -171,6 +189,7 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
             }
 
             updateListCacheAfterCreate(newItem)
+            updateTreeCacheAfterCreate(newItem)
         },
     })
 

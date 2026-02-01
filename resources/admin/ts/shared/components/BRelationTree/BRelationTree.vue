@@ -83,11 +83,11 @@
 
 <script setup lang="ts" generic="T extends IBaseTreeEntity<T>">
 import { get } from 'lodash'
-import { capitalize, computed, reactive, ref, shallowRef, triggerRef, watch } from 'vue'
+import { capitalize, computed, reactive, ref, watch, type Ref } from 'vue'
 
 import { useScreenNavigation } from '@/ts/features/screen'
 import { BTableLikeFieldWrapper } from '@/ts/shared/components'
-import { fetchChildren, useNormalizedErrors } from '@/ts/shared/composables'
+import { useNormalizedErrors, useRelationTreeQuery } from '@/ts/shared/composables'
 import { isBaseTreeEntity } from '@/ts/shared/helpers'
 import type { IBaseTreeEntity, IModule } from '@/ts/shared/types'
 
@@ -121,7 +121,15 @@ const { toScreenRoute } = useScreenNavigation()
 
 const normalizedErrorMessages = useNormalizedErrors(errorMessages)
 
-const treeItems = shallowRef<T[]>([])
+const currentParentId = ref<string>('')
+
+const treeQuery = useRelationTreeQuery<T>(
+    module.key,
+    currentParentId,
+    relations,
+)
+// TODO: fix this https://github.com/vuejs/core/issues/13755
+const treeItems: Ref<T[]> = ref([])  
 const openedNodes = ref<string[]>([])
 const loadingNodes = reactive<Set<string>>(new Set())
 const searchQuery = ref('')
@@ -160,14 +168,15 @@ const handleLoadChildren = async (item: unknown) => {
     loadingNodes.add(item.id)
 
     try {
-        const children = await fetchChildren<T>(module.key, item.id, relations.value)
+        currentParentId.value = item.id
+        await treeQuery.refetch()
+        const children = treeQuery.data.value ?? []
 
         item.children = prepareNodesForLazyLoad(children)
     } catch (error) {
         item.children = []
     } finally {
         loadingNodes.delete(item.id)
-        triggerRef(treeItems)
     }
 }
 
