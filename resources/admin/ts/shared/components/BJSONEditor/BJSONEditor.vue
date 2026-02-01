@@ -24,7 +24,7 @@
                     "
                     @blur="() => handleKeyBlur(item.id, item.key)"
                     density="compact"
-                    variant="outlined"
+                    variant="solo"
                     placeholder="Введите ключ"
                     :error="isDuplicateKey(item.id, item.key)"
                     hide-details
@@ -40,7 +40,7 @@
                         (newValue: string) => handleUpdateRow(item.id, 'value', newValue)
                     "
                     density="compact"
-                    variant="outlined"
+                    variant="solo"
                     placeholder="Введите значение"
                     hide-details
                     :readonly="readonly"
@@ -49,14 +49,16 @@
             </template>
 
             <template #item.actions="{ item }">
-                <VBtn
-                    v-if="!readonly"
-                    icon="mdi-delete"
-                    variant="flat"
-                    size="x-small"
-                    color="error"
-                    @click="handleRemoveRow(item.id)"
-                />
+                <div class="b-json-editor__actions-cell">
+                    <VBtn
+                        v-if="!readonly"
+                        icon="mdi-delete"
+                        variant="flat"
+                        size="x-small"
+                        color="error"
+                        @click="handleRemoveRow(item.id)"
+                    />
+                </div>
             </template>
         </VDataTable>
 
@@ -208,7 +210,15 @@ watch(
     }
 
     &__input {
-        margin: 4px 0;
+        margin: 4px 0 0 -16px;
+        :deep(.v-field) {
+            box-shadow: none;
+        }
+    }
+
+    &__actions-cell {
+        display: flex;
+        justify-content: flex-end;
     }
 }
 </style>
