@@ -68,11 +68,7 @@
             </VSlideGroup>
         </VCardActions>
     </VCard>
-    <AuditHistoryDialog
-        v-model="isAuditDialogVisible"
-        :audits="audits"
-        :fields="fields"
-    />
+    <AuditHistoryDialog v-model="isAuditDialogVisible" :audits="audits" :fields="fields" />
 </template>
 
 <script setup lang="ts" generic="T extends IBaseEntity">

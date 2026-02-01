@@ -11,6 +11,7 @@ export type TBCodeEditorProps = {
     name?: string;
     height?: string;
     readonly?: boolean;
+    disabled?: boolean;
     loading?: boolean;
     errorMessages?: TBCodeEditorErrorMessages;
     options?: TBCodeEditorOptions;

@@ -6,7 +6,8 @@
         item-value="id"
         :label="label"
         :placeholder="placeholder"
-        :readonly="readonly"
+        :readonly="readonly || disabled"
+        :disabled="disabled"
         :loading="isLoading"
         :error-messages="errorMessages"
         :no-data-text="noDataText"
@@ -27,7 +28,7 @@
                         variant="tonal"
                         class="mr-2"
                         v-bind="activatorProps"
-                        :disabled="readonly || !modelValue"
+                        :disabled="readonly || disabled || !modelValue"
                         @click="handleEditClick($event)"
                     >
                         <VIcon size="small">mdi-pencil</VIcon>
@@ -41,7 +42,7 @@
                         size="small"
                         variant="tonal"
                         v-bind="activatorProps"
-                        :disabled="readonly"
+                        :disabled="readonly || disabled"
                         @click="handleCreateClick($event)"
                     >
                         <VIcon size="small">mdi-plus</VIcon>
@@ -77,6 +78,7 @@ const {
     label,
     placeholder,
     readonly = false,
+    disabled = false,
     loading = false,
     errorMessages,
     debounceMs = 300,

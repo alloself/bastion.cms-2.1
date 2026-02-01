@@ -9,6 +9,7 @@
         <template #header-append>
             <VTextField
                 v-model="searchQuery"
+                :disabled="disabled"
                 density="compact"
                 variant="solo"
                 placeholder="Поиск..."
@@ -33,8 +34,10 @@
             :item-value="itemValue"
             :item-children="itemChildren"
             :load-children="handleLoadChildren"
-            density="compact"
+            :disabled="disabled"
+            :hideActions="disabled"
             open-on-click
+            density="compact"
             class="b-relation-tree__tree"
         >
             <template #prepend="{ item, isOpen }">
@@ -54,6 +57,7 @@
                     icon="mdi-pencil"
                     variant="text"
                     size="x-small"
+                    :disabled="disabled"
                     @click.stop="handleEditClick(item, $event)"
                 />
             </template>
@@ -68,6 +72,7 @@
                         variant="flat"
                         color="primary"
                         v-bind="activatorProps"
+                        :disabled="disabled"
                         @click="handleCreateClick"
                     />
                 </template>
@@ -86,25 +91,19 @@ import { useFetchRelationTreeChildren, useNormalizedErrors } from '@/ts/shared/c
 import { isBaseTreeEntity } from '@/ts/shared/helpers'
 import type { IBaseTreeEntity, IModule } from '@/ts/shared/types'
 
-const {
-    parentId,
-    module,
-    itemTitle = 'name',
-    itemValue = 'id',
-    itemChildren = 'children',
-    readonly = false,
-    label,
-    errorMessages,
-} = defineProps<{
-    parentId: string
-    module: IModule<T>
-    itemTitle?: string
-    itemValue?: string
-    itemChildren?: string
-    readonly?: boolean
-    label?: string
-    errorMessages?: string | string[]
-}>()
+
+const { parentId, module, itemTitle, itemValue = 'id', itemChildren, readonly, disabled, label, errorMessages } = defineProps<{
+        parentId: string
+        module: IModule<T>
+        itemTitle?: string
+        itemValue?: string
+        itemChildren?: string
+        readonly?: boolean
+        disabled?: boolean
+        label?: string
+        errorMessages?: string | string[]
+    }>()
+
 
 const relations = computed(() => module.relations?.detail ?? [])
 
@@ -152,17 +151,16 @@ const handleLoadChildren = async (item: unknown) => {
         return
     }
 
-    const nodeId = item.id
-    loadingNodes.add(nodeId)
+    loadingNodes.add(item.id)
 
     try {
-        const children = await fetchChildren<T>(module.key, nodeId, relations.value)
+        const children = await fetchChildren<T>(module.key, item.id, relations.value)
 
         item.children = prepareNodesForLazyLoad(children)
     } catch (error) {
         item.children = []
     } finally {
-        loadingNodes.delete(nodeId)
+        loadingNodes.delete(item.id)
         triggerRef(treeItems)
     }
 }

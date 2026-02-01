@@ -18,10 +18,11 @@
                     v-slot="{ value, handleChange, errors }"
                 >
                     <Component
-                        :loading="loading"
+                       
                         :is="schemeField.component"
                         :model-value="value"
                         :readonly="readonly || schemeField.readonly"
+                        :disabled="loading"
                         @update:modelValue="handleChange"
                         :error-messages="errors"
                         v-bind="resolveFieldProps(schemeField.props)"

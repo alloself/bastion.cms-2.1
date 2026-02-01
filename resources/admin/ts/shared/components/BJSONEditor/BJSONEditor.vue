@@ -29,6 +29,7 @@
                     :error="isDuplicateKey(item.id, item.key)"
                     hide-details
                     :readonly="readonly"
+                    :disabled="disabled"
                     class="b-json-editor__input"
                 />
             </template>
@@ -44,6 +45,7 @@
                     placeholder="Введите значение"
                     hide-details
                     :readonly="readonly"
+                    :disabled="disabled"
                     class="b-json-editor__input"
                 />
             </template>
@@ -56,6 +58,7 @@
                         variant="flat"
                         size="x-small"
                         color="error"
+                        :disabled="disabled"
                         @click="handleRemoveRow(item.id)"
                     />
                 </div>
@@ -71,6 +74,7 @@
                         variant="flat"
                         color="primary"
                         v-bind="activatorProps"
+                        :disabled="disabled"
                         @click="handleAddRow"
                     />
                 </template>
@@ -91,6 +95,7 @@ import type { TBJSONEditorProps, TJSONEditorRow, TJSONEditorValue } from './BJSO
 const {
     modelValue = null,
     readonly = false,
+    disabled = false,
     errorMessages,
     label,
 } = defineProps<TBJSONEditorProps>()

@@ -8,6 +8,7 @@ export type TBRelationAutocompleteProps<T extends IBaseEntity = IBaseEntity> = {
     label?: string
     placeholder?: string
     readonly?: boolean
+    disabled?: boolean
     loading?: boolean
     errorMessages?: TBRelationAutocompleteErrorMessages
     debounceMs?: number

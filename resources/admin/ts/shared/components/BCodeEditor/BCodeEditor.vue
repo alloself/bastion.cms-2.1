@@ -3,7 +3,7 @@
         class="b-code-editor"
         :class="{
             'b-code-editor--has-errors': normalizedErrorMessages.length > 0,
-            'b-code-editor--readonly': readonly,
+            'b-code-editor--readonly': isReadonly,
         }"
     >
         <div class="b-code-editor__container" :style="containerStyle">
@@ -54,6 +54,7 @@ const {
     modelValue = "",
     height,
     readonly = false,
+    disabled = false,
     loading = false,
     errorMessages,
     options = {},
@@ -72,6 +73,8 @@ const resizeObserver = shallowRef<ResizeObserver | null>(null);
 let isApplyingExternalValue = false;
 
 const { ensureMonacoEnvironment } = useMonacoEnvironment(true);
+
+const isReadonly = computed(() => readonly || disabled);
 
 const normalizedErrorMessages = computed<string[]>(() => {
     if (!errorMessages) {
@@ -118,7 +121,7 @@ const createEditor = (containerElement: HTMLDivElement) => {
         value: initialValue,
         language: "html",
         theme: "vs-dark",
-        readOnly: readonly,
+        readOnly: isReadonly.value,
     });
 
     editorInstance.value = createdEditor;
@@ -184,14 +187,14 @@ watch(
 );
 
 watch(
-    () => readonly,
-    (isReadonly) => {
+    isReadonly,
+    (nextIsReadonly) => {
         const currentEditor = editorInstance.value;
         if (!currentEditor) {
             return;
         }
         currentEditor.updateOptions({
-            readOnly: isReadonly,
+            readOnly: nextIsReadonly,
         });
     }
 );
@@ -205,7 +208,7 @@ watch(
         }
         currentEditor.updateOptions({
             ...nextOptions,
-            readOnly: readonly,
+            readOnly: isReadonly.value,
         });
     },
     { deep: true }

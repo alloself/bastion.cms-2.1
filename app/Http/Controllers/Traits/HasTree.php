@@ -19,9 +19,17 @@ trait HasTree
             $model = $this->model();
             $page = $model::findOrFail($id);
             $query = $page->children();
+
+            $filteredRelations = array_filter($relations, function ($relation) use ($page) {
+                if (str_contains($relation, 'children')) {
+                    return false;
+                }
+
+                return $page->isRelatedTo($relation);
+            });
             
-            if (count($relations)) {
-                $query->with($relations);
+            if (count($filteredRelations)) {
+                $query->with($filteredRelations);
             }
             
             return $query->get();
