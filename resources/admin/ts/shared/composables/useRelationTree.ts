@@ -20,26 +20,21 @@ const fetchTreeChildren = async <T extends IBaseTreeEntity>(
     return data
 }
 
-export const useFetchRelationTreeChildren = () => {
+export const fetchChildren = async <T extends IBaseTreeEntity>(
+    endpoint: string,
+    parentId: string,
+    relations: string[],
+) => {
     const queryCache = useQueryCache()
+    const queryKey = ['tree-children', endpoint, parentId, relations]
 
-    const fetchChildren = async <T extends IBaseTreeEntity>(
-        endpoint: string,
-        parentId: string,
-        relations: string[],
-    ) => {
-        const queryKey = ['tree-children', endpoint, parentId, relations]
+    const entry = queryCache.ensure({
+        key: queryKey,
+        query: () => fetchTreeChildren<T>(endpoint, parentId, relations),
+        gcTime: 0,
+    })
 
-        const entry = queryCache.ensure({
-            key: queryKey,
-            query: () => fetchTreeChildren<T>(endpoint, parentId, relations),
-            gcTime:  1000 * 60 * 5,
-        })
+    await queryCache.refresh(entry)
 
-        await queryCache.refresh(entry)
-
-        return queryCache.getQueryData<T[]>(queryKey) ?? []
-    }
-
-    return { fetchChildren }
+    return queryCache.getQueryData<T[]>(queryKey) ?? []
 }

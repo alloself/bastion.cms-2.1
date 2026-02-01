@@ -68,7 +68,7 @@ export const pageModule: IModule<Page> = {
         if (!entity) {
             return 'Создание страницы'
         }
-        return `Страница ${entity.link?.title}`
+        return `Страница "${entity.link?.title}"`
     },
     createForm: usePageForm,
     relations: {
@@ -98,7 +98,7 @@ export const templateModule: IModule<Template> = {
         if (!entity) {
             return 'Создание шаблона'
         }
-        return `Шаблон ${entity.name}`
+        return `Шаблон "${entity.name}"`
     },
     createForm: useTemplateForm,
 }

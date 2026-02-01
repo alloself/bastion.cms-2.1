@@ -20,7 +20,7 @@ const bootstrapAdminApp = async () => {
     const app = createApp(App)
 
     installPlugins(app)
-    await isCacheReady()
+    // await isCacheReady()
     app.mount(container)
 }
 

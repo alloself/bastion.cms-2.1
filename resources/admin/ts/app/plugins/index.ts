@@ -10,7 +10,7 @@ import vuetify from './vuetify'
 export const installPlugins = (app: App) => {
     app.use(createPinia())
     app.use(PiniaColada, {
-        plugins: [PiniaColadaCachePersister()],
+        // plugins: [PiniaColadaCachePersister()],
     })
     app.use(router)
     app.use(vuetify)

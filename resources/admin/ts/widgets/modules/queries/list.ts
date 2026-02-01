@@ -22,7 +22,7 @@ export const useModuleListQuery = <T extends IBaseEntity>(
     const listQuery = useQuery({
         key: () => buildListQueryKey(moduleValue, queryParamsValue),
         query: () => getModuleListQuery(moduleValue, queryParamsValue),
-        gcTime:  1000 * 60 * 5,
+        gcTime: 0,
     })
 
     return listQuery

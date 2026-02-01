@@ -109,6 +109,47 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
         return foundInList
     }
 
+    const updateListCacheAfterCreate = (newItem: T) => {
+        const entries = queryCache.getEntries({
+            key: ['list', moduleValue.key],
+        })
+
+        entries.forEach((entry) => {
+            const queryKey = entry.key[2]?.toString()
+
+            if (!queryKey) {
+                return
+            }
+
+            const queryParams = JSON.parse(queryKey) as IModuleListQueryParams
+            const listData = entry.state.value.data as IServerDataList<T> | undefined // https://github.com/posva/pinia-colada/issues/431
+
+            if (queryParams.search || !listData?.data?.length) {
+                queryCache.invalidateQueries({ key: entry.key, exact: true })
+                return
+            }
+
+            const insertIndex = findInsertIndex(listData.data, newItem, queryParams.sortBy)
+
+            if (insertIndex >= queryParams.perPage) {
+                queryCache.invalidateQueries({ key: entry.key, exact: true })
+                return
+            }
+
+            const updatedData = [...listData.data]
+            updatedData.splice(insertIndex, 0, newItem)
+
+            queryCache.setQueryData(entry.key, {
+                ...listData,
+                data: updatedData.slice(0, queryParams.perPage),
+                meta: {
+                    ...listData.meta,
+                    total: listData.meta.total + 1,
+                },
+            })
+        })
+    }
+
     const detailQuery = useQuery<T | null>({
         key: () => ['detail', moduleValue.key, getIdValue() ?? 'create'],
         query: async () => {
@@ -129,44 +170,7 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
                 return
             }
 
-            const entries = queryCache.getEntries({
-                key: ['list', moduleValue.key],
-            })
-
-            entries.forEach((entry) => {
-                const queryKey = entry.key[2]?.toString()
-
-                if (!queryKey) {
-                    return
-                }
-
-                const queryParams = JSON.parse(queryKey) as IModuleListQueryParams
-                const listData = entry.state.value.data as IServerDataList<T> // https://github.com/posva/pinia-colada/issues/431
-
-                if (queryParams.search) {
-                    queryCache.invalidateQueries({ key: entry.key, exact: true })
-                    return
-                }
-
-                const insertIndex = findInsertIndex(listData.data, newItem, queryParams.sortBy)
-
-                if (insertIndex >= queryParams.perPage) {
-                    queryCache.invalidateQueries({ key: entry.key, exact: true })
-                    return
-                }
-
-                const updatedData = [...listData.data]
-                updatedData.splice(insertIndex, 0, newItem)
-
-                queryCache.setQueryData(entry.key, {
-                    ...listData,
-                    data: updatedData.slice(0, queryParams.perPage),
-                    meta: {
-                        ...listData.meta,
-                        total: listData.meta.total + 1,
-                    },
-                })
-            })
+            updateListCacheAfterCreate(newItem)
         },
     })
 

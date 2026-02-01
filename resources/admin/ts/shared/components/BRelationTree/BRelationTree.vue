@@ -87,23 +87,31 @@ import { capitalize, computed, reactive, ref, shallowRef, triggerRef, watch } fr
 
 import { useScreenNavigation } from '@/ts/features/screen'
 import { BTableLikeFieldWrapper } from '@/ts/shared/components'
-import { useFetchRelationTreeChildren, useNormalizedErrors } from '@/ts/shared/composables'
+import { fetchChildren, useNormalizedErrors } from '@/ts/shared/composables'
 import { isBaseTreeEntity } from '@/ts/shared/helpers'
 import type { IBaseTreeEntity, IModule } from '@/ts/shared/types'
 
-
-const { parentId, module, itemTitle, itemValue = 'id', itemChildren, readonly, disabled, label, errorMessages } = defineProps<{
-        parentId: string
-        module: IModule<T>
-        itemTitle?: string
-        itemValue?: string
-        itemChildren?: string
-        readonly?: boolean
-        disabled?: boolean
-        label?: string
-        errorMessages?: string | string[]
-    }>()
-
+const {
+    parentId,
+    module,
+    itemTitle,
+    itemValue = 'id',
+    itemChildren,
+    readonly,
+    disabled,
+    label,
+    errorMessages,
+} = defineProps<{
+    parentId: string
+    module: IModule<T>
+    itemTitle?: string
+    itemValue?: string
+    itemChildren?: string
+    readonly?: boolean
+    disabled?: boolean
+    label?: string
+    errorMessages?: string | string[]
+}>()
 
 const relations = computed(() => module.relations?.detail ?? [])
 
@@ -112,8 +120,6 @@ const value = defineModel<T[]>()
 const { toScreenRoute } = useScreenNavigation()
 
 const normalizedErrorMessages = useNormalizedErrors(errorMessages)
-
-const { fetchChildren } = useFetchRelationTreeChildren()
 
 const treeItems = shallowRef<T[]>([])
 const openedNodes = ref<string[]>([])
