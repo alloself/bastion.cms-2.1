@@ -46,22 +46,37 @@ abstract class CRUDController extends Controller
             $query = $modelClass::query();
 
             $search = $request->input('search');
-            if ($search) {
-                $searchable_fields = $modelClass::getSearchableFields();
-                if (count($searchable_fields) > 0) {
-                    $query->where(function ($sub_query) use ($searchable_fields, $search) {
-                        foreach ($searchable_fields as $field) {
+            $searchableFields = $modelClass::getSearchableFields();
+
+            $includes = $request->input('includes', []);
+
+            $hasSearch = $search && count($searchableFields) > 0;
+            $hasIncludes = count($includes) > 0;
+
+
+            if ($hasSearch) {
+                $query->where(function ($filterQuery) use ($searchableFields, $search, $hasIncludes, $includes) {
+                    if ($hasIncludes) {
+                        $filterQuery->whereIn('id', $includes);
+                    }
+                    $filterQuery->orWhere(function ($searchQuery) use ($searchableFields, $search) {
+                        foreach ($searchableFields as $field) {
                             if (str_contains($field, '.')) {
                                 [$relation, $column] = explode('.', $field, 2);
-                                $sub_query->orWhereHas($relation, function ($relation_query) use ($column, $search) {
-                                    $relation_query->where($column, 'LIKE', "%{$search}%");
+                                $searchQuery->orWhereHas($relation, function ($relationQuery) use ($column, $search) {
+                                    $relationQuery->where($column, 'LIKE', "%{$search}%");
                                 });
                             } else {
-                                $sub_query->orWhere($field, 'LIKE', "%{$search}%");
+                                $searchQuery->orWhere($field, 'LIKE', "%{$search}%");
                             }
                         }
                     });
-                }
+                });
+            }
+
+            if ($hasIncludes) {
+                $placeholders = implode(',', array_fill(0, count($includes), '?'));
+                $query->orderByRaw("CASE WHEN id IN ($placeholders) THEN 0 ELSE 1 END", $includes);
             }
 
             $sortby = $request->input('sortBy', []);
@@ -78,10 +93,13 @@ abstract class CRUDController extends Controller
                     }
                 }
             }
+
             $relations = array_filter(explode(',', $request->input('relations', '')));
+
             if (count($relations) > 0) {
                 $query->with($relations);
             }
+
             $perPage = $request->input('per_page', 5);
             $paginator = $query->paginate($perPage);
             $paginator->appends($request->query());

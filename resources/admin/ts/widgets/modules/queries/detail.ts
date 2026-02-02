@@ -1,7 +1,15 @@
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
+import { isObject } from 'lodash'
 import { type MaybeRefOrGetter, toValue } from 'vue'
 
-import type { IBaseEntity, IBaseTreeEntity, IModule, IServerDataList, ISortBy, TUUID } from '@/ts/shared/types'
+import type {
+    IBaseEntity,
+    IBaseTreeEntity,
+    IModule,
+    IServerDataList,
+    ISortBy,
+    TUUID,
+} from '@/ts/shared/types'
 
 import {
     type IModuleListQueryParams,
@@ -10,11 +18,10 @@ import {
     getModuleDetailQuery,
     updateModuleDetailQuery,
 } from '../api'
-import { isObject } from 'lodash';
 
 const isBaseTreeEntity = <T extends IBaseEntity>(item: unknown): item is IBaseTreeEntity<T> => {
-    return isObject(item) && "id" in item && "has_children" in item && "parent_id" in item;
-};
+    return isObject(item) && 'id' in item && 'has_children' in item && 'parent_id' in item
+}
 
 const compareValues = (valueA: unknown, valueB: unknown, order: 'asc' | 'desc'): number => {
     if (valueA == null && valueB == null) {
@@ -82,10 +89,7 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
 
     const queryCache = useQueryCache()
 
-    const updateListCache = (
-        id: TUUID,
-        updateFn: (listData: IBaseEntity[]) => IBaseEntity[],
-    ): boolean => {
+    const updateListCache = (id: TUUID, updateFn: (listData: IBaseEntity[]) => IBaseEntity[]) => {
         const listEntries = queryCache.getEntries({
             key: ['list', moduleValue.key],
         })
@@ -155,16 +159,50 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
         })
     }
 
-    const updateTreeCacheAfterCreate = (newItem: T) => {
-        if(!newItem.id) {
+    const updateTreeCacheAfterCreate = <TTree extends IBaseTreeEntity<IBaseEntity>>(
+        newItem: TTree,
+    ) => {
+        if (!newItem.id) {
             return
         }
-        const entries = queryCache.getEntries({
-            key: ['tree-children', moduleValue.key],
+        // const treeEntries = queryCache.getEntries({
+        //     key: ['tree-children', moduleValue.key],
+        // })
+
+        // for (const entry of treeEntries) {
+        //     const items = entry.state.value.data as TTree[]
+        //     console.log(items)
+        //     if(!items || !items.length) {
+        //         continue
+        //     }
+
+        //     const parentIndex = items.findIndex((item) => item.id === newItem.parent_id)
+        //     if (parentIndex === -1) {
+        //         continue
+        //     }
+
+        //     const parentItem = items[parentIndex]
+
+        //     if (!parentItem) {
+        //         continue
+        //     }
+
+        //     const newParentData = {
+        //         ...parentItem,
+        //         has_children: true,
+        //     }
+        //     console.log(newParentData)
+        //     const updatedItems = items.toSpliced(parentIndex, 1, newParentData)
+        //     queryCache.setQueryData(entry.key, updatedItems)
+        // }
+
+        const detailEntries = queryCache.getEntries({
+            key: ['detail', moduleValue.key],
         })
 
-        for (const entry of entries) {
-            console.log(entry)
+        for (const entry of detailEntries) {
+            const detailData = entry.state.value.data as T
+            console.log(detailData)
         }
     }
 
@@ -189,7 +227,9 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
             }
 
             updateListCacheAfterCreate(newItem)
-            updateTreeCacheAfterCreate(newItem)
+            if (isBaseTreeEntity(newItem)) {
+                updateTreeCacheAfterCreate(newItem)
+            }
         },
     })
 
