@@ -41,6 +41,16 @@
             class="b-relation-tree__tree"
         >
             <template #prepend="{ item, isOpen }">
+                <VIcon
+                    v-if="isDragEnabled"
+                    icon="mdi-drag"
+                    size="small"
+                    draggable="true"
+                    class="b-relation-tree__drag-handle"
+                    @dragstart.stop="(event: DragEvent) => handleDragStart(event, item)"
+                    @drag="handleDrag"
+                    @dragend="handleDragEnd"
+                />
                 <VProgressCircular
                     v-if="isNodeLoading(item)"
                     indeterminate
@@ -49,6 +59,23 @@
                     class="mr-1"
                 />
                 <VIcon v-else size="small" :icon="getNodeIcon(item, isOpen)" />
+            </template>
+
+            <template #title="{ item }">
+                <div
+                    class="b-relation-tree__drop-zone"
+                    :class="{
+                        'b-relation-tree__drop-zone--active':
+                            dropTargetNodeId === item.id && draggedNodeId !== item.id,
+                        'b-relation-tree__drop-zone--dragging': draggedNodeId === item.id,
+                    }"
+                    @dragover="(event: DragEvent) => handleDragOver(event, item)"
+                    @dragenter="(event: DragEvent) => handleDragEnter(event, item)"
+                    @dragleave="handleDragLeave"
+                    @drop="(event: DragEvent) => handleDrop(event, item)"
+                >
+                    {{ get(item, itemTitle ?? 'title') ?? '' }}
+                </div>
             </template>
 
             <template #append="{ item }">
@@ -83,12 +110,17 @@
 
 <script setup lang="ts" generic="T extends IBaseTreeEntity<T>">
 import { get } from 'lodash'
-import { capitalize, computed, reactive, ref, watch, type Ref } from 'vue'
+import { type Ref, capitalize, computed, reactive, ref, watch } from 'vue'
 
 import { useScreenNavigation } from '@/ts/features/screen'
 import { BTableLikeFieldWrapper } from '@/ts/shared/components'
-import { useNormalizedErrors, useRelationTreeQuery } from '@/ts/shared/composables'
-import { isBaseTreeEntity } from '@/ts/shared/helpers'
+import {
+    useNormalizedErrors,
+    useRelationTreeQuery,
+    useTreeDragDrop,
+    useTreeNodeMove,
+} from '@/ts/shared/composables'
+import { isBaseTreeEntity, traverseTree } from '@/ts/shared/helpers'
 import type { IBaseTreeEntity, IModule } from '@/ts/shared/types'
 
 const {
@@ -115,7 +147,7 @@ const {
 
 const relations = computed(() => module.relations?.detail ?? [])
 
-const value = defineModel<T[]>()
+const value = defineModel<T[]>({ default: () => [] })
 
 const { toScreenRoute } = useScreenNavigation()
 
@@ -123,16 +155,97 @@ const normalizedErrorMessages = useNormalizedErrors(errorMessages)
 
 const currentParentId = ref<string>('')
 
-const treeQuery = useRelationTreeQuery<T>(
-    module.key,
-    currentParentId,
-    relations,
-)
+const treeQuery = useRelationTreeQuery<T>(module.key, currentParentId, relations)
 // TODO: fix this https://github.com/vuejs/core/issues/13755
-const treeItems: Ref<T[]> = ref([])  
+const treeItems: Ref<T[]> = ref([])
 const openedNodes = ref<string[]>([])
 const loadingNodes = reactive<Set<string>>(new Set())
 const searchQuery = ref('')
+
+const isDragEnabled = computed(() => !readonly && !disabled)
+
+const { moveMutation } = useTreeNodeMove<T>(module.key)
+
+const extractNodeFromTree = (nodeId: string): T | undefined => {
+    let extracted: T | undefined
+
+    traverseTree(treeItems.value, (item) => {
+        if (!item.children) {
+            return
+        }
+
+        const childIndex = item.children.findIndex((child) => child.id === nodeId)
+        if (childIndex === -1) {
+            return
+        }
+
+        extracted = item.children[childIndex]
+        item.children.splice(childIndex, 1)
+
+        if (!item.children.length) {
+            item.has_children = false
+            item.children = undefined
+        }
+    })
+
+    return extracted
+}
+
+const insertNodeIntoParent = (node: T, newParentId: string) => {
+    node.parent_id = newParentId
+    node.children = node.has_children ? [] : undefined
+
+    traverseTree(treeItems.value, (item) => {
+        if (item.id === newParentId) {
+            if (!item.children) {
+                item.children = []
+            }
+            item.children.push(node)
+            item.has_children = true
+        }
+    })
+}
+
+const moveNodeInTree = (nodeId: string, newParentId: string) => {
+    const node = extractNodeFromTree(nodeId)
+
+    if (node) {
+        insertNodeIntoParent(node, newParentId)
+    }
+}
+
+const handleMoveNode = async (nodeId: string, newParentId: string) => {
+    let nodeToMove: T | undefined
+
+    traverseTree(treeItems.value, (item) => {
+        if (item.id === nodeId) {
+            nodeToMove = item
+        }
+    })
+
+    if (!nodeToMove) {
+        return
+    }
+
+    await moveMutation.mutateAsync({
+        nodeId,
+        nodeData: nodeToMove,
+        parentId: newParentId,
+    })
+    moveNodeInTree(nodeId, newParentId)
+}
+
+const {
+    draggedNodeId,
+    dropTargetNodeId,
+    handleDragStart,
+    handleDrag,
+    handleDragOver,
+    handleDragEnter,
+    handleDragLeave,
+    handleDrop,
+    handleDragEnd,
+} = useTreeDragDrop<T>(treeItems, { onMoveNode: handleMoveNode })
 
 const prepareNodesForLazyLoad = (nodes: T[]) => {
     return nodes.map((node) => {
@@ -240,6 +353,42 @@ watch(
     &__search {
         :deep(.v-field) {
             box-shadow: none;
+        }
+    }
+
+    &__drag-handle {
+        display: inline-flex;
+        align-items: center;
+        cursor: grab;
+        margin-right: 4px;
+        opacity: 0.4;
+        transition: opacity 0.15s;
+
+        &:hover {
+            opacity: 1;
+        }
+
+        &:active {
+            cursor: grabbing;
+        }
+    }
+
+    &__drop-zone {
+        flex: 1;
+        padding: 2px 4px;
+        border-radius: 4px;
+        border: 2px solid transparent;
+        transition:
+            border-color 0.15s,
+            background-color 0.15s;
+
+        &--active {
+            border-color: rgb(var(--v-theme-primary));
+            background-color: rgba(var(--v-theme-primary), 0.1);
+        }
+
+        &--dragging {
+            opacity: 0.4;
         }
     }
 }
