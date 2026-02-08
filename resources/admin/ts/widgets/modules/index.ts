@@ -1,52 +1,11 @@
-import type { EntryKey, QueryCache } from '@pinia/colada'
 import type { Page, Template } from '@shared/types/models'
-import { capitalize, isObject } from 'lodash'
+import { capitalize } from 'lodash'
 import type { RouteLocation, RouteLocationNormalized, RouteRecordRaw } from 'vue-router'
 
 import { toKebabCase } from '@/ts/shared/helpers'
-import type { ILinkableEntity, IModule, IServerDataList } from '@/ts/shared/types'
+import type { IModule } from '@/ts/shared/types'
 
 import { usePageForm, useTemplateForm } from './forms'
-
-const isServerDataList = <T>(data: unknown): data is IServerDataList<T> => {
-    return isObject(data) && 'data' in data && Array.isArray(data.data)
-}
-
-const updateDescendantsUrls = <T extends ILinkableEntity>(
-    queryCache: QueryCache,
-    parentId: string,
-    parentUrl: string | null,
-    key: EntryKey,
-) => {
-    queryCache.getEntries({ key }).forEach((entry) => {
-        queryCache.setQueryData(entry.key, (oldData: unknown) => {
-            if (!isServerDataList<T>(oldData)) {
-                return oldData
-            }
-
-            const updatedData = oldData.data.map((item) => {
-                if (item.parent_id !== parentId || !item.link || !item.id) {
-                    return item
-                }
-
-                const newUrl = parentUrl ? `${parentUrl}/${item.link.slug}` : null
-
-                return {
-                    ...item,
-                    link: {
-                        ...item.link,
-                        url: newUrl,
-                    },
-                }
-            })
-
-            return {
-                ...oldData,
-                data: updatedData,
-            }
-        })
-    })
-}
 
 export const pageModule: IModule<Page> = {
     key: 'page',
@@ -74,12 +33,6 @@ export const pageModule: IModule<Page> = {
     relations: {
         list: ['link'],
         detail: ['template', 'link', 'children.link', 'parent.link', 'audits.user'],
-    },
-    onEntityUpdate: (page, queryCache) => {
-        if (!page.link?.url) {
-            return
-        }
-        updateDescendantsUrls<Page>(queryCache, page.id, page.link.url, ['list', 'page'])
     },
 }
 

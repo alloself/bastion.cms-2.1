@@ -5,6 +5,7 @@ import { type MaybeRefOrGetter, toValue } from 'vue'
 import type {
     IBaseEntity,
     IBaseTreeEntity,
+    ILinkableEntity,
     IModule,
     IServerDataList,
     ISortBy,
@@ -21,6 +22,53 @@ import {
 
 const isBaseTreeEntity = <T extends IBaseEntity>(item: unknown): item is IBaseTreeEntity<T> => {
     return isObject(item) && 'id' in item && 'has_children' in item && 'parent_id' in item
+}
+
+const isServerDataList = <T>(data: unknown): data is IServerDataList<T> => {
+    return isObject(data) && 'data' in data && Array.isArray(data.data)
+}
+
+const isLinkableEntity = (item: unknown): item is ILinkableEntity<IBaseEntity> => {
+    return isObject(item) && 'parent_id' in item && 'link' in item
+}
+
+const updatePageDescendantsUrls = (
+    queryCache: ReturnType<typeof useQueryCache>,
+    parentId: string,
+    parentUrl: string,
+) => {
+    queryCache.getEntries({ key: ['list', 'page'] }).forEach((entry) => {
+        queryCache.setQueryData(entry.key, (oldData: unknown) => {
+            if (!isServerDataList<IBaseEntity>(oldData)) {
+                return oldData
+            }
+
+            const updatedData = oldData.data.map((item) => {
+                if (!isLinkableEntity(item)) {
+                    return item
+                }
+
+                if (item.parent_id !== parentId || !item.link || !item.id) {
+                    return item
+                }
+
+                const newUrl = parentUrl ? `${parentUrl}/${item.link.slug}` : null
+
+                return {
+                    ...item,
+                    link: {
+                        ...item.link,
+                        url: newUrl,
+                    },
+                }
+            })
+
+            return {
+                ...oldData,
+                data: updatedData,
+            }
+        })
+    })
 }
 
 const compareValues = (valueA: unknown, valueB: unknown, order: 'asc' | 'desc'): number => {
@@ -202,7 +250,9 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
 
         for (const entry of detailEntries) {
             const detailData = entry.state.value.data as T
-            console.log(detailData)
+            
+
+            console.log(detailData, newItem)
         }
     }
 
@@ -255,7 +305,7 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
             queryCache.setQueryData(['detail', moduleValue.key, id], data)
 
             updateListCache(id, (listData) => {
-                const itemIndex = listData.findIndex((item: IBaseEntity) => item.id === id)
+                const itemIndex = listData.findIndex((item) => item.id === id)
                 const updatedData = [...listData]
                 updatedData[itemIndex] = {
                     ...updatedData[itemIndex],
@@ -264,7 +314,9 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
                 return updatedData
             })
 
-            moduleValue.onEntityUpdate?.(data, queryCache)
+            if (moduleValue.key === 'page' && isLinkableEntity(data) && data.id && data.link?.url) {
+                updatePageDescendantsUrls(queryCache, data.id, data.link.url)
+            }
         },
     })
 

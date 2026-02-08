@@ -43,7 +43,13 @@ export const useScreenNavigation = () => {
                 if (!resolvedRoute) {
                     return;
                 }
-                return screenStore.openRouteTab(activeScreen, resolvedRoute);
+                const openedTab = screenStore.openRouteTab(activeScreen, resolvedRoute);
+
+                await router.replace(resolvedRoute.fullPath);
+                await nextTick();
+
+                screenStore.setActiveTabRoute(router.currentRoute.value);
+                return openedTab;
             }
         }
 

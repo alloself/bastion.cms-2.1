@@ -47,7 +47,7 @@
                     size="small"
                     draggable="true"
                     class="b-relation-tree__drag-handle"
-                    @dragstart.stop="(event: DragEvent) => handleDragStart(event, item)"
+                    @dragstart.stop="handleDragStart($event, item)"
                     @drag="handleDrag"
                     @dragend="handleDragEnd"
                 />
@@ -69,10 +69,10 @@
                             dropTargetNodeId === item.id && draggedNodeId !== item.id,
                         'b-relation-tree__drop-zone--dragging': draggedNodeId === item.id,
                     }"
-                    @dragover="(event: DragEvent) => handleDragOver(event, item)"
-                    @dragenter="(event: DragEvent) => handleDragEnter(event, item)"
+                    @dragover="handleDragOver($event, item)"
+                    @dragenter="handleDragEnter($event, item)"
                     @dragleave="handleDragLeave"
-                    @drop="(event: DragEvent) => handleDrop(event, item)"
+                    @drop="handleDrop($event, item)"
                 >
                     {{ get(item, itemTitle ?? 'title') ?? '' }}
                 </div>
@@ -112,7 +112,7 @@
                         color="primary"
                         v-bind="activatorProps"
                         :disabled="disabled"
-                        @click="handleCreateClick"
+                        @click="handleCreateClick($event)"
                     />
                 </template>
             </VTooltip>
@@ -305,6 +305,7 @@ const handleEditClick = async (item: T, event: MouseEvent) => {
 }
 
 const handleCreateClick = async (event: MouseEvent) => {
+    console.log(parentId)
     await toScreenRoute(
         {
             name: `${capitalize(module.key)}Create`,

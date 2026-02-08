@@ -18,7 +18,6 @@
                     v-slot="{ value, handleChange, errors }"
                 >
                     <Component
-                       
                         :is="schemeField.component"
                         :model-value="value"
                         :readonly="readonly || schemeField.readonly"
@@ -36,6 +35,7 @@
 </template>
 
 <script lang="ts" setup generic="T extends GenericObject, K extends GenericObject">
+import { isEqual } from 'lodash'
 import { Field, type GenericObject, useForm } from 'vee-validate'
 import { computed, watch } from 'vue'
 import { z } from 'zod'
@@ -154,14 +154,20 @@ emits('update:form', formContext)
 
 watch(
     () => initialValues,
-    (newValues) => {
-        if (newValues) {
-            formContext.resetForm({
-                values: newValues,
-            })
+    (newValues, oldValues) => {
+        if (!newValues) {
+            return
         }
+
+        if (isEqual(oldValues, newValues)) {
+            return
+        }
+
+        formContext.resetForm({
+            values: newValues,
+        })
     },
-    { deep: true },
+    { deep: true, flush: 'post' },
 )
 </script>
 

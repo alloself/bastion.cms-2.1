@@ -113,7 +113,7 @@ import { sortBy } from "lodash";
 import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 import { BLogo, routeNames } from "@/ts/shared";
-import { Screen, useScreenStore } from "@/ts/features/screen";
+import { Screen, useScreenNavigation, useScreenStore } from "@/ts/features/screen";
 import { useAuthStore } from "@/ts/features/auth";
 
 type TNavigationModuleItem = {
@@ -128,8 +128,9 @@ const router = useRouter();
 const route = useRoute();
 
 const screenStore = useScreenStore();
-const { screens, activeScreen } = storeToRefs(screenStore);
+const { screens } = storeToRefs(screenStore);
 const authStore = useAuthStore();
+const { toScreenRoute } = useScreenNavigation();
 
 const { user } = storeToRefs(authStore);
 
@@ -199,7 +200,7 @@ const isItemActive = (item: TNavigationModuleItem) => {
     return false;
 };
 
-const { pause: pauseRouteWatch, resume: resumeRouteWatch } = watch(
+watch(
     () => route.fullPath,
     () => {
         screenStore.setActiveTabRoute(router.currentRoute.value);
@@ -214,21 +215,7 @@ const handleNavigationItemClick = async (
         return;
     }
 
-    const shouldOpenNewTab =
-        (event.ctrlKey || event.metaKey) && activeScreen.value;
-
-    if (shouldOpenNewTab) {
-        pauseRouteWatch();
-    }
-
-    await router.push({ name: item.to });
-
-    if (shouldOpenNewTab && activeScreen.value) {
-        screenStore.openRouteTab(activeScreen.value, router.currentRoute.value);
-        resumeRouteWatch();
-    } else {
-        screenStore.setActiveTabRoute(router.currentRoute.value);
-    }
+    await toScreenRoute({ name: item.to }, event);
 };
 
 const onLogout = async () => {
@@ -241,7 +228,7 @@ const toggleRailMode = () => {
 };
 
 onMounted(() => {
-    if (screenStore.screens.size === 0) {
+    if (!screenStore.screens.size) {
         const screen = screenStore.addScreen();
         screenStore.openRouteTab(screen, router.currentRoute.value);
     }

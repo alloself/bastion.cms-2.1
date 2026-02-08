@@ -19,6 +19,7 @@ class LinkObserver
     public function updated(Link $link): void
     {
         $this->regenerateChildLinksIfNeeded($link);
+        $this->handleLinkAudit($link);
     }
 
     private function generateUrlIfNeeded(Link $link): void
@@ -47,5 +48,16 @@ class LinkObserver
         }
 
         $linkable->updateDescendantLinks();
+    }
+
+    private function handleLinkAudit(Link $link): void
+    {
+        $linkable = $link->linkable;
+
+        if ($linkable === null) {
+            return;
+        }
+
+        $linkable->auditLinkChanges($link);
     }
 }
