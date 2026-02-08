@@ -1,132 +1,18 @@
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
-import { isObject } from 'lodash'
 import { type MaybeRefOrGetter, toValue } from 'vue'
 
 import type {
     IBaseEntity,
-    IBaseTreeEntity,
-    ILinkableEntity,
     IModule,
-    IServerDataList,
-    ISortBy,
     TUUID,
 } from '@/ts/shared/types'
 
 import {
-    type IModuleListQueryParams,
     createModuleDetailQuery,
     deleteModuleDetailQuery,
     getModuleDetailQuery,
     updateModuleDetailQuery,
 } from '../api'
-
-const isBaseTreeEntity = <T extends IBaseEntity>(item: unknown): item is IBaseTreeEntity<T> => {
-    return isObject(item) && 'id' in item && 'has_children' in item && 'parent_id' in item
-}
-
-const isServerDataList = <T>(data: unknown): data is IServerDataList<T> => {
-    return isObject(data) && 'data' in data && Array.isArray(data.data)
-}
-
-const isLinkableEntity = (item: unknown): item is ILinkableEntity<IBaseEntity> => {
-    return isObject(item) && 'parent_id' in item && 'link' in item
-}
-
-const updatePageDescendantsUrls = (
-    queryCache: ReturnType<typeof useQueryCache>,
-    parentId: string,
-    parentUrl: string,
-) => {
-    queryCache.getEntries({ key: ['list', 'page'] }).forEach((entry) => {
-        queryCache.setQueryData(entry.key, (oldData: unknown) => {
-            if (!isServerDataList<IBaseEntity>(oldData)) {
-                return oldData
-            }
-
-            const updatedData = oldData.data.map((item) => {
-                if (!isLinkableEntity(item)) {
-                    return item
-                }
-
-                if (item.parent_id !== parentId || !item.link || !item.id) {
-                    return item
-                }
-
-                const newUrl = parentUrl ? `${parentUrl}/${item.link.slug}` : null
-
-                return {
-                    ...item,
-                    link: {
-                        ...item.link,
-                        url: newUrl,
-                    },
-                }
-            })
-
-            return {
-                ...oldData,
-                data: updatedData,
-            }
-        })
-    })
-}
-
-const compareValues = (valueA: unknown, valueB: unknown, order: 'asc' | 'desc'): number => {
-    if (valueA == null && valueB == null) {
-        return 0
-    }
-    if (valueA == null) {
-        return 1
-    }
-    if (valueB == null) {
-        return -1
-    }
-
-    let result = 0
-    if (typeof valueA === 'string' && typeof valueB === 'string') {
-        result = valueA.localeCompare(valueB)
-    } else {
-        result = valueA < valueB ? -1 : valueA > valueB ? 1 : 0
-    }
-
-    return order === 'desc' ? -result : result
-}
-
-const findInsertIndex = <T extends IBaseEntity>(list: T[], newItem: T, sortBy: ISortBy[] = []) => {
-    for (let index = 0; index < list.length; index++) {
-        const item = list[index]
-
-        if (!item) {
-            return list.length
-        }
-
-        let shouldInsertHere = false
-        let shouldContinue = false
-
-        for (const sort of sortBy) {
-            const valueA = newItem[sort.key as keyof T]
-            const valueB = item[sort.key as keyof T]
-            const cmp = compareValues(valueA, valueB, sort.order)
-
-            if (cmp < 0) {
-                shouldInsertHere = true
-                break
-            }
-            if (cmp > 0) {
-                shouldContinue = true
-                break
-            }
-        }
-
-        if (shouldInsertHere) {
-            return index
-        }
-        if (shouldContinue) {
-            continue
-        }
-    }
-    return list.length
-}
 
 export const useModuleDetailQuery = <T extends IBaseEntity>(
     module: MaybeRefOrGetter<IModule<T>>,
@@ -136,125 +22,6 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
     const getIdValue = () => toValue(id)
 
     const queryCache = useQueryCache()
-
-    const updateListCache = (id: TUUID, updateFn: (listData: IBaseEntity[]) => IBaseEntity[]) => {
-        const listEntries = queryCache.getEntries({
-            key: ['list', moduleValue.key],
-        })
-
-        let foundInList = false
-
-        listEntries.forEach((entry) => {
-            const listData = entry.state.value.data as IServerDataList<T>
-            const itemIndex = listData.data.findIndex((item) => item.id === id)
-            if (itemIndex !== -1) {
-                foundInList = true
-                const updatedData = updateFn(listData.data)
-                queryCache.setQueryData(entry.key, {
-                    ...listData,
-                    data: updatedData,
-                })
-            }
-        })
-
-        if (!foundInList) {
-            queryCache.invalidateQueries({
-                key: ['list', moduleValue.key],
-            })
-        }
-
-        return foundInList
-    }
-
-    const updateListCacheAfterCreate = (newItem: T) => {
-        const entries = queryCache.getEntries({
-            key: ['list', moduleValue.key],
-        })
-
-        entries.forEach((entry) => {
-            const queryKey = entry.key[2]?.toString()
-
-            if (!queryKey) {
-                return
-            }
-
-            const queryParams = JSON.parse(queryKey) as IModuleListQueryParams
-            const listData = entry.state.value.data as IServerDataList<T> | undefined //TODO: https://github.com/posva/pinia-colada/issues/431
-
-            if (queryParams.search || !listData?.data?.length) {
-                queryCache.invalidateQueries({ key: entry.key, exact: true })
-                return
-            }
-
-            const insertIndex = findInsertIndex(listData.data, newItem, queryParams.sortBy)
-
-            if (insertIndex >= queryParams.perPage) {
-                queryCache.invalidateQueries({ key: entry.key, exact: true })
-                return
-            }
-
-            const updatedData = [...listData.data]
-            updatedData.splice(insertIndex, 0, newItem)
-
-            queryCache.setQueryData(entry.key, {
-                ...listData,
-                data: updatedData.slice(0, queryParams.perPage),
-                meta: {
-                    ...listData.meta,
-                    total: listData.meta.total + 1,
-                },
-            })
-        })
-    }
-
-    const updateTreeCacheAfterCreate = <TTree extends IBaseTreeEntity<IBaseEntity>>(
-        newItem: TTree,
-    ) => {
-        if (!newItem.id) {
-            return
-        }
-        // const treeEntries = queryCache.getEntries({
-        //     key: ['tree-children', moduleValue.key],
-        // })
-
-        // for (const entry of treeEntries) {
-        //     const items = entry.state.value.data as TTree[]
-        //     console.log(items)
-        //     if(!items || !items.length) {
-        //         continue
-        //     }
-
-        //     const parentIndex = items.findIndex((item) => item.id === newItem.parent_id)
-        //     if (parentIndex === -1) {
-        //         continue
-        //     }
-
-        //     const parentItem = items[parentIndex]
-
-        //     if (!parentItem) {
-        //         continue
-        //     }
-
-        //     const newParentData = {
-        //         ...parentItem,
-        //         has_children: true,
-        //     }
-        //     console.log(newParentData)
-        //     const updatedItems = items.toSpliced(parentIndex, 1, newParentData)
-        //     queryCache.setQueryData(entry.key, updatedItems)
-        // }
-
-        const detailEntries = queryCache.getEntries({
-            key: ['detail', moduleValue.key],
-        })
-
-        for (const entry of detailEntries) {
-            const detailData = entry.state.value.data as T
-            
-
-            console.log(detailData, newItem)
-        }
-    }
 
     const detailQuery = useQuery<T | null>({
         key: () => ['detail', moduleValue.key, getIdValue() ?? 'create'],
@@ -271,80 +38,43 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
 
     const createMutation = useMutation({
         mutation: (payload: Partial<T>) => createModuleDetailQuery<T>(moduleValue, payload),
-        onSettled: (newItem, error) => {
-            if (error || !newItem) {
+        onSettled: (_data, error) => {
+            if (error) {
                 return
             }
 
-            updateListCacheAfterCreate(newItem)
-            if (isBaseTreeEntity(newItem)) {
-                updateTreeCacheAfterCreate(newItem)
-            }
+            queryCache.invalidateQueries({ key: ['list', moduleValue.key] })
+            queryCache.invalidateQueries({ key: ['tree-children', moduleValue.key] })
         },
     })
 
     const updateMutation = useMutation({
         mutation: ({ id, payload }: { id: TUUID; payload: Partial<T> }) =>
             updateModuleDetailQuery<T>(moduleValue, id, payload),
-        onMutate: ({ id, payload }) => {
-            const oldDetail = queryCache.getQueryData<T>(['detail', moduleValue.key, id])
-            const newDetail = {
-                ...oldDetail,
-                ...payload,
+        onSettled: (_data, error) => {
+            if (error) {
+                return
             }
-            queryCache.setQueryData(['detail', moduleValue.key, id], newDetail)
-            queryCache.cancelQueries({ key: ['detail', moduleValue.key, id] })
-            return { oldDetail, newDetail }
-        },
-        onError: (_err, { id }, { newDetail, oldDetail }) => {
-            if (newDetail === queryCache.getQueryData(['detail', moduleValue.key, id])) {
-                queryCache.setQueryData(['detail', moduleValue.key, id], oldDetail)
-            }
-        },
-        onSuccess: (data, { id }) => {
-            queryCache.setQueryData(['detail', moduleValue.key, id], data)
 
-            updateListCache(id, (listData) => {
-                const itemIndex = listData.findIndex((item) => item.id === id)
-                const updatedData = [...listData]
-                updatedData[itemIndex] = {
-                    ...updatedData[itemIndex],
-                    ...data,
-                }
-                return updatedData
-            })
-
-            if (moduleValue.key === 'page' && isLinkableEntity(data) && data.id && data.link?.url) {
-                updatePageDescendantsUrls(queryCache, data.id, data.link.url)
-            }
+            queryCache.invalidateQueries({ key: ['list', moduleValue.key] })
+            queryCache.invalidateQueries({ key: ['tree-children', moduleValue.key] })
+            queryCache.invalidateQueries({ key: ['detail', moduleValue.key] })
         },
     })
 
     const deleteMutation = useMutation({
         mutation: (id: TUUID) => deleteModuleDetailQuery<T>(moduleValue, id),
-        onMutate: (id) => {
-            const oldDetail = queryCache.getQueryData<T>(['detail', moduleValue.key, id])
-            queryCache.setQueryData(['detail', moduleValue.key, id], null)
-            queryCache.cancelQueries({ key: ['detail', moduleValue.key, id] })
-            return { oldDetail }
-        },
-        onError: (_err, id, { oldDetail }) => {
-            if (oldDetail) {
-                queryCache.setQueryData(['detail', moduleValue.key, id], oldDetail)
+        onSettled: (_data, error, id) => {
+            if (error) {
+                return
             }
-        },
-        onSettled: (_data, _error, id) => {
-            const [detailEntry] = queryCache.getEntries({
+
+            queryCache.invalidateQueries({ key: ['list', moduleValue.key] })
+            queryCache.invalidateQueries({
                 key: ['detail', moduleValue.key, id],
                 exact: true,
             })
-            if (detailEntry) {
-                queryCache.remove(detailEntry)
-            }
-
-            updateListCache(id, (listData) => {
-                return listData.filter((item: IBaseEntity) => item.id !== id)
-            })
+            queryCache.invalidateQueries({ key: ['tree-children', moduleValue.key] })
         },
     })
 

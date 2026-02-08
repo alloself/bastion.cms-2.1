@@ -1,16 +1,15 @@
 import { PiniaColada } from '@pinia/colada'
-import { PiniaColadaCachePersister } from '@pinia/colada-plugin-cache-persister'
-import { createStore, del, get, set } from 'idb-keyval'
 import { createPinia } from 'pinia'
 import type { App } from 'vue'
 import router from '@/ts/app/router'
 import vuetify from './vuetify'
 
-const coladaStore = createStore('pinia-colada-db', 'cache')
-
 export const installPlugins = (app: App) => {
     app.use(createPinia())
     app.use(PiniaColada, {
+        queryOptions: {
+            staleTime: 5000,
+        },
         plugins: [
             // PiniaColadaCachePersister({
             //     storage: {

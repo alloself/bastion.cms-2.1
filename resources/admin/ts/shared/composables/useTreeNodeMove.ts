@@ -28,51 +28,31 @@ export const useTreeNodeMove = <T extends IBaseTreeEntity>(
 ) => {
     const queryCache = useQueryCache()
 
-    const removeFromOldParentCache = (nodeId: string, oldParentId: string | null) => {
-        if (!oldParentId) {
-            return
-        }
-
-        const entries = queryCache.getEntries({
-            key: ['tree-children', toValue(moduleKey), oldParentId],
-        })
-
-        for (const entry of entries) {
-            const items = entry.state.value.data
-
-            if (Array.isArray(items)) {
-                queryCache.setQueryData(
-                    entry.key,
-                    items.filter((item) => item.id !== nodeId),
-                )
-            }
-        }
-    }
-
-    const addToNewParentCache = (updatedNode: T, newParentId: string | null) => {
-        if (!newParentId) {
-            return
-        }
-
-        const entries = queryCache.getEntries({
-            key: ['tree-children', toValue(moduleKey), newParentId],
-        })
-
-        for (const entry of entries) {
-            const items = entry.state.value.data
-
-            if (Array.isArray(items)) {
-                queryCache.setQueryData(entry.key, [...items, updatedNode])
-            }
-        }
-    }
-
     const moveMutation = useMutation({
         mutation: (payload: ITreeNodeMovePayload<T>) =>
             patchTreeNodeParent<T>(toValue(moduleKey), payload),
-        onSuccess: (updatedNode, payload) => {
-            removeFromOldParentCache(payload.nodeId, payload.nodeData.parent_id)
-            addToNewParentCache(updatedNode, payload.parentId)
+        onSettled: (_updatedNode, error, payload) => {
+            if (error) {
+                return
+            }
+
+            const moduleKeyValue = toValue(moduleKey)
+            const oldParentId = payload.nodeData.parent_id
+            const newParentId = payload.parentId
+
+            if (oldParentId) {
+                queryCache.invalidateQueries({
+                    key: ['tree-children', moduleKeyValue, oldParentId],
+                    exact: true,
+                })
+            }
+
+            if (newParentId) {
+                queryCache.invalidateQueries({
+                    key: ['tree-children', moduleKeyValue, newParentId],
+                    exact: true,
+                })
+            }
         },
     })
 
