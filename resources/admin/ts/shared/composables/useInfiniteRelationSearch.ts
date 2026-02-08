@@ -21,7 +21,7 @@ export const useInfiniteRelationSearch = <T extends IBaseEntity>(
                 search: toValue(search),
             }
 
-            return ['list', toValue(moduleKey), JSON.stringify(queryParams)]
+            return ['infinity', toValue(moduleKey), JSON.stringify(queryParams)]
         },
         query: async ({ pageParam }) => {
             const endpointValue = toValue(moduleKey)

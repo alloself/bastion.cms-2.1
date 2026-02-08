@@ -64,12 +64,15 @@
             />
         </VCardTitle>
         <VDivider />
-        <Component
-            :is="activeTabComponent"
-            :key="activeTabKey"
-            v-bind="activeTabProps"
-            :tab="activeTab"
-        />
+        <KeepAlive>
+            <Component
+                v-if="activeTabComponent && activeTab"
+                :is="activeTabComponent"
+                :key="`${activeTab.id}-${activeTab.route}`"
+                v-bind="activeTabProps"
+                :tab="activeTab"
+            />
+        </KeepAlive>
     </VCard>
     <div
         v-if="!isLast && nextScreen"
@@ -92,7 +95,12 @@ import { ACTIVE_SCREEN_KEY } from '@/ts/shared/const'
 import type { TUUID } from '@/ts/shared/types'
 
 import { type IScreen, type ITab, useScreenStore } from '..'
-import { isVueComponent, resolveComponentExport, useScreenResize, useTabDragDrop } from '../composables'
+import {
+    isVueComponent,
+    resolveComponentExport,
+    useScreenResize,
+    useTabDragDrop,
+} from '../composables'
 import ScreenTabLoading from './ScreenTabLoading.vue'
 
 const { screen, isLast, nextScreen } = defineProps<{
@@ -185,13 +193,6 @@ const activeTab = computed(() => {
     return screen.tabs.get(screen.activeTabId) || null
 })
 
-const activeTabKey = computed(() => {
-    if (!activeTab.value) {
-        return null
-    }
-    return `${activeTab.value.id}-${activeTab.value.route}`
-})
-
 const resolvedTabRoute = computed(() => {
     if (!activeTab.value) {
         return null
@@ -208,7 +209,7 @@ const activeTabRoute = computed(() => {
 })
 
 const activeTabComponent = computed(() => {
-    if (!activeTabRoute.value) {
+    if (!activeTabRoute.value || !activeTab.value) {
         return null
     }
     const component = activeTabRoute.value.components?.default

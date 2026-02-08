@@ -21,12 +21,12 @@
             />
         </template>
 
-        <div v-if="!treeItems.length" class="b-relation-tree__empty">Нет дочерних элементов</div>
+        <div v-if="!value.length" class="b-relation-tree__empty">Нет дочерних элементов</div>
 
         <VTreeview
             v-else
             v-model:opened="openedNodes"
-            :items="treeItems"
+            :items="value"
             :search="searchQuery"
             separate-roots
             :item-title="itemTitle"
@@ -110,7 +110,7 @@
 
 <script setup lang="ts" generic="T extends IBaseTreeEntity<T>">
 import { get } from 'lodash'
-import { type Ref, capitalize, computed, reactive, ref, watch } from 'vue'
+import { capitalize, computed, reactive, ref } from 'vue'
 
 import { useScreenNavigation } from '@/ts/features/screen'
 import { BTableLikeFieldWrapper } from '@/ts/shared/components'
@@ -156,8 +156,6 @@ const normalizedErrorMessages = useNormalizedErrors(errorMessages)
 const currentParentId = ref<string>('')
 
 const treeQuery = useRelationTreeQuery<T>(module.key, currentParentId, relations)
-// TODO: fix this https://github.com/vuejs/core/issues/13755
-const treeItems: Ref<T[]> = ref([])
 const openedNodes = ref<string[]>([])
 const loadingNodes = reactive<Set<string>>(new Set())
 const searchQuery = ref('')
@@ -169,7 +167,7 @@ const { moveMutation } = useTreeNodeMove<T>(module.key)
 const extractNodeFromTree = (nodeId: string): T | undefined => {
     let extracted: T | undefined
 
-    traverseTree(treeItems.value, (item) => {
+    traverseTree(value.value, (item) => {
         if (!item.children) {
             return
         }
@@ -195,7 +193,7 @@ const insertNodeIntoParent = (node: T, newParentId: string) => {
     node.parent_id = newParentId
     node.children = node.has_children ? [] : undefined
 
-    traverseTree(treeItems.value, (item) => {
+    traverseTree(value.value, (item) => {
         if (item.id === newParentId) {
             if (!item.children) {
                 item.children = []
@@ -217,7 +215,7 @@ const moveNodeInTree = (nodeId: string, newParentId: string) => {
 const handleMoveNode = async (nodeId: string, newParentId: string) => {
     let nodeToMove: T | undefined
 
-    traverseTree(treeItems.value, (item) => {
+    traverseTree(value.value, (item) => {
         if (item.id === nodeId) {
             nodeToMove = item
         }
@@ -245,21 +243,7 @@ const {
     handleDragLeave,
     handleDrop,
     handleDragEnd,
-} = useTreeDragDrop<T>(treeItems, { onMoveNode: handleMoveNode })
-
-const prepareNodesForLazyLoad = (nodes: T[]) => {
-    return nodes.map((node) => {
-        if (node.children && node.children.length) {
-            node.children = prepareNodesForLazyLoad(node.children)
-        } else if (node.has_children) {
-            node.children = []
-        } else {
-            node.children = undefined
-        }
-
-        return node
-    })
-}
+} = useTreeDragDrop<T>(value, { onMoveNode: handleMoveNode })
 
 const isNodeLoading = (item: T) => {
     return item.id ? loadingNodes.has(item.id) : false
@@ -285,7 +269,7 @@ const handleLoadChildren = async (item: unknown) => {
         await treeQuery.refetch()
         const children = treeQuery.data.value ?? []
 
-        item.children = prepareNodesForLazyLoad(children)
+        item.children = children
     } catch (error) {
         item.children = []
     } finally {
@@ -317,18 +301,6 @@ const handleCreateClick = async (event: MouseEvent) => {
         event,
     )
 }
-
-watch(
-    value,
-    (newValue) => {
-        if (newValue && Array.isArray(newValue) && newValue.length) {
-            treeItems.value = prepareNodesForLazyLoad(newValue)
-        } else {
-            treeItems.value = []
-        }
-    },
-    { immediate: true },
-)
 </script>
 
 <style scoped lang="scss">

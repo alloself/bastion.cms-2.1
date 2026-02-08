@@ -75,7 +75,7 @@
 import { isAxiosError } from 'axios'
 import type { PartialDeep } from 'type-fest'
 import type { FormContext } from 'vee-validate'
-import { capitalize, computed, onMounted, ref, watch } from 'vue'
+import { capitalize, computed, onActivated, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { type ITab, useScreenNavigation } from '@/ts/features/screen'
@@ -339,10 +339,19 @@ useGlobalHotkey(
 )
 
 onMounted(() => {
-    tab.title = module.getDetailTabTitle(entity.value)
-
     if (!id) {
         form.value?.resetForm({ values: initialValues.value })
+
+        tab.title = module.getDetailTabTitle()
+    }
+})
+
+onActivated(() => {
+    if (!id) {
+        tab.title = module.getDetailTabTitle()
+    }
+    if (entity.value) {
+        tab.title = module.getDetailTabTitle(entity.value)
     }
 })
 </script>

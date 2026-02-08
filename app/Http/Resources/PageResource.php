@@ -9,6 +9,10 @@ class PageResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $hasChildren = $this->relationLoaded('children') 
+            ? $this->children->isNotEmpty() 
+            : $this->children()->exists();
+        
         return [
             'id' => $this->id,
             'index' => $this->index,
@@ -27,11 +31,11 @@ class PageResource extends JsonResource
             'parent' => $this->whenLoaded('parent', function () {
                 return new PageResource($this->parent);
             }),
-            'has_children' => $this->relationLoaded('children') 
-                ? $this->children->isNotEmpty() 
-                : $this->children()->exists(),
-            'children' => $this->whenLoaded('children', function () {
-                return PageResource::collection($this->children);
+            'has_children' => $hasChildren,
+            'children' => $this->when($hasChildren, function () {
+                return $this->relationLoaded('children') && $this->children->isNotEmpty()
+                    ? PageResource::collection($this->children)
+                    : [];
             }),
             'audits' => $this->whenLoaded('audits', function () {
                 return $this->audits->map(function ($audit) {

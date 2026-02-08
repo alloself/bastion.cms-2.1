@@ -129,7 +129,7 @@ export const useScreenStore = defineStore("screen", () => {
             0
         );
 
-        if (totalWidth === 0) {
+        if (!totalWidth) {
             return;
         }
 
@@ -166,8 +166,7 @@ export const useScreenStore = defineStore("screen", () => {
             screen.activeTabId = firstTab ? firstTab.id : null;
         }
 
-        const totalScreens = screens.size + 1;
-        screen.width = 100 / totalScreens;
+        screen.width = 100 / screens.size;
 
         screens.set(screen.id, screen);
         activeScreenId.value = screen.id;
@@ -287,10 +286,8 @@ export const useScreenStore = defineStore("screen", () => {
         }
         screens.delete(screenId);
         if (activeScreenId.value === screenId) {
-            const remainingScreens = Array.from(screens.keys());
-            activeScreenId.value = remainingScreens.length
-                ? (remainingScreens[0] as TUUID)
-                : null;
+            const firstKey = screens.keys().next().value;
+            activeScreenId.value = firstKey ?? null;
         }
         normalizeScreenWidths();
     };

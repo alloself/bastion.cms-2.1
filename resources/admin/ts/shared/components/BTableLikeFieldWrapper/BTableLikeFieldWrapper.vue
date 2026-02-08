@@ -108,7 +108,6 @@ const hasHeaderAppendSlot = computed(() => !!slots["header-append"]);
     }
 
     &__content {
-        max-height: 300px;
         overflow: auto;
     }
 
