@@ -79,6 +79,18 @@
             </template>
 
             <template #append="{ item }">
+                <VTooltip v-if="!readonly" location="top" text="Создать дочерний элемент">
+                    <template #activator="{ props: activatorProps }">
+                        <VBtn
+                            icon="mdi-file-tree"
+                            variant="text"
+                            size="x-small"
+                            :disabled="disabled"
+                            v-bind="activatorProps"
+                            @click.stop="handleCreateChildClick(item, $event)"
+                        />
+                    </template>
+                </VTooltip>
                 <VBtn
                     v-if="!readonly"
                     icon="mdi-pencil"
@@ -297,6 +309,16 @@ const handleCreateClick = async (event: MouseEvent) => {
         {
             name: `${capitalize(module.key)}Create`,
             query: { parent_id: parentId },
+        },
+        event,
+    )
+}
+
+const handleCreateChildClick = async (item: T, event: MouseEvent) => {
+    await toScreenRoute(
+        {
+            name: `${capitalize(module.key)}Create`,
+            query: { parent_id: item.id },
         },
         event,
     )

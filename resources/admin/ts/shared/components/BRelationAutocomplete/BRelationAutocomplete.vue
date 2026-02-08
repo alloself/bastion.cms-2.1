@@ -62,7 +62,7 @@
     </VAutocomplete>
 </template>
 
-<script setup lang="ts" generic="T extends IBaseEntity">
+<script setup lang="ts">
 import { refDebounced } from '@vueuse/core'
 import { capitalize, computed, ref } from 'vue'
 
@@ -84,10 +84,9 @@ const {
     debounceMs = 300,
     relations = [],
     initialItems = [],
-} = defineProps<TBRelationAutocompleteProps<T>>()
+} = defineProps<TBRelationAutocompleteProps>()
 
-//TODO: fix this
-const modelValue = defineModel<T['id'] | undefined>()
+const modelValue = defineModel<IBaseEntity['id']>({ default: undefined })
 
 const { toScreenRoute } = useScreenNavigation()
 
@@ -95,7 +94,7 @@ const searchInput = ref('')
 const debouncedSearch = refDebounced(searchInput, debounceMs)
 const isMenuOpen = ref(false)
 
-const { items, hasMore, isLoadingMore, isInitialLoading, loadMore } = useInfiniteRelationSearch<T>(
+const { items, hasMore, isLoadingMore, isInitialLoading, loadMore } = useInfiniteRelationSearch(
     moduleKey,
     debouncedSearch,
     relations,

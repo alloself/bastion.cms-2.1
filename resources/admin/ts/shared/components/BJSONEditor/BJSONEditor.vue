@@ -55,9 +55,8 @@
                     <VBtn
                         v-if="!readonly"
                         icon="mdi-delete"
-                        variant="flat"
+                        variant="text"
                         size="x-small"
-                        color="error"
                         :disabled="disabled"
                         @click="handleRemoveRow(item.id)"
                     />

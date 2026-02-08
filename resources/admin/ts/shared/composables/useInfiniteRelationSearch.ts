@@ -19,6 +19,8 @@ export const useInfiniteRelationSearch = <T extends IBaseEntity>(
             const queryParams = {
                 ...DEFAULT_PAGINATION_PARAMS,
                 search: toValue(search),
+                relations: toValue(relations),
+                includes: toValue(selectedIds),
             }
 
             return ['infinity', toValue(moduleKey), JSON.stringify(queryParams)]
