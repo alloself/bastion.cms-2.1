@@ -92,11 +92,7 @@
                     </template>
                     <span>Создать</span>
                 </VTooltip>
-                <VTooltip
-                    location="top"
-                    text="Удалить выбранное"
-                    color="primary"
-                >
+                <VTooltip location="top" text="Удалить выбранное" color="primary">
                     <template #activator="{ props }">
                         <VBtn
                             icon
@@ -116,9 +112,10 @@
                 <VSelect
                     density="compact"
                     class="module-list__per-page"
-                    v-model="tableState.perPage"
-                    hide-details
+                    :model-value="tableState.perPage"
                     :items="[5, 10, 15, 25, 50, 100]"
+                    hide-details
+                    @update:model-value="handlePerPageChange"
                 ></VSelect>
                 <VPagination
                     density="compact"
@@ -134,151 +131,154 @@
 </template>
 
 <script setup lang="ts" generic="T extends IBaseEntity">
-import { capitalize, computed, reactive, ref, watch } from "vue";
-import { useRouter } from "vue-router";
-import type { IBaseEntity, IModule, ISortBy, TUUID } from "@/ts/shared/types";
-import {
-    type ITab,
-    useScreenNavigation,
-    useScreenStore,
-} from "@/ts/features/screen";
-import { useModuleListQuery } from "../queries";
-import { DEFAULT_PAGINATION_PARAMS } from "../const";
+import { capitalize, computed, reactive, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
+
+import { type ITab, useScreenNavigation, useScreenStore } from '@/ts/features/screen'
+import type { IBaseEntity, IModule, ISortBy, TUUID } from '@/ts/shared/types'
+
+import { DEFAULT_PAGINATION_PARAMS } from '../const'
+import { useModuleListQuery } from '../queries'
 
 const { module, tab } = defineProps<{
-    module: IModule<T>;
-    tab: ITab;
-}>();
+    module: IModule<T>
+    tab: ITab
+}>()
 
-const selectedItems = ref<TUUID[]>([]);
+const selectedItems = ref<TUUID[]>([])
 
 const parseSortByFromUrl = (url: URL) => {
-    const sortByParams = url.searchParams.getAll("sortBy[]");
+    const sortByParams = url.searchParams.getAll('sortBy[]')
 
     return sortByParams.reduce<ISortBy[]>((result, param) => {
-        const [key, order] = param.split(":");
-        if (key && (order === "asc" || order === "desc")) {
-            result.push({ key, order });
+        const [key, order] = param.split(':')
+        if (key && (order === 'asc' || order === 'desc')) {
+            result.push({ key, order })
         }
-        return result;
-    }, []);
-};
+        return result
+    }, [])
+}
 
 const parseQueryTableState = (tab: ITab) => {
-    const url = new URL(tab.route, window.location.origin);
+    const url = new URL(tab.route, window.location.origin)
 
-    const page = parseInt(url.searchParams.get("page") || String(DEFAULT_PAGINATION_PARAMS.page));
-    const perPage = parseInt(url.searchParams.get("per_page") || String(DEFAULT_PAGINATION_PARAMS.perPage));
-    const search = url.searchParams.get("search") ?? DEFAULT_PAGINATION_PARAMS.search;
-    const sortBy = parseSortByFromUrl(url);
+    const page = parseInt(url.searchParams.get('page') || String(DEFAULT_PAGINATION_PARAMS.page))
+    const perPage = parseInt(
+        url.searchParams.get('per_page') || String(DEFAULT_PAGINATION_PARAMS.perPage),
+    )
+    const search = url.searchParams.get('search') ?? DEFAULT_PAGINATION_PARAMS.search
+    const sortBy = parseSortByFromUrl(url)
 
     return {
         page,
         perPage,
         search,
         sortBy,
-    };
-};
+    }
+}
 
-const router = useRouter();
-const { toScreenRoute } = useScreenNavigation();
+const router = useRouter()
+const { toScreenRoute } = useScreenNavigation()
 
-const tableState = reactive(parseQueryTableState(tab));
+const tableState = reactive(parseQueryTableState(tab))
 
-const searchInput = ref(tableState.search);
+const searchInput = ref(tableState.search)
 
-const { state, asyncStatus } = useModuleListQuery<T>(module, tableState);
+const { state, asyncStatus } = useModuleListQuery<T>(module, tableState)
 
-const screenStore = useScreenStore();
+const screenStore = useScreenStore()
 
-const items = computed(() => state.value?.data?.data ?? []);
-const itemsLength = computed(() => state.value?.data?.meta?.total ?? 0);
-const pagesCount = computed(() => state.value?.data?.meta?.last_page ?? 1);
-const isLoading = computed(() => asyncStatus.value === "loading");
+const items = computed(() => state.value?.data?.data ?? [])
+const itemsLength = computed(() => state.value?.data?.meta?.total ?? 0)
+const pagesCount = computed(() => state.value?.data?.meta?.last_page ?? 1)
+const isLoading = computed(() => asyncStatus.value === 'loading')
 
 const buildQuery = () => {
-    const query: Record<string, string | string[]> = {};
+    const query: Record<string, string | string[]> = {}
 
     if (tableState.page !== DEFAULT_PAGINATION_PARAMS.page) {
-        query.page = String(tableState.page);
+        query.page = String(tableState.page)
     }
     if (tableState.perPage !== DEFAULT_PAGINATION_PARAMS.perPage) {
-        query.per_page = String(tableState.perPage);
+        query.per_page = String(tableState.perPage)
     }
-    if (tableState.search.trim() !== "") {
-        query.search = tableState.search.trim();
+    if (tableState.search.trim() !== '') {
+        query.search = tableState.search.trim()
     }
     if (tableState.sortBy.length) {
-        query["sortBy[]"] = tableState.sortBy.map(
-            (sort) => `${sort.key}:${sort.order}`
-        );
+        query['sortBy[]'] = tableState.sortBy.map((sort) => `${sort.key}:${sort.order}`)
     }
 
-    return query;
-};
+    return query
+}
 
 const syncTableStateToUrl = async () => {
-    const currentRoute = router.currentRoute.value;
-    const query = buildQuery();
-    const queryParams = new URLSearchParams();
-    
+    const currentRoute = router.currentRoute.value
+    const query = buildQuery()
+    const queryParams = new URLSearchParams()
+
     Object.entries(query).forEach(([key, value]) => {
         if (Array.isArray(value)) {
-            value.forEach((item) => queryParams.append(key, item));
+            value.forEach((item) => queryParams.append(key, item))
         } else {
-            queryParams.set(key, value);
+            queryParams.set(key, value)
         }
-    });
+    })
 
-    const queryString = queryParams.toString();
-    const basePath = currentRoute.path;
-    const newFullPath = queryString ? `${basePath}?${queryString}` : basePath;
+    const queryString = queryParams.toString()
+    const basePath = currentRoute.path
+    const newFullPath = queryString ? `${basePath}?${queryString}` : basePath
 
     if (currentRoute.fullPath === newFullPath) {
-        return;
+        return
     }
 
     await router.replace({
         path: basePath,
         query,
-    });
-    screenStore.setActiveTabRoute(router.currentRoute.value);
-};
+    })
+    screenStore.setActiveTabRoute(router.currentRoute.value)
+}
+
+const handlePerPageChange = (newPerPage: number) => {
+    tableState.perPage = newPerPage
+    tableState.page = DEFAULT_PAGINATION_PARAMS.page
+}
 
 watch(
     () => tableState,
     () => {
-        syncTableStateToUrl();
+        syncTableStateToUrl()
     },
-    { deep: true }
-);
+    { deep: true },
+)
 
 const handleSearchSubmit = () => {
-    tableState.search = searchInput.value.trim();
-};
+    tableState.search = searchInput.value.trim()
+}
 
 const handleClearSearch = () => {
-    searchInput.value = "";
-    tableState.search = "";
-};
+    searchInput.value = ''
+    tableState.search = ''
+}
 
 const noDataTitle = computed(() => {
-    if (tableState.search.trim() !== "") {
-        return "Ничего не найдено";
+    if (tableState.search.trim() !== '') {
+        return 'Ничего не найдено'
     }
-    return "Пока здесь пусто";
-});
+    return 'Пока здесь пусто'
+})
 
 const noDataText = computed(() => {
-    if (tableState.search.trim() !== "") {
-        return "Попробуйте изменить запрос или сбросить поиск.";
+    if (tableState.search.trim() !== '') {
+        return 'Попробуйте изменить запрос или сбросить поиск.'
     }
-    return "Создайте первую запись или попробуйте позже.";
-});
+    return 'Создайте первую запись или попробуйте позже.'
+})
 
 const handleCreateClick = (event: MouseEvent) => {
-    toScreenRoute({ name: `${capitalize(module.key)}Create` }, event);
-};
+    toScreenRoute({ name: `${capitalize(module.key)}Create` }, event)
+}
 
 const handleRowClick = async (event: MouseEvent, { item }: { item: T }) => {
     await toScreenRoute(
@@ -286,13 +286,13 @@ const handleRowClick = async (event: MouseEvent, { item }: { item: T }) => {
             name: `${capitalize(module.key)}Detail`,
             params: { id: item.id },
         },
-        event
-    );
-};
+        event,
+    )
+}
 
 const onDelete = () => {
-    console.log(selectedItems.value);
-};
+    console.log(selectedItems.value)
+}
 </script>
 
 <style scoped lang="scss">
@@ -320,7 +320,7 @@ const onDelete = () => {
             box-shadow: none;
         }
     }
-    
+
     &__search-hotkey {
         cursor: pointer;
         user-select: none;

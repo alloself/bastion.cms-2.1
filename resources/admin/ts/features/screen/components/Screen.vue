@@ -67,7 +67,7 @@
         <KeepAlive>
             <ScreenTabContent
                 v-if="activeTabComponent && activeTab"
-                :key="`${screen.id}-${activeTab.id}-${activeTab.route}`"
+                :key="activeTabContentKey"
                 :component="activeTabComponent"
                 :props="activeTabProps"
                 :tab="activeTab"
@@ -86,7 +86,7 @@
 
 <script setup lang="ts">
 import { isObject } from 'lodash'
-import { computed, defineAsyncComponent, nextTick, provide, ref, useTemplateRef, watch } from 'vue'
+import { computed, defineAsyncComponent, provide, ref, useTemplateRef, watch } from 'vue'
 import type { Component } from 'vue'
 import { type RouteLocationResolved, useRouter } from 'vue-router'
 import type { VCard, VCardTitle } from 'vuetify/components'
@@ -192,6 +192,14 @@ const resolvedTabRoute = computed(() => {
         return null
     }
     return router.resolve(activeTab.value.route)
+})
+
+const activeTabContentKey = computed(() => {
+    if (!activeTab.value) {
+        return `${screen.id}-no-tab`
+    }
+
+    return `${screen.id}-${activeTab.value.id}-${resolvedTabRoute.value?.path}`
 })
 
 const activeTabRoute = computed(() => {
