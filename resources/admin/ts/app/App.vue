@@ -1,19 +1,17 @@
 <template>
-    <Suspense>
-        <VApp>
-            <router-view v-slot="{ Component }">
-                <component :is="Component" />
-            </router-view>
-            <notification
-                v-for="(notification, index) in notifications"
-                :key="index"
-                :notification="notification"
-                :style="getOffsetStyle(index)"
-                @onCancel="notificationStore.closeAlert(index)"
-            >
-            </notification>
-        </VApp>
-    </Suspense>
+    <VApp>
+        <router-view v-slot="{ Component }">
+            <component :is="Component" />
+        </router-view>
+        <notification
+            v-for="(notification, index) in notifications"
+            :key="index"
+            :notification="notification"
+            :style="getOffsetStyle(index)"
+            @onCancel="notificationStore.closeAlert(index)"
+        >
+        </notification>
+    </VApp>
 </template>
 
 <script setup lang="ts">

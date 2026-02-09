@@ -3,6 +3,7 @@ import { createPinia } from 'pinia'
 import type { App } from 'vue'
 import router from '@/ts/app/router'
 import vuetify from './vuetify'
+import { PiniaColadaCachePersister } from '@pinia/colada-plugin-cache-persister'
 
 export const installPlugins = (app: App) => {
     app.use(createPinia())

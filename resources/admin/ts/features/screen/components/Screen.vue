@@ -101,7 +101,6 @@ import {
     useScreenResize,
     useTabDragDrop,
 } from '../composables'
-import ScreenTabLoading from './ScreenTabLoading.vue'
 
 const { screen, isLast, nextScreen } = defineProps<{
     screen: IScreen
@@ -143,20 +142,14 @@ const renderComponent = (routeComponent: unknown): Component | null => {
     if (typeof routeComponent === 'function') {
         const asyncComponent = defineAsyncComponent({
             loader: async () => {
-                try {
-                    const resolvedExport = resolveComponentExport(await routeComponent())
+                const resolvedExport = resolveComponentExport(await routeComponent())
 
-                    if (isVueComponent(resolvedExport)) {
-                        return resolvedExport
-                    }
-
-                    throw new Error('Failed to load screen tab component.')
-                } catch (error) {
-                    console.error(error)
-                    throw error
+                if (isVueComponent(resolvedExport)) {
+                    return resolvedExport
                 }
+
+                throw new Error('Failed to load screen tab component.')
             },
-            loadingComponent: ScreenTabLoading,
         })
 
         return asyncComponent
