@@ -166,7 +166,8 @@ export const useScreenStore = defineStore("screen", () => {
             screen.activeTabId = firstTab ? firstTab.id : null;
         }
 
-        screen.width = 100 / screens.size;
+        const screensSize = Math.max(1, screens.size);
+        screen.width = 100 / screensSize;
 
         screens.set(screen.id, screen);
         activeScreenId.value = screen.id;

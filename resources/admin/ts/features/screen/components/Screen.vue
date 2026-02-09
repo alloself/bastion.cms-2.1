@@ -117,8 +117,8 @@ provide(ACTIVE_SCREEN_KEY, () => screenStore.activeScreen?.id === screen.id)
 const screenCardRef = useTemplateRef<InstanceType<typeof VCard>>('screenCardRef')
 
 const { isDragging, handleResizerPointerDown } = useScreenResize({
-    screen: () => screen,
-    nextScreen: () => nextScreen,
+    screen,
+    nextScreen,
     screenCardRef,
 })
 

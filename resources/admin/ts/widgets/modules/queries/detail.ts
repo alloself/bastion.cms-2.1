@@ -1,11 +1,7 @@
-import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
+import { useMutation, useQuery } from '@pinia/colada'
 import { type MaybeRefOrGetter, toValue } from 'vue'
 
-import type {
-    IBaseEntity,
-    IModule,
-    TUUID,
-} from '@/ts/shared/types'
+import type { IBaseEntity, IModule, TUUID } from '@/ts/shared/types'
 
 import {
     createModuleDetailQuery,
@@ -21,8 +17,6 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
     const moduleValue = toValue(module)
     const getIdValue = () => toValue(id)
 
-    const queryCache = useQueryCache()
-
     const detailQuery = useQuery<T | null>({
         key: () => ['detail', moduleValue.key, getIdValue() ?? 'create'],
         query: async () => {
@@ -37,45 +31,19 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
     })
 
     const createMutation = useMutation({
+        key: () => ['create', moduleValue.key, getIdValue() ?? 'create'],
         mutation: (payload: Partial<T>) => createModuleDetailQuery<T>(moduleValue, payload),
-        onSettled: (_data, error) => {
-            if (error) {
-                return
-            }
-
-            queryCache.invalidateQueries({ key: ['list', moduleValue.key] })
-            queryCache.invalidateQueries({ key: ['tree-children', moduleValue.key] })
-        },
     })
 
     const updateMutation = useMutation({
+        key: () => ['update', moduleValue.key, getIdValue() ?? 'update'],
         mutation: ({ id, payload }: { id: TUUID; payload: Partial<T> }) =>
             updateModuleDetailQuery<T>(moduleValue, id, payload),
-        onSettled: (_data, error) => {
-            if (error) {
-                return
-            }
-
-            queryCache.invalidateQueries({ key: ['list', moduleValue.key] })
-            queryCache.invalidateQueries({ key: ['tree-children', moduleValue.key] })
-            queryCache.invalidateQueries({ key: ['detail', moduleValue.key] })
-        },
     })
 
     const deleteMutation = useMutation({
+        key: () => ['delete', moduleValue.key, getIdValue() ?? 'delete'],
         mutation: (id: TUUID) => deleteModuleDetailQuery<T>(moduleValue, id),
-        onSettled: (_data, error, id) => {
-            if (error) {
-                return
-            }
-
-            queryCache.invalidateQueries({ key: ['list', moduleValue.key] })
-            queryCache.invalidateQueries({
-                key: ['detail', moduleValue.key, id],
-                exact: true,
-            })
-            queryCache.invalidateQueries({ key: ['tree-children', moduleValue.key] })
-        },
     })
 
     return { detailQuery, createMutation, updateMutation, deleteMutation }
