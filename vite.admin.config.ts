@@ -6,6 +6,17 @@ import vuetify, { transformAssetUrls } from "vite-plugin-vuetify";
 
 export default defineConfig({
     cacheDir: "node_modules/.vite-admin",
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks: (id) => {
+                    if (id.includes("node_modules/monaco-editor")) {
+                        return "monaco";
+                    }
+                },
+            },
+        },
+    },
     server: {
         host: "0.0.0.0",
         port: 5174,

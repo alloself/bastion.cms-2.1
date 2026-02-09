@@ -68,7 +68,7 @@
             <Component
                 v-if="activeTabComponent && activeTab"
                 :is="activeTabComponent"
-                :key="`${activeTab.id}-${activeTab.route}`"
+                :key="`${screen.id}-${activeTab.id}-${activeTab.route}`"
                 v-bind="activeTabProps"
                 :tab="activeTab"
             />
