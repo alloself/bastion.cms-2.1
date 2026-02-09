@@ -65,11 +65,11 @@
         </VCardTitle>
         <VDivider />
         <KeepAlive>
-            <Component
+            <ScreenTabContent
                 v-if="activeTabComponent && activeTab"
-                :is="activeTabComponent"
                 :key="`${screen.id}-${activeTab.id}-${activeTab.route}`"
-                v-bind="activeTabProps"
+                :component="activeTabComponent"
+                :props="activeTabProps"
                 :tab="activeTab"
             />
         </KeepAlive>
@@ -86,7 +86,7 @@
 
 <script setup lang="ts">
 import { isObject } from 'lodash'
-import { computed, defineAsyncComponent, provide, ref, useTemplateRef, watch } from 'vue'
+import { computed, defineAsyncComponent, nextTick, provide, ref, useTemplateRef, watch } from 'vue'
 import type { Component } from 'vue'
 import { type RouteLocationResolved, useRouter } from 'vue-router'
 import type { VCard, VCardTitle } from 'vuetify/components'
@@ -94,6 +94,7 @@ import type { VCard, VCardTitle } from 'vuetify/components'
 import { ACTIVE_SCREEN_KEY } from '@/ts/shared/const'
 import type { TUUID } from '@/ts/shared/types'
 
+import ScreenTabContent from './ScreenTabContent.vue'
 import { type IScreen, type ITab, useScreenStore } from '..'
 import {
     isVueComponent,
