@@ -45,6 +45,11 @@ export const useInfiniteRelationSearch = <T extends IBaseEntity>(
         },
         initialPageParam: 1,
         getNextPageParam: (lastPage) => {
+
+            if(!lastPage.meta) {
+                return null
+            }
+
             const hasNext = lastPage.meta.current_page < lastPage.meta.last_page
             return hasNext ? lastPage.meta.current_page + 1 : null
         },
