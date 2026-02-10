@@ -131,7 +131,7 @@ const isAuditDialogVisible = ref(false)
 
 const { detailQuery, createMutation, updateMutation, deleteMutation } = useModuleDetailQuery(
     module,
-    () => id,
+    id,
 )
 
 watch(detailQuery.error, (error) => {
