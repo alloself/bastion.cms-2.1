@@ -78,7 +78,7 @@ import type { FormContext } from 'vee-validate'
 import { capitalize, computed, onActivated, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-import { type ITab, useScreenNavigation } from '@/ts/features/screen'
+import { type IScreen, type ITab, useScreenNavigation, useScreenStore } from '@/ts/features/screen'
 import { BSmartForm } from '@/ts/shared/components'
 import { useGlobalHotkey } from '@/ts/shared/composables'
 import type { IBaseEntity, IModule, TUUID } from '@/ts/shared/types'
@@ -100,15 +100,17 @@ type TAction = {
     handleClick: () => Promise<void>
 }
 
-const { module, id, tab } = defineProps<{
+const { module, id, tab, screen } = defineProps<{
     module: IModule<T>
     id?: TUUID
     tab: ITab
+    screen: IScreen
 }>()
 
 const route = useRoute()
 const router = useRouter()
 const { toScreenRoute } = useScreenNavigation()
+const screenStore = useScreenStore()
 
 const canGoBack = computed(() => {
     const historyState = window.history.state
@@ -131,6 +133,14 @@ const { detailQuery, createMutation, updateMutation, deleteMutation } = useModul
     module,
     () => id,
 )
+
+watch(detailQuery.error, (error) => {
+    if (!id || !isAxiosError(error) || error.response?.status !== 404) {
+        return
+    }
+    const listRoute = router.resolve({ name: `${capitalize(module.key)}List` })
+    screenStore.setTabRoute(screen.id, tab.id, listRoute)
+})
 
 const moduleFormContext = computed(() => {
     if (!entity.value) {

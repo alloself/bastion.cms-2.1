@@ -69,6 +69,14 @@ export interface ISortBy {
     order: 'asc' | 'desc'
 }
 
+export interface IInfiniteQueryPage<T> {
+    data: T[]
+}
+
+export interface IInfiniteQueryData<T> {
+    pages: IInfiniteQueryPage<T>[]
+}
+
 export interface IServerDataList<T> {
     data: T[]
     links: {

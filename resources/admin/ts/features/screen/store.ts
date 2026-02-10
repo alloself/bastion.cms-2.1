@@ -249,6 +249,25 @@ export const useScreenStore = defineStore("screen", () => {
         }
     };
 
+    const setTabRoute = (
+        screenId: TUUID,
+        tabId: TUUID,
+        route:
+            | RouteLocationNormalizedLoadedGeneric
+            | RouteLocationResolvedGeneric,
+    ) => {
+        const screen = screens.get(screenId);
+        if (!screen) {
+            return null;
+        }
+        const tab = screen.tabs.get(tabId);
+        if (!tab) {
+            return null;
+        }
+        tab.route = route.fullPath;
+        return tab;
+    };
+
     const removeTab = (screenId: TUUID, tabId: TUUID) => {
         const screen = screens.get(screenId);
         if (!screen) {
@@ -376,6 +395,7 @@ export const useScreenStore = defineStore("screen", () => {
         setActiveTabRoute,
         setActiveScreen,
         setActiveTab,
+        setTabRoute,
         removeTab,
         removeScreen,
         normalizeScreenWidths,

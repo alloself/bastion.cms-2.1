@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
+import { isObject } from 'lodash'
 import { type MaybeRefOrGetter, toValue } from 'vue'
 
 import type { IBaseEntity, IModule, TUUID } from '@/ts/shared/types'
@@ -7,6 +8,8 @@ import {
     createModuleDetailQuery,
     deleteModuleDetailQuery,
     getModuleDetailQuery,
+    isInfiniteQueryData,
+    isServerListData,
     updateModuleDetailQuery,
 } from '../api'
 
@@ -53,10 +56,36 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
                     predicate: (entry) => entry.key.includes(moduleValue.key),
                 },
                 (cacheData) => {
-                    console.log(cacheData)
+                    if (isServerListData<T>(cacheData)) {
+                        return {
+                            ...cacheData,
+                            data: cacheData.data.map((item) =>
+                                item.id === updatedEntity.id ? updatedEntity : item,
+                            ),
+                        }
+                    }
+
+                    if (isInfiniteQueryData<T>(cacheData)) {
+                        return {
+                            ...cacheData,
+                            pages: cacheData.pages.map((page) => ({
+                                ...page,
+                                data: page.data.map((item: T) =>
+                                    item.id === updatedEntity.id ? updatedEntity : item,
+                                ),
+                            })),
+                        }
+                    }
+
+                    if (isObject(cacheData) && cacheData.id === updatedEntity.id) {
+                        return updatedEntity
+                    }
+
                     return cacheData
                 },
             )
+
+            moduleValue.onEntityUpdate?.(updatedEntity, queryCache)
         },
     })
 

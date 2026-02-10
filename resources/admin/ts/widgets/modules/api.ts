@@ -1,5 +1,13 @@
 import { client } from '@/ts/shared/api/client'
-import type { IBaseEntity, IModule, IServerDataList, ISortBy, TUUID } from '@/ts/shared/types'
+import type {
+    IBaseEntity,
+    IInfiniteQueryData,
+    IModule,
+    IServerDataList,
+    ISortBy,
+    TUUID,
+} from '@/ts/shared/types'
+import { isObject } from 'lodash'
 
 export interface IModuleListQueryParams {
     page: number
@@ -89,4 +97,13 @@ export const deleteModuleDetailQuery = async <T extends IBaseEntity>(
     const url = `/api/admin/${module.key}/${id}`
     const { data } = await client.delete<T>(url)
     return data
+}
+
+
+export const isInfiniteQueryData = <T>(data: unknown): data is IInfiniteQueryData<T> => {
+    return isObject(data) && 'pages' in data
+}
+
+export const isServerListData = <T>(data: unknown): data is IServerDataList<T> => {
+    return isObject(data) && 'data' in data && 'links' in data && 'meta' in data
 }

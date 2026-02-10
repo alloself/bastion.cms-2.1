@@ -1,11 +1,49 @@
+import type { EntryKey, QueryCache } from '@pinia/colada'
 import type { Page, Template } from '@shared/types/models'
 import { capitalize } from 'lodash'
 import type { RouteLocation, RouteLocationNormalized, RouteRecordRaw } from 'vue-router'
 
 import { toKebabCase } from '@/ts/shared/helpers'
-import type { IModule } from '@/ts/shared/types'
+import type { ILinkableEntity, IModule } from '@/ts/shared/types'
 
+import { isServerListData } from './api'
 import { usePageForm, useTemplateForm } from './forms'
+
+const updateDescendantsUrls = <T extends ILinkableEntity>(
+    queryCache: QueryCache,
+    parentId: string,
+    parentUrl: string | null,
+    key: EntryKey,
+) => {
+    queryCache.getEntries({ key }).forEach((entry) => {
+        queryCache.setQueryData(entry.key, (oldData: unknown) => {
+            if (!isServerListData<T>(oldData)) {
+                return oldData
+            }
+
+            const updatedData = oldData.data.map((item) => {
+                if (item.parent_id !== parentId || !item.link || !item.id) {
+                    return item
+                }
+
+                const newUrl = parentUrl ? `${parentUrl}/${item.link.slug}` : null
+
+                return {
+                    ...item,
+                    link: {
+                        ...item.link,
+                        url: newUrl,
+                    },
+                }
+            })
+
+            return {
+                ...oldData,
+                data: updatedData,
+            }
+        })
+    })
+}
 
 export const pageModule: IModule<Page> = {
     key: 'page',
@@ -33,6 +71,17 @@ export const pageModule: IModule<Page> = {
     relations: {
         list: ['link'],
         detail: ['template', 'link', 'children.link', 'parent.link', 'audits.user'],
+    },
+    onEntityUpdate: (page, queryCache) => {
+        if (!page.link?.url) {
+            return
+        }
+        updateDescendantsUrls<Page>(queryCache, page.id, page.link.url, [
+            'list',
+            'page',
+            'infinity',
+            'tree-children',
+        ])
     },
 }
 

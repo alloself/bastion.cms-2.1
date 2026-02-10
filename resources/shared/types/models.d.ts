@@ -48,7 +48,7 @@ export interface AuditModel {
   updated_at: string | null
   // relations
   user?: User
-  auditable?: AuditModel
+  auditable?: Audit
 }
 
 export interface Template {

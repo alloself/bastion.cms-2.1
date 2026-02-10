@@ -71,6 +71,7 @@
                 :component="activeTabComponent"
                 :props="activeTabProps"
                 :tab="activeTab"
+                :screen="screen"
             />
         </KeepAlive>
     </VCard>
