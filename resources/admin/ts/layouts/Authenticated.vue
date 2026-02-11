@@ -215,7 +215,7 @@ const handleNavigationItemClick = async (
         return;
     }
 
-    await toScreenRoute({ name: item.to }, event);
+    toScreenRoute({ name: item.to }, event);
 };
 
 const onLogout = async () => {

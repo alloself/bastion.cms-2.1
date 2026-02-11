@@ -128,7 +128,7 @@ const handleEditClick = async (event: MouseEvent) => {
     if (!modelValue.value) {
         return
     }
-    await toScreenRoute(
+    toScreenRoute(
         {
             name: `${capitalize(moduleKey)}Detail`,
             params: { id: modelValue.value },
@@ -138,7 +138,7 @@ const handleEditClick = async (event: MouseEvent) => {
 }
 
 const handleCreateClick = async (event: MouseEvent) => {
-    await toScreenRoute(
+    toScreenRoute(
         {
             name: `${capitalize(moduleKey)}Create`,
         },

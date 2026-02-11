@@ -122,7 +122,7 @@ const handleBackClick = async () => {
         router.back()
         return
     }
-    await toScreenRoute({ name: `${capitalize(module.key)}List` })
+    toScreenRoute({ name: `${capitalize(module.key)}List` })
 }
 
 const form = ref<FormContext<T, T>>()
@@ -264,7 +264,7 @@ const handleConfirmDelete = async () => {
 
     await deleteMutation.mutateAsync(id)
     isDeleteDialogVisible.value = false
-    await toScreenRoute({ name: `${capitalize(module.key)}List` })
+    toScreenRoute({ name: `${capitalize(module.key)}List` })
 }
 
 const handleSaveClick = async () => {
@@ -314,7 +314,7 @@ const handleCreateClick = async () => {
             return
         }
 
-        await toScreenRoute({
+        toScreenRoute({
             name: `${capitalize(module.key)}Detail`,
             params: { id: createdEntity.id },
         })

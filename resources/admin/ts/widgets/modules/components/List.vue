@@ -281,7 +281,7 @@ const handleCreateClick = (event: MouseEvent) => {
 }
 
 const handleRowClick = async (event: MouseEvent, { item }: { item: T }) => {
-    await toScreenRoute(
+    toScreenRoute(
         {
             name: `${capitalize(module.key)}Detail`,
             params: { id: item.id },

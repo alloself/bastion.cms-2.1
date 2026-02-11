@@ -295,7 +295,7 @@ const handleEditClick = async (item: T, event: MouseEvent) => {
         return
     }
 
-    await toScreenRoute(
+    toScreenRoute(
         {
             name: `${capitalize(module.key)}Detail`,
             params: { id: nodeId },
@@ -305,7 +305,7 @@ const handleEditClick = async (item: T, event: MouseEvent) => {
 }
 
 const handleCreateClick = async (event: MouseEvent) => {
-    await toScreenRoute(
+    toScreenRoute(
         {
             name: `${capitalize(module.key)}Create`,
             query: { parent_id: parentId },
@@ -315,7 +315,7 @@ const handleCreateClick = async (event: MouseEvent) => {
 }
 
 const handleCreateChildClick = async (item: T, event: MouseEvent) => {
-    await toScreenRoute(
+    toScreenRoute(
         {
             name: `${capitalize(module.key)}Create`,
             query: { parent_id: item.id },
