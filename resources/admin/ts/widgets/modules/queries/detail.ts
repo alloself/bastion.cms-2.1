@@ -20,6 +20,11 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
     const moduleValue = toValue(module)
     const getIdValue = () => toValue(id)
     const queryCache = useQueryCache()
+    const invalidateModuleQueries = () => {
+        queryCache.invalidateQueries({
+            predicate: (entry) => entry.key.includes(moduleValue.key),
+        })
+    }
 
     const detailQuery = useQuery<T | undefined>({
         key: () => ['detail', moduleValue.key, getIdValue() ?? 'create'],
@@ -37,6 +42,9 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
     const createMutation = useMutation({
         key: () => ['create', moduleValue.key, getIdValue() ?? 'create'],
         mutation: (payload: Partial<T>) => createModuleDetailQuery<T>(moduleValue, payload),
+        onSettled: () => {
+            invalidateModuleQueries()
+        },
     })
 
     const updateMutation = useMutation({
@@ -45,9 +53,7 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
             updateModuleDetailQuery<T>(moduleValue, id, payload),
         onSettled: (updatedEntity, error) => {
             if (error || !updatedEntity || !updatedEntity.id) {
-                queryCache.invalidateQueries({
-                    predicate: (entry) => entry.key.includes(moduleValue.key),
-                })
+                invalidateModuleQueries()
                 return
             }
 
@@ -92,6 +98,9 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
     const deleteMutation = useMutation({
         key: () => ['delete', moduleValue.key, getIdValue() ?? 'delete'],
         mutation: (id: TUUID) => deleteModuleDetailQuery<T>(moduleValue, id),
+        onSettled: () => {
+            invalidateModuleQueries()
+        },
     })
 
     return { detailQuery, createMutation, updateMutation, deleteMutation }

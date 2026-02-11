@@ -305,7 +305,6 @@ const handleEditClick = async (item: T, event: MouseEvent) => {
 }
 
 const handleCreateClick = async (event: MouseEvent) => {
-    console.log(parentId)
     await toScreenRoute(
         {
             name: `${capitalize(module.key)}Create`,
