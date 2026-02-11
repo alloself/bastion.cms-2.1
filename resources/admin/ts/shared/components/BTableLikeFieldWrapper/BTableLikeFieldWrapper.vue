@@ -75,7 +75,7 @@ const hasHeaderAppendSlot = computed(() => !!slots["header-append"]);
 <style scoped lang="scss">
 .b-table-like-field-wrapper {
     width: 100%;
-
+  
     &__container {
         border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: 4px;
@@ -109,6 +109,7 @@ const hasHeaderAppendSlot = computed(() => !!slots["header-append"]);
 
     &__content {
         overflow: auto;
+        max-height: 512px;
     }
 
     &__actions {

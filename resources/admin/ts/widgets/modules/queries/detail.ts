@@ -2,7 +2,14 @@ import { useMutation, useQuery, useQueryCache } from '@pinia/colada'
 import { isObject } from 'lodash'
 import { type MaybeRefOrGetter, toValue } from 'vue'
 
-import type { IBaseEntity, IModule, TUUID } from '@/ts/shared/types'
+import type {
+    IBaseEntity,
+    IBaseTreeEntity,
+    IInfiniteQueryData,
+    IModule,
+    IServerDataList,
+    TUUID,
+} from '@/ts/shared/types'
 
 import {
     createModuleDetailQuery,
@@ -12,6 +19,28 @@ import {
     isServerListData,
     updateModuleDetailQuery,
 } from '../api'
+
+type TModuleCacheData<T> = T | T[] | IServerDataList<T> | IInfiniteQueryData<T> | undefined
+
+const hasChildren = <T extends IBaseEntity>(entity: unknown): entity is IBaseTreeEntity<T> =>
+    isObject(entity) &&
+    'children' in entity &&
+    Array.isArray(entity.children) &&
+    entity.children.length > 0
+
+const traverseChildren = <T extends IBaseEntity>(children: T[] = [], updatedEntity: T): T[] =>
+    children.map((item) => {
+        if (item.id === updatedEntity.id) {
+            return updatedEntity
+        }
+        if (hasChildren<T>(item) && item.children) {
+            return {
+                ...item,
+                children: traverseChildren(item.children, updatedEntity),
+            }
+        }
+        return item
+    })
 
 export const useModuleDetailQuery = <T extends IBaseEntity>(
     module: MaybeRefOrGetter<IModule<T>>,
@@ -57,11 +86,28 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
                 return
             }
 
-            queryCache.setQueriesData<T | undefined>(
+            queryCache.setQueriesData<TModuleCacheData<T>>(
                 {
                     predicate: (entry) => entry.key.includes(moduleValue.key),
                 },
                 (cacheData) => {
+                    if (Array.isArray(cacheData) && cacheData.length) {
+                        const updatedData = cacheData.map((item) => {
+                            if (item.id === updatedEntity.id) {
+                                return updatedEntity
+                            }
+                            if (hasChildren<T>(item) && item.children) {
+                                return {
+                                    ...item,
+                                    children: traverseChildren(item.children, updatedEntity),
+                                }
+                            }
+                            return item
+                        })
+                        console.log(updatedData, cacheData)
+                        return updatedData
+                    }
+
                     if (isServerListData<T>(cacheData)) {
                         return {
                             ...cacheData,
@@ -83,7 +129,18 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
                         }
                     }
 
-                    if (isObject(cacheData) && cacheData.id === updatedEntity.id) {
+                    if (
+                        isObject(cacheData) &&
+                        !Array.isArray(cacheData) &&
+                        cacheData.id === updatedEntity.id
+                    ) {
+                        if (hasChildren<T>(cacheData)) {
+                            return {
+                                ...cacheData,
+                                children: traverseChildren(cacheData.children, updatedEntity),
+                            }
+                        }
+
                         return updatedEntity
                     }
 
