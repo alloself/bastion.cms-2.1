@@ -91,7 +91,8 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
                             })),
                         }
                     }
-                    console.log(cacheData, updatedEntity)
+                  
+                    //TODO: может сделать так чтобы при обновлении кеша все дети не пропадали
                     if (
                         isObject(cacheData) &&
                         !Array.isArray(cacheData) &&
