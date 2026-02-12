@@ -4,7 +4,6 @@ import { type MaybeRefOrGetter, toValue } from 'vue'
 
 import type {
     IBaseEntity,
-    IBaseTreeEntity,
     IInfiniteQueryData,
     IModule,
     IServerDataList,
