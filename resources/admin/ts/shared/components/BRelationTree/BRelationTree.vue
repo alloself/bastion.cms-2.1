@@ -122,7 +122,7 @@
 
 <script setup lang="ts" generic="T extends IBaseTreeEntity<T>">
 import { get } from 'lodash'
-import { capitalize, computed, reactive, ref } from 'vue'
+import { capitalize, computed, reactive, ref, watch } from 'vue'
 
 import { useScreenNavigation } from '@/ts/features/screen'
 import { BTableLikeFieldWrapper } from '@/ts/shared/components'
@@ -177,6 +177,21 @@ const treeQuery = useRelationTreeQuery<T>(module.key, currentParentId, relations
 const openedNodes = ref<string[]>([])
 const loadingNodes = reactive<Set<string>>(new Set())
 const searchQuery = ref('')
+
+const getNodeIdsWithLoadedChildren = (): Set<string> => {
+    const ids = new Set<string>()
+    traverseTree(value.value, (item) => {
+        if (item.id && Array.isArray(item.children) && item.children.length > 0) {
+            ids.add(item.id)
+        }
+    })
+    return ids
+}
+
+watch(value, () => {
+    const validIds = getNodeIdsWithLoadedChildren()
+    openedNodes.value = openedNodes.value.filter((id) => validIds.has(id))
+}, { deep: true })
 
 const isDragEnabled = computed(() => !readonly && !disabled)
 

@@ -187,7 +187,7 @@ const actions = computed<Array<TAction>>(() => {
 
     const historyAction: TAction = {
         key: 'history',
-        isVisible: !!id && audits.value.length > 0,
+        isVisible: !!id,
         tooltipText: 'История изменений',
         label: 'История',
         icon: 'mdi-history',
