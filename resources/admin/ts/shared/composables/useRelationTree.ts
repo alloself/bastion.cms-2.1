@@ -1,5 +1,5 @@
 import { useQuery } from '@pinia/colada'
-import { type MaybeRefOrGetter, toValue } from 'vue'
+import { type MaybeRefOrGetter, toValue, watch } from 'vue'
 
 import { client } from '@/ts/shared/api/client'
 import type { IBaseTreeEntity } from '@/ts/shared/types'
@@ -20,11 +20,11 @@ const fetchTreeChildren = async <T extends IBaseTreeEntity>(
 
     return data
 }
-
 export const useRelationTreeQuery = <T extends IBaseTreeEntity>(
     moduleKey: MaybeRefOrGetter<string>,
     parentId: MaybeRefOrGetter<string>,
     relations: MaybeRefOrGetter<string[]>,
+    onMutation?: (data: T[]) => void,
 ) => {
     const query = useQuery({
         key: () => ['tree-children', toValue(moduleKey), toValue(parentId), toValue(relations)],
@@ -32,6 +32,17 @@ export const useRelationTreeQuery = <T extends IBaseTreeEntity>(
             fetchTreeChildren<T>(toValue(moduleKey), toValue(parentId), toValue(relations)),
         enabled: () => !!toValue(parentId),
     })
+
+    watch(
+        () => query.data.value,
+        (data) => {
+            if (!data || !onMutation) {
+                return
+            }
+
+            onMutation(data)
+        },
+    )
 
     return query
 }

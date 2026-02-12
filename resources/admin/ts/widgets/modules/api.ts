@@ -1,6 +1,7 @@
 import { client } from '@/ts/shared/api/client'
 import type {
     IBaseEntity,
+    IBaseTreeEntity,
     IInfiniteQueryData,
     IModule,
     IServerDataList,
@@ -106,4 +107,8 @@ export const isInfiniteQueryData = <T>(data: unknown): data is IInfiniteQueryDat
 
 export const isServerListData = <T>(data: unknown): data is IServerDataList<T> => {
     return isObject(data) && 'data' in data && 'links' in data && 'meta' in data
+}
+
+export const isBaseTreeEntityData = <T extends IBaseTreeEntity<T>>(data: unknown): data is IBaseTreeEntity<T> => {
+    return isObject(data) && 'id' in data && 'has_children' in data
 }

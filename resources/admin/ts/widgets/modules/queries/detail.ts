@@ -14,6 +14,7 @@ import {
     createModuleDetailQuery,
     deleteModuleDetailQuery,
     getModuleDetailQuery,
+    isBaseTreeEntityData,
     isInfiniteQueryData,
     isServerListData,
     updateModuleDetailQuery,
@@ -97,6 +98,21 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
                         cacheData.id === updatedEntity.id
                     ) {
                         return updatedEntity
+                    }
+
+                    if (isBaseTreeEntityData(cacheData) && cacheData.children) {
+                        return {
+                            ...cacheData,
+                            children: cacheData.children.map((item) =>
+                                item.id === updatedEntity.id ? updatedEntity : item,
+                            ),
+                        }
+                    }
+
+                    if (Array.isArray(cacheData)) {
+                        return cacheData.map((item) =>
+                            item.id === updatedEntity.id ? updatedEntity : item,
+                        )
                     }
 
                     return cacheData

@@ -167,7 +167,13 @@ const normalizedErrorMessages = useNormalizedErrors(errorMessages)
 
 const currentParentId = ref<string>('')
 
-const treeQuery = useRelationTreeQuery<T>(module.key, currentParentId, relations)
+const treeQuery = useRelationTreeQuery<T>(module.key, currentParentId, relations, (data) => {
+    traverseTree(value.value, (item) => {
+        if (item.id === currentParentId.value) {
+            item.children = data
+        }
+    })
+})
 const openedNodes = ref<string[]>([])
 const loadingNodes = reactive<Set<string>>(new Set())
 const searchQuery = ref('')
@@ -278,11 +284,11 @@ const handleLoadChildren = async (item: unknown) => {
 
     try {
         currentParentId.value = item.id
-        await treeQuery.refetch()
-        const children = treeQuery.data.value ?? []
+        await treeQuery?.refetch()
+        const children = treeQuery?.data.value ?? []
 
         item.children = children
-    } catch (error) {
+    } catch {
         item.children = []
     } finally {
         loadingNodes.delete(item.id)
@@ -324,7 +330,6 @@ const handleCreateChildClick = async (item: T, event: MouseEvent) => {
     )
 }
 </script>
-
 <style scoped lang="scss">
 .b-relation-tree {
     &__tree {
@@ -387,3 +392,4 @@ const handleCreateChildClick = async (item: T, event: MouseEvent) => {
     }
 }
 </style>
+
