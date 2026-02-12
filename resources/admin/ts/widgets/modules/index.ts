@@ -70,7 +70,7 @@ export const pageModule: IModule<Page> = {
     createForm: usePageForm,
     relations: {
         list: ['link'],
-        detail: ['template', 'link', 'children.link', 'parent.link', 'audits.user'],
+        detail: ['template', 'link', 'children.link', 'parent.link'],
     },
     onEntityUpdate: (page, queryCache) => {
         if (!page.link?.url) {
