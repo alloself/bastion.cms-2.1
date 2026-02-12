@@ -15,7 +15,6 @@ const fetchTreeChildren = async <T extends IBaseTreeEntity>(
         params.relations = relations.join(',')
     }
 
-
     const url = `/api/admin/${moduleKey}/${parentId}/children`
     const { data } = await client.get<T[]>(url, { params })
 
@@ -28,18 +27,9 @@ export const useRelationTreeQuery = <T extends IBaseTreeEntity>(
     relations: MaybeRefOrGetter<string[]>,
 ) => {
     const query = useQuery({
-        key: () => [
-            'tree-children',
-            toValue(moduleKey),
-            toValue(parentId),
-            toValue(relations),
-        ],
+        key: () => ['tree-children', toValue(moduleKey), toValue(parentId), toValue(relations)],
         query: () =>
-            fetchTreeChildren<T>(
-                toValue(moduleKey),
-                toValue(parentId),
-                toValue(relations),
-            ),
+            fetchTreeChildren<T>(toValue(moduleKey), toValue(parentId), toValue(relations)),
         enabled: () => !!toValue(parentId),
     })
 
