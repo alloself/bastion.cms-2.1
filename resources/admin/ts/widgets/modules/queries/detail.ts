@@ -71,6 +71,8 @@ export const useModuleDetailQuery = <T extends IBaseEntity>(
                     predicate: (entry) => entry.key.includes(moduleValue.key),
                 },
                 (cacheData) => {
+
+                    console.log(cacheData)
                     if (isServerListData<T>(cacheData)) {
                         return {
                             ...cacheData,

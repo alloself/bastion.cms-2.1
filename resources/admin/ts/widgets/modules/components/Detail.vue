@@ -68,7 +68,13 @@
             </VSlideGroup>
         </VCardActions>
     </VCard>
-    <AuditHistoryDialog v-model="isAuditDialogVisible" :audits="audits" :fields="fields" />
+    <AuditHistoryDialog
+        v-if="id"
+        v-model="isAuditDialogVisible"
+        :model-key="module.key"
+        :entity-id="id"
+        :fields="fields"
+    />
 </template>
 
 <script setup lang="ts" generic="T extends IBaseEntity">
@@ -218,10 +224,6 @@ const layout = computed(() => moduleFormContext.value.layout)
 
 const entity = computed(() => {
     return detailQuery.data.value
-})
-
-const audits = computed(() => {
-    return entity.value?.audits ?? []
 })
 
 const initialValues = computed(() => {

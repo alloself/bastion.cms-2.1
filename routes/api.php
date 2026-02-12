@@ -2,6 +2,7 @@
 
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuditController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\TemplateController;
@@ -19,6 +20,7 @@ $treeResources = [
 
 Route::prefix('admin')->middleware(['auth:sanctum', 'role:root'])->group(function () use ($resources, $treeResources) {
     Route::get('me', [UserController::class, 'me']);
+    Route::get('audits', [AuditController::class, 'index']);
 
 
     foreach ($treeResources as $route => $controller) {

@@ -1,4 +1,6 @@
 import { client } from '@/ts/shared/api/client'
+import { isObject } from 'lodash'
+
 import type {
     IBaseEntity,
     IBaseTreeEntity,
@@ -8,7 +10,30 @@ import type {
     ISortBy,
     TUUID,
 } from '@/ts/shared/types'
-import { isObject } from 'lodash'
+import type { TAuditModelWithResolved } from '@/ts/shared/types'
+
+export interface IAuditsQueryParams {
+    page: number
+    perPage: number
+    search?: string
+}
+
+export const getAuditsQuery = async (
+    model: string,
+    entityId: string,
+    params: IAuditsQueryParams,
+) => {
+    const { data } = await client.get<IServerDataList<TAuditModelWithResolved>>('/api/admin/audits', {
+        params: {
+            model,
+            id: entityId,
+            page: params.page,
+            per_page: params.perPage,
+            ...(params.search && { search: params.search.trim() }),
+        },
+    })
+    return data
+}
 
 export interface IModuleListQueryParams {
     page: number
