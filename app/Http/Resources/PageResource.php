@@ -37,13 +37,6 @@ class PageResource extends JsonResource
                     ? PageResource::collection($this->children)
                     : [];
             }),
-            'audits' => $this->whenLoaded('audits', function () {
-                return $this->audits->map(function ($audit) {
-                    return array_merge($audit->toArray(), [
-                        'resolved_values' => $this->resource->resolveAuditValues($audit),
-                    ]);
-                });
-            }),
         ];
     }
 }
