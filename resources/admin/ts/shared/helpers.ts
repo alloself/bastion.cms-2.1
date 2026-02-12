@@ -27,7 +27,6 @@ export const isValidRedirectPath = (value: unknown): value is string => {
 
 export const traverseTree = <T extends IBaseTreeEntity<T>>(
     tree: T | T[],
-
     callback: (item: T) => void,
 ) => {
     const nodes = Array.isArray(tree) ? tree : [tree]
