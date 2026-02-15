@@ -12,6 +12,15 @@ class ContentBlock extends CRUDModel
 
     protected $fillable = ['name', 'content', 'order', 'parent_id', 'template_id'];
 
+    public array $interfaces = [
+        'parent_id' => [
+            'type' => 'string | null',
+        ],
+        'has_children' => [
+            'type' => 'boolean | null',
+        ],
+    ];
+
     public function template(): BelongsTo
     {
         return $this->belongsTo(Template::class);
