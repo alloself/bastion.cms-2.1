@@ -38,7 +38,7 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'role:root'])->group(functio
     });
 });
 
-
 Route::prefix('public')->group(function () {
     Route::get('me', [UserController::class, 'me']);
 });
+
