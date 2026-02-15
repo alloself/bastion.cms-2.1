@@ -15,7 +15,7 @@ return new class extends Migration
             $table->integer('order')->default(0);
 
             $table->foreignUuid('file_id')->constrained();
-            $table->unique(['fileable_id', 'fileable_type', 'key']);
+            $table->unique(['fileable_id', 'fileable_type', 'file_id']);
         });
     }
 

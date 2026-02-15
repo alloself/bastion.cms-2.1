@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuditController;
 use App\Http\Controllers\ContentBlockController;
+use App\Http\Controllers\FileController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\UserController;
@@ -9,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 
 $resources = [
     'content_block' => ContentBlockController::class,
+    'file' => FileController::class,
     'page' => PageController::class,
     'template' => TemplateController::class,
 ];
@@ -30,6 +32,12 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'role:root'])->group(functio
     }
 
     Route::apiResources($resources);
+
+    Route::prefix('files')->group(function () {
+        Route::post('assign', [FileController::class, 'assign']);
+        Route::patch('relation', [FileController::class, 'updateRelation']);
+        Route::delete('detach', [FileController::class, 'detach']);
+    });
 
     Route::prefix('batch')->group(function () use ($resources) {
         Route::prefix('delete')->group(function () use ($resources) {
