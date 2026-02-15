@@ -27,6 +27,12 @@ export interface ContentBlockable {
   content_block?: ContentBlock
 }
 
+export interface Attributeable {
+  // relations
+  attributeable?: Attributeable
+  attribute?: Attribute
+}
+
 export interface File {
   // columns
   id: string
@@ -37,6 +43,18 @@ export interface File {
   updated_at: string | null
   // relations
   fileables?: Fileable[]
+  audits?: AuditModel[]
+}
+
+export interface Attribute {
+  // columns
+  id: string
+  name: string
+  key: string
+  deleted_at: string | null
+  created_at: string | null
+  updated_at: string | null
+  // relations
   audits?: AuditModel[]
 }
 
@@ -119,6 +137,7 @@ export interface Page {
   parent?: Page
   children?: Page[]
   links?: Link[]
+  content_blocks?: ContentBlock[]
 }
 
 export interface Link {
