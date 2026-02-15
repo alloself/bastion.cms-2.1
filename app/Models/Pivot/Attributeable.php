@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Attributeable extends MorphPivot
 {
+    public $timestamps = false;
+
     protected $fillable = [
         'attribute_id',
         'attributeable_id',

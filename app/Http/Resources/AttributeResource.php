@@ -11,9 +11,8 @@ class AttributeResource extends JsonResource
     {
         $data = [
             'id' => $this->id,
-            'url' => $this->url,
             'name' => $this->name,
-            'extension' => $this->extension,
+            'key' => $this->key,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'deleted_at' => $this->deleted_at,

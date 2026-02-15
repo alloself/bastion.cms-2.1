@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\AuditController;
 use App\Http\Controllers\Admin\ContentBlockController;
 use App\Http\Controllers\Admin\FileController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 $resources = [
+    'attribute' => AttributeController::class,
     'content_block' => ContentBlockController::class,
     'file' => FileController::class,
     'page' => PageController::class,
