@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Traits\HasTree;
 use App\Http\Resources\PageResource;
 use App\Models\Page;
-use App\Http\Controllers\Traits\HasTree;
 
 class PageController extends CRUDController
 {

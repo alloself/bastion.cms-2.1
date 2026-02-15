@@ -1,11 +1,11 @@
 <?php
 
-use App\Http\Controllers\AuditController;
-use App\Http\Controllers\ContentBlockController;
-use App\Http\Controllers\FileController;
-use App\Http\Controllers\PageController;
-use App\Http\Controllers\TemplateController;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\Admin\AuditController;
+use App\Http\Controllers\Admin\ContentBlockController;
+use App\Http\Controllers\Admin\FileController;
+use App\Http\Controllers\Admin\PageController;
+use App\Http\Controllers\Admin\TemplateController;
+use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 $resources = [

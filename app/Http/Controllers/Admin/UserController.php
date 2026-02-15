@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 
@@ -11,7 +12,7 @@ class UserController extends Controller
     {
         $user = $request->user();
 
-        if ($user) {
+        if ($user !== null) {
             return new UserResource($user);
         }
 

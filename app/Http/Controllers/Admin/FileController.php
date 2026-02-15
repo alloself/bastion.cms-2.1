@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use App\Http\Resources\FileResource;
 use App\Models\File;
@@ -74,7 +74,7 @@ class FileController extends CRUDController
         $modelClass = config("fileable.models.{$validated['model']}");
         $entity = $modelClass::find($validated['model_id']);
 
-        if (!$entity) {
+        if ($entity === null) {
             return response()->json(['message' => 'Сущность не найдена.'], Response::HTTP_NOT_FOUND);
         }
 
@@ -135,7 +135,7 @@ class FileController extends CRUDController
             ->where('file_id', $validated['file_id'])
             ->first();
 
-        if (!$fileable) {
+        if ($fileable === null) {
             return response()->json(['message' => 'Связь не найдена.'], Response::HTTP_NOT_FOUND);
         }
 

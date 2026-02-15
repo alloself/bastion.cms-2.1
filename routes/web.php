@@ -1,12 +1,13 @@
 <?php
 
+use App\Http\Controllers\Admin\SiteController as AdminSiteController;
+use App\Http\Controllers\Site\SiteController as SiteSiteController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\SiteController;
 
-Route::get('/admin/{any?}', [SiteController::class, 'admin'])
+Route::get('/admin/{any?}', [AdminSiteController::class, 'admin'])
     ->where('any', '.*')
     ->name('admin');
 
-Route::get('{any?}', [SiteController::class, 'site'])
+Route::get('{any?}', [SiteSiteController::class, 'site'])
     ->where('any', '.*')
     ->name('site');

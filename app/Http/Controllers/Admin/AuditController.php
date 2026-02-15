@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Http\Resources\AuditResource;
 use App\Models\AuditModel;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 
 class AuditController extends Controller
 {
@@ -22,7 +23,7 @@ class AuditController extends Controller
 
         $modelClass = config("audit.models.{$validated['model']}");
 
-        if(!$modelClass) {
+        if ($modelClass === null) {
             return response()->json([], Response::HTTP_NOT_FOUND);
         }
 
@@ -38,7 +39,7 @@ class AuditController extends Controller
                 ->with('user')
                 ->orderBy('created_at', 'desc');
 
-            if ($search) {
+            if ($search !== null) {
                 $query->whereHas('user', function ($userQuery) use ($search) {
                     $userQuery->where('email', 'LIKE', "%{$search}%");
                 });
