@@ -141,7 +141,7 @@ const { detailQuery, createMutation, updateMutation, deleteMutation } = useModul
 )
 
 watch(detailQuery.error, (error) => {
-    if (!id || !isAxiosError(error) || error.response?.status === 404) {
+    if (!id || !isAxiosError(error) || error.response?.status !== 404) {
         return
     }
     const listRoute = router.resolve({ name: `${capitalize(module.key)}List` })
