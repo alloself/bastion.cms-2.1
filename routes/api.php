@@ -1,18 +1,20 @@
 <?php
 
-
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuditController;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\ContentBlockController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\TemplateController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Route;
 
 $resources = [
+    'content_block' => ContentBlockController::class,
     'page' => PageController::class,
     'template' => TemplateController::class,
 ];
 
 $treeResources = [
+    'content_block' => ContentBlockController::class,
     'page' => PageController::class,
 ];
 

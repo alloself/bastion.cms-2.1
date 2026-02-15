@@ -11,7 +11,10 @@ class Fileable extends MorphPivot
     protected $fillable = [
         'file_id',
         'fileable_id',
-        'fileable_type'
+        'fileable_type',
+        'type',
+        'key',
+        'order',
     ];
 
     public function fileable()
