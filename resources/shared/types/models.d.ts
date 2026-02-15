@@ -1,4 +1,4 @@
-export interface User {
+export type User = {
   // columns
   id: string
   email: string
@@ -11,13 +11,19 @@ export interface User {
   deleted_at: string | null
 }
 
-export interface Fileable {
+export type Fileable = {
   // relations
   fileable?: Fileable
   file?: File
 }
 
-export interface File {
+export type ContentBlockable = {
+  // relations
+  content_blockable?: ContentBlockable
+  content_block?: ContentBlock
+}
+
+export type File = {
   // columns
   id: string
   url: unknown
@@ -30,7 +36,18 @@ export interface File {
   audits?: AuditModel[]
 }
 
-export interface AuditModel {
+export type ContentBlock = {
+  // relations
+  template?: Template
+  audits?: AuditModel[]
+  images?: File[]
+  files?: File[]
+  videos?: File[]
+  parent?: ContentBlock
+  children?: ContentBlock[]
+}
+
+export type AuditModel = {
   // columns
   id: string
   user_type: string | null
@@ -51,7 +68,7 @@ export interface AuditModel {
   auditable?: Audit
 }
 
-export interface Template {
+export type Template = {
   // columns
   id: string
   name: string
@@ -63,7 +80,7 @@ export interface Template {
   audits?: AuditModel[]
 }
 
-export interface Page {
+export type Page = {
   // columns
   id: string
   meta: Record<string, unknown> | null
@@ -86,7 +103,7 @@ export interface Page {
   links?: Link[]
 }
 
-export interface Link {
+export type Link = {
   // columns
   id: string
   title: string
