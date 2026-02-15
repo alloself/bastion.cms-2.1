@@ -6,10 +6,11 @@ use App\Models\Traits\HasLink;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Kalnoy\Nestedset\NodeTrait;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
+use App\Models\Traits\HasContentBlocks;
 
 class Page extends CRUDModel
 {
-    use NodeTrait, HasLink;
+    use NodeTrait, HasLink, HasContentBlocks;
 
     protected $fillable = ['index', 'meta', 'parent_id', 'template_id'];
 
