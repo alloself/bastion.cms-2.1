@@ -15,6 +15,7 @@ return new class extends Migration
             $table->uuidMorphs('content_blockable', 'cb_morph_index');
             $table->integer('order')->default(0);
             $table->string('key')->nullable();
+            $table->boolean('is_visible')->default(true);
 
             $table->foreignUuid('content_block_id')->constrained('content_blocks')->cascadeOnDelete();
             $table->unique(['content_blockable_id', 'content_blockable_type', 'key'], 'cb_unique_index');

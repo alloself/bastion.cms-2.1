@@ -18,6 +18,10 @@ export interface Fileable {
 }
 
 export interface ContentBlockable {
+  // overrides
+  is_visible: boolean
+  key: string | null
+  order: integer
   // relations
   content_blockable?: ContentBlockable
   content_block?: ContentBlock

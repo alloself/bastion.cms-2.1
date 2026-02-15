@@ -13,6 +13,19 @@ class ContentBlockable extends MorphPivot
         'content_blockable_type',
         'key',
         'order',
+        'is_visible',
+    ];
+
+    public array $interfaces = [
+        'is_visible' => [
+            'type' => 'boolean',
+        ],
+        'key' => [
+            'type' => 'string | null',
+        ],
+        'order' => [
+            'type' => 'integer',
+        ],
     ];
 
     public function contentBlockable()
