@@ -360,6 +360,7 @@ onMounted(() => {
 
 onActivated(() => {
     if (!id) {
+        form.value?.resetForm({ values: initialValues.value })
         tab.title = module.getDetailTabTitle()
     }
     if (entity.value) {
