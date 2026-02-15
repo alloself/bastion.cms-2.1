@@ -2,6 +2,7 @@ import type { QueryCache } from '@pinia/colada'
 import type { AuditModel, Link } from '@shared/types/models'
 import type { PartialDeep } from 'type-fest'
 import type { ComputedRef } from 'vue'
+import type { MaybeRefOrGetter } from 'vue'
 
 import type { IBSmartFormField } from '../components/BSmartForm'
 
@@ -54,7 +55,7 @@ export interface IModule<T extends IBaseEntity = IBaseEntity> {
     isDefault?: boolean
     headers: ITableHeader[]
     getDetailTabTitle(entity?: T | null): string
-    createForm: (entity?: T) => IModuleForm<T>
+    createForm: (entity?: MaybeRefOrGetter<T | undefined>) => IModuleForm<T>
     relations?: {
         list?: string[]
         detail?: string[]

@@ -148,12 +148,9 @@ watch(detailQuery.error, (error) => {
     screenStore.setTabRoute(screen.id, tab.id, listRoute)
 })
 
-const moduleFormContext = computed(() => {
-    if (!entity.value) {
-        return module.createForm()
-    }
-    return module.createForm(entity.value)
-})
+const entity = computed(() => detailQuery.data.value)
+
+const { fields, layout, createInitialValues } = module.createForm(entity)
 
 const isLoading = computed(
     () =>
@@ -219,19 +216,12 @@ const actions = computed<Array<TAction>>(() => {
     return [refreshAction, historyAction, deleteAction, saveAction]
 })
 
-const fields = computed(() => moduleFormContext.value.fields.value)
-const layout = computed(() => moduleFormContext.value.layout)
-
-const entity = computed(() => {
-    return detailQuery.data.value
-})
-
 const initialValues = computed(() => {
     if (id && entity.value) {
         return entity.value as PartialDeep<T>
     }
 
-    const baseInitialValues = moduleFormContext.value.createInitialValues()
+    const baseInitialValues = createInitialValues()
 
     if (!Object.keys(route.query).length) {
         return baseInitialValues

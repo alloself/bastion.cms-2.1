@@ -1,20 +1,17 @@
 import { computed } from 'vue'
 import { z } from 'zod'
 
-import { BCodeEditor, type IBSmartFormField } from '@/ts/shared/components'
+import { type IBSmartFormField } from '@/ts/shared/components'
 
 const nameSchema = z.string().trim().min(1, 'Поле обязательно для заполнения')
 
-const valueSchema = z.string().min(1, 'Поле обязательно для заполнения')
-
-export const templateSchema = z.object({
+export const contentBlockSchema = z.object({
     name: nameSchema,
-    value: valueSchema,
 })
 
-export type TemplateFormValues = z.infer<typeof templateSchema>
+export type ContentBlockFormValues = z.infer<typeof contentBlockSchema>
 
-export const useTemplateForm = () => {
+export const useContentBlockForm = () => {
     const fields = computed<IBSmartFormField[]>(() => {
         return [
             {
@@ -30,22 +27,12 @@ export const useTemplateForm = () => {
                 },
                 rule: nameSchema,
             },
-            {
-                component: BCodeEditor,
-                key: 'value',
-                isGrow: true,
-                props: {
-                    name: 'value',
-                },
-                rule: valueSchema,
-            },
         ]
     })
 
     const createInitialValues = () => {
         return {
             name: '',
-            value: '',
         }
     }
 

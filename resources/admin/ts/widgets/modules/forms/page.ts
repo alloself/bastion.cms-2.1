@@ -1,5 +1,6 @@
 import type { Page } from '@shared/types/models'
-import { computed } from 'vue'
+import type { MaybeRefOrGetter } from 'vue'
+import { computed, toValue } from 'vue'
 
 import {
     BJSONEditor,
@@ -10,8 +11,9 @@ import {
 
 import { pageModule, templateModule } from '..'
 
-export const usePageForm = (entity?: Page) => {
+export const usePageForm = (entity?: MaybeRefOrGetter<Page | undefined>) => {
     const fields = computed<IBSmartFormField[]>(() => {
+        const entityValue = toValue(entity)
         const baseFields: IBSmartFormField[] = [
             {
                 component: 'v-text-field',
@@ -48,7 +50,7 @@ export const usePageForm = (entity?: Page) => {
                     clearable: true,
                     relations: ['link'],
                     disabled: (formValues: Partial<Page>) => !!formValues.index,
-                    initialItems: entity?.parent ? [entity.parent] : [],
+                    initialItems: entityValue?.parent ? [entityValue.parent] : [],
                 },
             },
             {
@@ -59,7 +61,7 @@ export const usePageForm = (entity?: Page) => {
                     itemTitle: 'name',
                     label: 'Шаблон',
                     placeholder: 'Выберите шаблон',
-                    initialItems: entity?.template ? [entity.template] : [],
+                    initialItems: entityValue?.template ? [entityValue.template] : [],
                 },
             },
             {
@@ -82,13 +84,13 @@ export const usePageForm = (entity?: Page) => {
             },
         ]
 
-        if (entity?.id) {
+        if (entityValue?.id) {
             baseFields.push({
                 component: BRelationTree,
                 key: 'children',
                 props: {
                     module: pageModule,
-                    parentId: entity.id,
+                    parentId: entityValue.id,
                     itemTitle: 'link.title',
                     label: 'Дочерние страницы',
                     relations: ['link'],

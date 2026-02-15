@@ -1,5 +1,5 @@
 import type { EntryKey, QueryCache } from '@pinia/colada'
-import type { Page, Template } from '@shared/types/models'
+import type { ContentBlock, Page, Template } from '@shared/types/models'
 import { capitalize } from 'lodash'
 import type { RouteLocation, RouteLocationNormalized, RouteRecordRaw } from 'vue-router'
 
@@ -8,6 +8,7 @@ import type { ILinkableEntity, IModule } from '@/ts/shared/types'
 
 import { isServerListData } from './api'
 import { usePageForm, useTemplateForm } from './forms'
+import { useContentBlockForm } from './forms/contentBlock'
 
 const updateDescendantsUrls = <T extends ILinkableEntity>(
     queryCache: QueryCache,
@@ -43,6 +44,27 @@ const updateDescendantsUrls = <T extends ILinkableEntity>(
             }
         })
     })
+}
+
+export const contentBlockModule: IModule<ContentBlock> = {
+    key: 'content_block',
+    title: 'Блоки контента',
+    icon: 'mdi-view-grid',
+    showInNavigation: true,
+    headers: [
+        {
+            title: 'Название',
+            key: 'name',
+        },
+    ],
+    getDetailTabTitle(entity?: ContentBlock) {
+        if (!entity) {
+            return 'Создание блока контента'
+        }
+        return `Блок контента "${entity.name}"`
+    },
+
+    createForm: useContentBlockForm,
 }
 
 export const pageModule: IModule<Page> = {
@@ -105,7 +127,7 @@ export const templateModule: IModule<Template> = {
     createForm: useTemplateForm,
 }
 
-export const modules = [pageModule, templateModule]
+export const modules = [pageModule, templateModule, contentBlockModule]
 
 export const getDefaultModule = () => {
     return modules.find(({ isDefault, showInNavigation }) => isDefault && showInNavigation)
