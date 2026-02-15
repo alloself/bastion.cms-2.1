@@ -115,8 +115,8 @@ const { module, id, tab, screen } = defineProps<{
 
 const route = useRoute()
 const router = useRouter()
-const { toScreenRoute } = useScreenNavigation()
 const screenStore = useScreenStore()
+const { toScreenRoute } = useScreenNavigation()
 
 const canGoBack = computed(() => {
     const historyState = window.history.state

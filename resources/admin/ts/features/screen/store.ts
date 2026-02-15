@@ -1,150 +1,136 @@
-import { defineStore } from "pinia";
-import { computed, reactive, ref, watch } from "vue";
-import type { IScreen, ITab, IScreenStateSerializable } from "./types";
+import { defineStore } from 'pinia'
+import { computed, reactive, ref, watch } from 'vue'
+import type { RouteLocationNormalizedLoadedGeneric, RouteLocationResolvedGeneric } from 'vue-router'
 
-import type { TUUID } from "@/ts/shared/types";
-import { defaultTabConfig } from "@/ts/shared/const";
-import type {
-    RouteLocationNormalizedLoadedGeneric,
-    RouteLocationResolvedGeneric,
-} from "vue-router";
+import { defaultTabConfig } from '@/ts/shared/const'
+import type { TUUID } from '@/ts/shared/types'
 
-const STORAGE_KEY = "screen-store";
+import type { IScreen, IScreenStateSerializable, ITab } from './types'
 
-const serialize = (
-    screens: Map<TUUID, IScreen>,
-    activeScreenId: TUUID | null
-) => {
+const STORAGE_KEY = 'screen-store'
+
+const serialize = (screens: Map<TUUID, IScreen>, activeScreenId: TUUID | null) => {
     const serializedScreens = Array.from(screens.values()).map((screen) => ({
         id: screen.id,
         tabs: Array.from(screen.tabs.values()),
         activeTabId: screen.activeTabId,
         width: screen.width,
-    }));
+    }))
 
     return {
         screens: serializedScreens,
         activeScreenId,
-    };
-};
+    }
+}
 
 const deserialize = (data: IScreenStateSerializable) => {
-    const screens = new Map<TUUID, IScreen>();
+    const screens = new Map<TUUID, IScreen>()
 
     for (const screenData of data.screens) {
-        const tabs = new Map<TUUID, ITab>();
+        const tabs = new Map<TUUID, ITab>()
         for (const tab of screenData.tabs) {
-            tabs.set(tab.id, tab);
+            tabs.set(tab.id, tab)
         }
         screens.set(screenData.id, {
             id: screenData.id,
             tabs,
             activeTabId: screenData.activeTabId,
             width: screenData.width,
-        });
+        })
     }
 
     return {
         screens,
         activeScreenId: data.activeScreenId,
-    };
-};
+    }
+}
 
 const loadFromStorage = () => {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(STORAGE_KEY)
     if (!stored) {
-        return { screens: new Map(), activeScreenId: null };
+        return { screens: new Map(), activeScreenId: null }
     }
-    const parsed = JSON.parse(stored) as IScreenStateSerializable;
+    const parsed = JSON.parse(stored) as IScreenStateSerializable
 
     if (!parsed.screens) {
-        return { screens: new Map(), activeScreenId: null };
+        return { screens: new Map(), activeScreenId: null }
     }
-    return deserialize(parsed);
-};
+    return deserialize(parsed)
+}
 
-const saveToStorage = (
-    screens: Map<TUUID, IScreen>,
-    activeScreenId: TUUID | null
-) => {
-    const serialized = serialize(screens, activeScreenId);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(serialized));
-};
+const saveToStorage = (screens: Map<TUUID, IScreen>, activeScreenId: TUUID | null) => {
+    const serialized = serialize(screens, activeScreenId)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(serialized))
+}
 
-export const useScreenStore = defineStore("screen", () => {
-    const { screens: initialScreens, activeScreenId: initialActiveScreenId } =
-        loadFromStorage();
+export const useScreenStore = defineStore('screen', () => {
+    const { screens: initialScreens, activeScreenId: initialActiveScreenId } = loadFromStorage()
 
-    const screens = reactive<Map<TUUID, IScreen>>(initialScreens);
-    const activeScreenId = ref<TUUID | null>(initialActiveScreenId);
+    const screens = reactive<Map<TUUID, IScreen>>(initialScreens)
+    const activeScreenId = ref<TUUID | null>(initialActiveScreenId)
 
     watch(
         [() => screens, () => activeScreenId.value],
         () => {
-            saveToStorage(screens, activeScreenId.value);
+            saveToStorage(screens, activeScreenId.value)
         },
-        { deep: true }
-    );
+        { deep: true },
+    )
 
-    const activeScreen = computed(
-        () => activeScreenId.value && screens.get(activeScreenId.value)
-    );
+    const activeScreen = computed(() => activeScreenId.value && screens.get(activeScreenId.value))
 
     const getScreenWidth = (screenId: TUUID) => {
-        const screen = screens.get(screenId);
+        const screen = screens.get(screenId)
         if (!screen) {
-            return 0;
+            return 0
         }
         if (screen.width !== 0) {
-            return screen.width;
+            return screen.width
         }
-        const totalScreens = screens.size;
-        return totalScreens > 0 ? 100 / totalScreens : 100;
-    };
+        const totalScreens = screens.size
+        return totalScreens > 0 ? 100 / totalScreens : 100
+    }
 
     const cloneActiveTabFromActiveScreen = () => {
-        const activeTabId = activeScreen.value?.activeTabId;
+        const activeTabId = activeScreen.value?.activeTabId
         if (!activeScreen.value || !activeTabId) {
-            return null;
+            return null
         }
 
-        const sourceTab = activeScreen.value.tabs.get(activeTabId);
+        const sourceTab = activeScreen.value.tabs.get(activeTabId)
 
         if (!sourceTab) {
-            return null;
+            return null
         }
         return {
             id: crypto.randomUUID(),
             route: sourceTab.route,
             title: sourceTab.title,
             icon: sourceTab.icon,
-        };
-    };
+        }
+    }
 
     const normalizeScreenWidths = () => {
-        const totalWidth = Array.from(screens.values()).reduce(
-            (sum, screen) => {
-                return sum + getScreenWidth(screen.id);
-            },
-            0
-        );
+        const totalWidth = Array.from(screens.values()).reduce((sum, screen) => {
+            return sum + getScreenWidth(screen.id)
+        }, 0)
 
         if (!totalWidth) {
-            return;
+            return
         }
 
-        const factor = 100 / totalWidth;
+        const factor = 100 / totalWidth
         screens.forEach((screen) => {
-            screen.width = getScreenWidth(screen.id) * factor;
-        });
-    };
+            screen.width = getScreenWidth(screen.id) * factor
+        })
+    }
 
     const addScreen = (tabs: ITab[] = [], activeTabId: TUUID | null = null) => {
-        const initialTabs: ITab[] = [...tabs];
+        const initialTabs: ITab[] = [...tabs]
         if (!tabs.length) {
-            const clonedTab = cloneActiveTabFromActiveScreen();
+            const clonedTab = cloneActiveTabFromActiveScreen()
             if (clonedTab) {
-                initialTabs.push(clonedTab);
+                initialTabs.push(clonedTab)
             }
         }
 
@@ -153,239 +139,230 @@ export const useScreenStore = defineStore("screen", () => {
             tabs: new Map(),
             activeTabId: activeTabId ?? null,
             width: 0,
-        };
+        }
         initialTabs.forEach((tab) => {
-            screen.tabs.set(tab.id, tab);
-        });
+            screen.tabs.set(tab.id, tab)
+        })
 
-        const hasValidActiveTab =
-            screen.activeTabId !== null && screen.tabs.has(screen.activeTabId);
+        const hasValidActiveTab = screen.activeTabId !== null && screen.tabs.has(screen.activeTabId)
 
         if (!hasValidActiveTab) {
-            const [firstTab] = initialTabs;
-            screen.activeTabId = firstTab ? firstTab.id : null;
+            const [firstTab] = initialTabs
+            screen.activeTabId = firstTab ? firstTab.id : null
         }
 
-        const screensSize = Math.max(1, screens.size);
-        screen.width = 100 / screensSize;
+        const screensSize = Math.max(1, screens.size)
+        screen.width = 100 / screensSize
 
-        screens.set(screen.id, screen);
-        activeScreenId.value = screen.id;
+        screens.set(screen.id, screen)
+        activeScreenId.value = screen.id
 
-        normalizeScreenWidths();
+        normalizeScreenWidths()
 
-        return screen;
-    };
+        return screen
+    }
 
     const addTab = (screen: IScreen, tab: ITab) => {
-        screen.tabs.set(tab.id, tab);
-        return tab;
-    };
+        screen.tabs.set(tab.id, tab)
+        return tab
+    }
 
     const openRouteTab = (
         screen: IScreen,
-        route:
-            | RouteLocationNormalizedLoadedGeneric
-            | RouteLocationResolvedGeneric
+        route: RouteLocationNormalizedLoadedGeneric | RouteLocationResolvedGeneric,
     ) => {
-        const module = route.meta.module;
+        const module = route.meta.module
 
         const tab = addTab(screen, {
             id: crypto.randomUUID(),
             route: route.fullPath,
             title: module?.title || defaultTabConfig.title,
             icon: module?.icon || defaultTabConfig.icon,
-        });
-        screen.activeTabId = tab.id;
-        return tab;
-    };
+        })
+        screen.activeTabId = tab.id
+        return tab
+    }
 
     const setActiveTabRoute = (
-        route:
-            | RouteLocationNormalizedLoadedGeneric
-            | RouteLocationResolvedGeneric
+        route: RouteLocationNormalizedLoadedGeneric | RouteLocationResolvedGeneric,
     ) => {
-        const module = route.meta.module;
+        const module = route.meta.module
         if (!activeScreen.value) {
-            return null;
+            return null
         }
-        const activeTabId = activeScreen.value.activeTabId;
+        const activeTabId = activeScreen.value.activeTabId
         if (!activeTabId) {
-            return openRouteTab(activeScreen.value, route);
+            return openRouteTab(activeScreen.value, route)
         }
-        const tab = activeScreen.value.tabs.get(activeTabId);
+        const tab = activeScreen.value.tabs.get(activeTabId)
 
         if (!tab) {
-            return;
+            return
         }
 
-        const previousTabRoute = tab.route;
-        const nextFullPath = route.fullPath;
+        const previousTabRoute = tab.route
+        const nextFullPath = route.fullPath
 
-        const isSameFullPath = previousTabRoute === nextFullPath;
+        const isSameFullPath = previousTabRoute === nextFullPath
 
-        tab.route = nextFullPath;
+        tab.route = nextFullPath
         if (!isSameFullPath && module) {
-            tab.title = module.title;
-            tab.icon = module.icon;
+            tab.title = module.title
+            tab.icon = module.icon
         }
 
-        return tab;
-    };
+        return tab
+    }
 
     const setActiveScreen = (screenId: TUUID) => {
         if (screens.has(screenId)) {
-            activeScreenId.value = screenId;
+            activeScreenId.value = screenId
         }
-    };
+    }
 
     const setActiveTab = (screenId: TUUID, tabId: TUUID) => {
-        const screen = screens.get(screenId);
+        const screen = screens.get(screenId)
         if (!screen) {
-            return;
+            return
         }
         if (screen.tabs.has(tabId)) {
-            screen.activeTabId = tabId;
+            screen.activeTabId = tabId
         }
-    };
+    }
 
     const setTabRoute = (
         screenId: TUUID,
         tabId: TUUID,
-        route:
-            | RouteLocationNormalizedLoadedGeneric
-            | RouteLocationResolvedGeneric,
+        route: RouteLocationNormalizedLoadedGeneric | RouteLocationResolvedGeneric,
     ) => {
-        const screen = screens.get(screenId);
+        const screen = screens.get(screenId)
         if (!screen) {
-            return null;
+            return null
         }
-        const tab = screen.tabs.get(tabId);
+        const tab = screen.tabs.get(tabId)
         if (!tab) {
-            return null;
+            return null
         }
-        tab.route = route.fullPath;
-        return tab;
-    };
+        tab.route = route.fullPath
+
+        if (route.meta?.module) {
+            tab.title = route.meta?.module.title
+            tab.icon = route.meta?.module.icon ?? defaultTabConfig.icon
+        }
+        return tab
+    }
 
     const removeTab = (screenId: TUUID, tabId: TUUID) => {
-        const screen = screens.get(screenId);
+        const screen = screens.get(screenId)
         if (!screen) {
-            return null;
+            return null
         }
         if (screen.tabs.size <= 1) {
-            return null;
+            return null
         }
-        const wasActive = screen.activeTabId === tabId;
+        const wasActive = screen.activeTabId === tabId
 
-        const tabsArray = Array.from(screen.tabs.values());
-        const closedTabIndex = tabsArray.findIndex((tab) => tab.id === tabId);
+        const tabsArray = Array.from(screen.tabs.values())
+        const closedTabIndex = tabsArray.findIndex((tab) => tab.id === tabId)
 
-        screen.tabs.delete(tabId);
+        screen.tabs.delete(tabId)
 
         if (wasActive) {
-            const remainingTabs = Array.from(screen.tabs.values());
+            const remainingTabs = Array.from(screen.tabs.values())
 
             const newActiveIndex = Math.min(
                 closedTabIndex > 0 ? closedTabIndex - 1 : 0,
-                remainingTabs.length - 1
-            );
-            const nextTab = remainingTabs[newActiveIndex];
+                remainingTabs.length - 1,
+            )
+            const nextTab = remainingTabs[newActiveIndex]
             if (nextTab) {
-                screen.activeTabId = nextTab.id;
-                return nextTab;
+                screen.activeTabId = nextTab.id
+                return nextTab
             }
-            screen.activeTabId = null;
+            screen.activeTabId = null
         }
-        return null;
-    };
+        return null
+    }
 
     const removeScreen = (screenId: TUUID) => {
         if (screens.size <= 1) {
-            return;
+            return
         }
-        screens.delete(screenId);
+        screens.delete(screenId)
         if (activeScreenId.value === screenId) {
-            const firstKey = screens.keys().next().value;
-            activeScreenId.value = firstKey ?? null;
+            const firstKey = screens.keys().next().value
+            activeScreenId.value = firstKey ?? null
         }
-        normalizeScreenWidths();
-    };
+        normalizeScreenWidths()
+    }
 
     const resizeScreens = (
         screenId: TUUID,
         nextScreenId: TUUID,
         deltaPercent: number,
         startScreenWidth: number,
-        startNextScreenWidth: number
+        startNextScreenWidth: number,
     ) => {
-        const screen = screens.get(screenId);
-        const nextScreen = screens.get(nextScreenId);
+        const screen = screens.get(screenId)
+        const nextScreen = screens.get(nextScreenId)
         if (!screen || !nextScreen) {
-            return null;
+            return null
         }
 
-        const totalWidth = startScreenWidth + startNextScreenWidth;
+        const totalWidth = startScreenWidth + startNextScreenWidth
         if (totalWidth <= 0) {
-            return null;
+            return null
         }
 
-        const minWidthPercent = 10;
-        const effectiveMinWidth = Math.min(minWidthPercent, totalWidth / 2);
+        const minWidthPercent = 10
+        const effectiveMinWidth = Math.min(minWidthPercent, totalWidth / 2)
 
-        const maxWidth = totalWidth - effectiveMinWidth;
-        const unclampedWidth = startScreenWidth + deltaPercent;
-        const newScreenWidth = Math.max(
-            effectiveMinWidth,
-            Math.min(maxWidth, unclampedWidth)
-        );
+        const maxWidth = totalWidth - effectiveMinWidth
+        const unclampedWidth = startScreenWidth + deltaPercent
+        const newScreenWidth = Math.max(effectiveMinWidth, Math.min(maxWidth, unclampedWidth))
 
-        const newNextScreenWidth = totalWidth - newScreenWidth;
+        const newNextScreenWidth = totalWidth - newScreenWidth
 
-        screen.width = newScreenWidth;
-        nextScreen.width = newNextScreenWidth;
+        screen.width = newScreenWidth
+        nextScreen.width = newNextScreenWidth
 
-        return newScreenWidth;
-    };
+        return newScreenWidth
+    }
 
-    const moveTabToScreen = (
-        tabId: TUUID,
-        sourceScreenId: TUUID,
-        targetScreenId: TUUID
-    ) => {
+    const moveTabToScreen = (tabId: TUUID, sourceScreenId: TUUID, targetScreenId: TUUID) => {
         if (sourceScreenId === targetScreenId) {
-            return false;
+            return false
         }
 
-        const sourceScreen = screens.get(sourceScreenId);
-        const targetScreen = screens.get(targetScreenId);
+        const sourceScreen = screens.get(sourceScreenId)
+        const targetScreen = screens.get(targetScreenId)
 
         if (!sourceScreen || !targetScreen) {
-            return false;
+            return false
         }
 
         if (sourceScreen.tabs.size <= 1) {
-            return false;
+            return false
         }
 
-        const tab = sourceScreen.tabs.get(tabId);
+        const tab = sourceScreen.tabs.get(tabId)
         if (!tab) {
-            return false;
+            return false
         }
 
-        sourceScreen.tabs.delete(tabId);
+        sourceScreen.tabs.delete(tabId)
 
         if (sourceScreen.activeTabId === tabId) {
-            const [firstRemainingTab] = sourceScreen.tabs.values();
-            sourceScreen.activeTabId = firstRemainingTab?.id ?? null;
+            const [firstRemainingTab] = sourceScreen.tabs.values()
+            sourceScreen.activeTabId = firstRemainingTab?.id ?? null
         }
 
-        targetScreen.tabs.set(tabId, tab);
-        targetScreen.activeTabId = tabId;
-        activeScreenId.value = targetScreenId;
+        targetScreen.tabs.set(tabId, tab)
+        targetScreen.activeTabId = tabId
+        activeScreenId.value = targetScreenId
 
-        return true;
-    };
+        return true
+    }
 
     return {
         screens,
@@ -402,5 +379,5 @@ export const useScreenStore = defineStore("screen", () => {
         getScreenWidth,
         resizeScreens,
         moveTabToScreen,
-    };
-});
+    }
+})
