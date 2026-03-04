@@ -1,0 +1,370 @@
+---
+description: TypeScript Cookbook — правила, паттерны и рецепты для TypeScript в проекте
+alwaysApply: true
+---
+
+# TypeScript Cookbook
+
+## Именование
+
+| Сущность | Конвенция | Пример |
+|----------|-----------|--------|
+| Тип (type) | Префикс `T` + PascalCase | `TUserData`, `TFormField` |
+| Интерфейс | Префикс `I` + PascalCase | `IUserRepository`, `IFormService` |
+| Enum | Префикс `E` + PascalCase | `EFormMode`, `EButtonType` |
+| Переменная / функция | camelCase | `userName`, `handleClick` |
+| Константа | camelCase или UPPER_CASE | `defaultPageSize`, `MAX_RETRIES` |
+
+- **CRITICAL: Имена переменных и функций не должны состоять из 1 символа.** Они должны быть лаконичными и описательными.
+- Обработчики событий именуются с префиксом `handle`: `handleClick`, `handleSubmit`, `handleKeyDown`.
+
+---
+
+## Строгие правила (обязательные)
+
+- **CRITICAL: Запрещён тип `any`.** Использовать `unknown` + type guard.
+- **CRITICAL: Запрещено приведение через `as` и `as unknown`.** Единственное исключение — `as const`.
+- **CRITICAL: Только строгое сравнение `===` и `!==`.**
+- **CRITICAL: Запрещён `continue` в циклах.**
+- **CRITICAL: Запрещены пустые блоки `catch`.** Обрабатывать ошибку или логировать.
+- Использовать early return для уменьшения вложенности.
+- **CRITICAL: Для проверки наличия значения использовать truthy/falsy проверку, а НЕ явное сравнение с `null`/`undefined`.**
+  Полагаться на приведение типов JavaScript: `null`, `undefined`, `0`, `""`, `NaN` — все falsy.
+
+  ```ts
+  // Плохо
+  if (teamId != null && viewId != null) { ... }
+  if (taskId !== null && taskId !== undefined) { ... }
+
+  // Хорошо
+  if (teamId && viewId) { ... }
+  if (taskId) { ... }
+  ```
+
+  Исключение: если `0` или `""` являются валидными значениями и их нужно отличить от `null`/`undefined`, допускается `value !== null && value !== undefined` (или утилита `isNonNullable`).
+
+---
+
+## Типизация — паттерны
+
+### Utility Types
+
+```ts
+// Частичный тип — все поля необязательны
+type TPartialUser = Partial<TUser>
+
+// Все поля обязательны
+type TRequiredUser = Required<TUser>
+
+// Выбрать определённые поля
+type TUserPreview = Pick<TUser, 'id' | 'name' | 'avatar'>
+
+// Исключить поля
+type TUserWithoutPassword = Omit<TUser, 'password' | 'salt'>
+
+// Словарь
+type TPermissionsMap = Record<string, boolean>
+
+// Тип возвращаемого значения функции
+type TQueryResult = ReturnType<typeof useFormQuery>
+
+// Тип параметров функции
+type TLoginParams = Parameters<typeof loginApi>
+```
+
+### satisfies — проверка типа без расширения
+
+```ts
+const FIELD_ICONS = {
+  text: 'TEXT_ICON',
+  number: 'NUMBER_ICON',
+  date: 'DATE_ICON',
+} satisfies Record<string, string>
+// Тип остаётся { text: string; number: string; date: string },
+// а не расширяется до Record<string, string>
+```
+
+### as const — единственное допустимое использование `as`
+
+```ts
+const ROUTES = {
+  HOME: '/',
+  TASKS: '/tasks',
+  SETTINGS: '/settings',
+} as const
+
+type TRoute = typeof ROUTES[keyof typeof ROUTES]
+// '/' | '/tasks' | '/settings'
+```
+
+### Discriminated Unions
+
+Для описания состояний с разными структурами данных. Используют общее поле-дискриминант.
+
+```ts
+type TRequestState<TData> =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'success'; data: TData }
+  | { status: 'error'; error: Error }
+
+const handleState = (state: TRequestState<TUser[]>) => {
+  switch (state.status) {
+    case 'idle':
+      return null
+    case 'loading':
+      return 'Загрузка...'
+    case 'success':
+      return state.data // TypeScript знает что data существует
+    case 'error':
+      return state.error.message // TypeScript знает что error существует
+  }
+}
+```
+
+### Template Literal Types
+
+```ts
+type TEventName = `on${Capitalize<string>}`
+// 'onClick', 'onSubmit', 'onChange', ...
+
+type TApiEndpoint = `/api/${string}`
+
+type TCssColor = `#${string}` | `rgb(${string})` | `rgba(${string})`
+```
+
+---
+
+## Type Guards — сужение типов
+
+### Пользовательские type guards
+
+```ts
+function isUser(value: unknown): value is TUser {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'id' in value &&
+    'name' in value
+  )
+}
+
+function isNonNullable<TValue>(value: TValue): value is NonNullable<TValue> {
+  return value !== null && value !== undefined
+}
+
+// Использование
+const filteredUsers = items.filter(isUser)
+const nonNullItems = items.filter(isNonNullable)
+```
+
+### in оператор для narrowing
+
+```ts
+interface ISuccessResponse {
+  data: TUser[]
+  total: number
+}
+
+interface IErrorResponse {
+  error: string
+  code: number
+}
+
+const handleResponse = (response: ISuccessResponse | IErrorResponse) => {
+  if ('data' in response) {
+    return response.data // ISuccessResponse
+  }
+  return response.error // IErrorResponse
+}
+```
+
+### Exhaustive checking через never
+
+```ts
+enum EStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  PENDING = 'pending',
+}
+
+const getStatusLabel = (status: EStatus): string => {
+  switch (status) {
+    case EStatus.ACTIVE:
+      return 'Активен'
+    case EStatus.INACTIVE:
+      return 'Неактивен'
+    case EStatus.PENDING:
+      return 'Ожидает'
+    default: {
+      const exhaustiveCheck: never = status
+      return exhaustiveCheck
+    }
+  }
+}
+```
+
+---
+
+## Generics
+
+### Constrained generics
+
+```ts
+interface IBaseEntity {
+  id: string
+  createdAt: Date
+}
+
+const findById = <TEntity extends IBaseEntity>(
+  items: TEntity[],
+  id: string,
+): TEntity | undefined => {
+  return items.find((item) => item.id === id)
+}
+```
+
+### Default generic types
+
+```ts
+type TPaginatedResponse<TItem = unknown> = {
+  items: TItem[]
+  total: number
+  page: number
+  pageSize: number
+}
+```
+
+### Generic composable
+
+```ts
+import { type MaybeRefOrGetter, toValue, ref, computed } from 'vue'
+
+const useSelection = <TItem extends IBaseEntity>(
+  items: MaybeRefOrGetter<TItem[]>,
+) => {
+  const selectedIds = ref<Set<string>>(new Set())
+
+  const selectedItems = computed(() =>
+    toValue(items).filter((item) => selectedIds.value.has(item.id)),
+  )
+
+  const toggle = (id: string) => {
+    const set = new Set(selectedIds.value)
+    if (set.has(id)) {
+      set.delete(id)
+    } else {
+      set.add(id)
+    }
+    selectedIds.value = set
+  }
+
+  const selectAll = () => {
+    selectedIds.value = new Set(toValue(items).map((item) => item.id))
+  }
+
+  const deselectAll = () => {
+    selectedIds.value = new Set()
+  }
+
+  return { selectedIds, selectedItems, toggle, selectAll, deselectAll }
+}
+```
+
+### Conditional types
+
+```ts
+type TExtractArrayItem<TArr> = TArr extends Array<infer TItem> ? TItem : never
+
+type TItem = TExtractArrayItem<string[]> // string
+type TNever = TExtractArrayItem<number> // never
+```
+
+---
+
+## Zod — валидация и вывод типов
+
+### Схема + вывод типа
+
+```ts
+import { z } from 'zod'
+
+const userSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(1),
+  email: z.string().email(),
+  role: z.enum(['admin', 'user', 'moderator']),
+  createdAt: z.coerce.date(),
+})
+
+type TUser = z.infer<typeof userSchema>
+```
+
+### Составные схемы
+
+```ts
+const paginatedSchema = <TItemSchema extends z.ZodTypeAny>(itemSchema: TItemSchema) =>
+  z.object({
+    items: z.array(itemSchema),
+    total: z.number(),
+    page: z.number(),
+    pageSize: z.number(),
+  })
+
+const usersPageSchema = paginatedSchema(userSchema)
+type TUsersPage = z.infer<typeof usersPageSchema>
+```
+
+### Discriminated union в Zod
+
+```ts
+const formFieldSchema = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('text'), value: z.string() }),
+  z.object({ type: z.literal('number'), value: z.number() }),
+  z.object({
+    type: z.literal('select'),
+    value: z.string(),
+    options: z.array(z.object({ id: z.string(), label: z.string() })),
+  }),
+])
+```
+
+---
+
+## Обработка ошибок
+
+```ts
+// Запрещено (пустой catch):
+try { await fetchData() } catch {}
+
+// Правильно:
+try {
+  await fetchData()
+} catch (error: unknown) {
+  if (error instanceof RequestError) {
+    console.error('Ошибка запроса:', error.message)
+    throw error
+  }
+  console.error('Неизвестная ошибка:', error)
+  throw error
+}
+```
+
+---
+
+## Nullable типы
+
+```ts
+type TNullable<TValue> = TValue | null
+
+type TOptional<TValue> = TValue | undefined
+
+// Проверка
+const processUser = (user: TNullable<TUser>) => {
+  if (!user) {
+    return
+  }
+  // user: TUser (сужен)
+  console.log(user.name)
+}
+```

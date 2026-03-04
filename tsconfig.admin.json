@@ -19,10 +19,8 @@
     },
     "include": [
         "resources/admin/**/*.ts",
-        "resources/admin/**/*.tsx",
         "resources/admin/**/*.vue",
         "resources/shared/**/*.ts",
-        "resources/shared/**/*.tsx",
         "resources/shared/**/*.vue",
         "resources/shared/**/*.d.ts"
     ],

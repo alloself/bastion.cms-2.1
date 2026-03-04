@@ -1,0 +1,184 @@
+---
+description: Feature-Sliced Design — структура проекта, слои, импорты и стандарт организации компонентов
+alwaysApply: true
+---
+
+# Feature-Sliced Design (FSD)
+
+## Слои проекта
+
+```
+src/
+├── pages/           # Страницы (роуты). Композируют widgets и components
+├── widgets/         # Крупные самодостаточные блоки UI (formConstructor, formResponses)
+├── features/        # Бизнес-фичи (sharing, guestPassword)
+├── components/      # Переиспользуемые UI-компоненты
+│   ├── UiKit/       # Базовые UI-компоненты (Button, Input, Select, Toast, ...)
+│   ├── common/      # Общие компоненты (table, dnd)
+│   ├── shared/      # Компоненты, разделяемые между модулями
+│   ├── views/       # Компоненты представлений
+│   ├── tasks/       # Компоненты задач
+│   ├── layout/      # Компоненты layout (sidebar, header)
+│   └── modals/      # Модальные окна
+├── api/             # HTTP-запросы (private/ + index.ts)
+├── hooks/           # TanStack Query (queries, mutations) + доменная логика
+├── stores/          # Pinia stores (глобальное состояние)
+├── models/          # Zod-схемы и TypeScript-типы данных
+├── composables/     # Глобальные composables
+├── locales/         # Интернационализация (ru/, en/)
+├── router/          # Маршрутизация
+├── styles/          # Глобальные стили, темы, переменные
+├── helpers/         # Утилитарные хелперы
+├── utils/           # Утилиты
+├── services/        # Сервисы (MetrikaService и т.д.)
+├── constants/       # Константы (icons, ...)
+├── types/           # Глобальные типы
+├── errors/          # Классы ошибок
+└── plugins/         # Vue-плагины
+```
+
+---
+
+## Правила импортов между слоями
+
+- **CRITICAL: Компоненты НЕ импортируют из `api/` напрямую — только через `hooks/requests/`.**
+- `hooks/requests/` использует функции из `api/`.
+- Stores (`stores/`) могут использовать `api/` и `hooks/`.
+- Компоненты верхнего уровня (pages, widgets) композируют нижние.
+- `components/UiKit/` — только UI, без бизнес-логики.
+- `shared/` — утилитарные компоненты без привязки к конкретному домену.
+
+```
+pages/ → widgets/ → components/
+                  → hooks/ → api/
+                  → stores/ → api/
+```
+
+---
+
+## Структура папки компонента (ОБЯЗАТЕЛЬНАЯ)
+
+- **CRITICAL: При создании нового компонента использовать подагент `create-component`** (`.cursor/agents/create-component.md`).
+
+Каждый компонент располагается в своей папке. Минимальный набор файлов:
+
+```
+vue[ComponentName]/
+├── [ComponentName].vue    # Основной SFC-компонент
+├── types.ts               # Типы props, emits, slots, локальные типы и enums
+├── index.ts               # Публичный экспорт компонента и типов
+├── const.ts               # Константы (при необходимости)
+├── hooks.ts               # Локальные composables (при необходимости)
+├── _styles.scss           # Общие стили, шарящиеся между подкомпонентами (при необходимости)
+└── components/            # Дочерние компоненты (при необходимости)
+    └── ChildComponent.vue
+```
+
+### Правила именования папок
+
+- Папка компонента: `vue[ComponentName]` (camelCase с префиксом `vue`).
+  Примеры: `vueTaskCard`, `vueFormField`, `vueUserAvatar`.
+- Файл SFC: `[ComponentName].vue` (PascalCase).
+  Примеры: `TaskCard.vue`, `FormField.vue`, `UserAvatar.vue`.
+
+### index.ts — публичный API
+
+```ts
+export { default as TaskCard } from './TaskCard.vue'
+export * from './types'
+```
+
+- Экспортировать ТОЛЬКО то, что нужно внешним потребителям.
+- Не экспортировать внутренние компоненты из `components/`.
+
+### types.ts — типы компонента
+
+```ts
+export interface ITaskCardProps {
+  taskId: string
+  title: string
+  status: ETaskStatus
+  assignee?: TUser
+}
+
+export interface ITaskCardEmits {
+  click: [taskId: string]
+  statusChange: [taskId: string, status: ETaskStatus]
+}
+
+export enum ETaskStatus {
+  TODO = 'todo',
+  IN_PROGRESS = 'in_progress',
+  DONE = 'done',
+}
+```
+
+### const.ts — константы
+
+```ts
+import type { ETaskStatus } from './types'
+
+export const STATUS_COLORS: Record<ETaskStatus, string> = {
+  todo: '$text-secondary',
+  in_progress: '$accent-warning-primary',
+  done: '$accent-positive-primary',
+} as const
+```
+
+### hooks.ts — локальные composables
+
+```ts
+import { computed, type MaybeRefOrGetter, toValue } from 'vue'
+import type { ETaskStatus } from './types'
+
+export const useTaskStatusLabel = (status: MaybeRefOrGetter<ETaskStatus>) => {
+  const label = computed(() => {
+    const rawStatus = toValue(status)
+    // маппинг статуса к ключу локализации
+    return `tasks.status.${rawStatus}`
+  })
+
+  return { label }
+}
+```
+
+---
+
+## Структура дочерних компонентов (private)
+
+Для компонентов с внутренними подкомпонентами используется папка `private/`:
+
+```
+vueViewHeader/
+├── index.ts
+├── types.ts
+└── private/
+    ├── desktop/
+    │   ├── ViewHeader.desktop.vue
+    │   └── private/
+    │       ├── vueViewTypeCard/
+    │       └── vueViewStages/
+    └── shared/
+        └── ...
+```
+
+- `private/` — компоненты, которые НЕ экспортируются наружу.
+- `shared/` внутри `private/` — общие подкомпоненты между вариантами (desktop/mobile).
+
+---
+
+## UIKit — правила
+
+Компоненты UIKit находятся в `src/components/UiKit/`:
+- Импорт: `import { Button, ETypeButton } from '@/components/UiKit/buttons'`
+- Каждый UiKit-компонент имеет `index.ts` для публичного экспорта.
+- UIKit НЕ содержит бизнес-логики — только отображение и базовая интерактивность.
+- Иконки: `import { svgIcons } from '@/constants/icons'`
+
+---
+
+## Локализация
+
+- Весь видимый пользователю текст — через `$t()` / `t()`, НИКОГДА хардкод.
+- Ключи: `locales/ru/[domain]/[feature].ts` и `locales/en/[domain]/[feature].ts`.
+- Структура ключей: `domain.feature.element` (пример: `tasks.card.statusLabel`).

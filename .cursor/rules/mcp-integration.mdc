@@ -1,0 +1,121 @@
+---
+description: MCP-интеграции — Context7, Figma, Superpowers. Когда и как использовать внешние MCP-серверы
+alwaysApply: true
+---
+
+# MCP-интеграции
+
+## Context7 — документация библиотек
+
+### Когда использовать
+
+- **CRITICAL: ОБЯЗАТЕЛЬНО перед работой с любой внешней библиотекой/фреймворком.**
+- При неуверенности в API или синтаксисе.
+- При обновлении зависимостей.
+- При первом использовании библиотеки в проекте.
+
+### Как использовать
+
+1. Вызвать `resolve-library-id` с названием библиотеки:
+   ```
+   resolve-library-id({ query: "Vue 3.5 props destructuring", libraryName: "vue" })
+   ```
+
+2. Выбрать наиболее релевантный `libraryId` из результатов.
+
+3. Вызвать `query-docs` с конкретным вопросом:
+   ```
+   query-docs({ libraryId: "/vuejs/docs", query: "How to use defineModel for two-way binding" })
+   ```
+
+### Ключевые библиотеки проекта
+
+| Библиотека | libraryName для поиска |
+|------------|------------------------|
+| Vue 3 | `vue` |
+| Pinia | `pinia` |
+| VueUse | `vueuse` |
+| TanStack Query | `tanstack vue-query` |
+| Zod | `zod` |
+| vee-validate | `vee-validate` |
+| Vue Router | `vue-router` |
+| date-fns | `date-fns` |
+| Axios | `axios` |
+
+---
+
+## Figma — чтение макетов
+
+### Когда использовать
+
+- При создании нового компонента по макету.
+- При уточнении визуальных деталей (отступы, цвета, типографика).
+- При сравнении реализации с дизайном.
+
+### Как использовать
+
+1. Получить URL от пользователя (формат: `figma.com/design/:fileKey/:fileName?node-id=:nodeId`).
+
+2. Извлечь `fileKey` и `nodeId`:
+   - `node-id=123-456` -> `nodeId = "123:456"` (заменить `-` на `:`).
+   - Для branch: `figma.com/design/:fileKey/branch/:branchKey/...` -> использовать `branchKey`.
+
+3. Вызвать `get_design_context`:
+   ```
+   get_design_context({ fileKey: "abc123", nodeId: "123:456" })
+   ```
+
+4. Получить скриншот при необходимости:
+   ```
+   get_screenshot({ fileKey: "abc123", nodeId: "123:456" })
+   ```
+
+### Адаптация результата
+
+Figma MCP возвращает React + Tailwind. Необходимо адаптировать:
+
+| Figma/React | Проект |
+|-------------|--------|
+| JSX | Vue `<template>` |
+| `className="..."` | BEM-классы |
+| Tailwind утилиты | SCSS с переменными из `_theme.scss` |
+| `onClick` | `@click` |
+| `useState` | `ref` / `reactive` |
+| Figma токены | CSS-переменные из `_theme.scss` |
+| Hex-цвета | Переменные темы (`$surface-primary`, ...) |
+| px-размеры | Переменные типографики (`$size-sm`, ...) |
+
+### Порядок работы
+
+1. Прочитать макет через Figma MCP.
+2. Создать компонент через подагент `create-component`.
+3. Маппинг цветов/размеров на переменные темы.
+4. Использовать существующие UIKit-компоненты где возможно.
+5. Добавить переводы в `locales/`.
+
+---
+
+## Superpowers — скиллы агента
+
+### Когда использовать
+
+| Скилл | Триггер |
+|-------|---------|
+| `brainstorming` | Перед созданием фич, компонентов, добавлением функциональности |
+| `writing-plans` | При многошаговой задаче с требованиями |
+| `executing-plans` | Выполнение готового плана (батчи + чекпоинты) |
+| `systematic-debugging` | Любой баг, падение, неожиданное поведение |
+| `verification-before-completion` | Перед заявлением о завершении, коммитом, PR |
+| `requesting-code-review` | После крупной фичи или перед мержем |
+| `receiving-code-review` | При получении ревью |
+| `finishing-a-development-branch` | Реализация завершена, тесты проходят |
+| `dispatching-parallel-agents` | 2+ независимые задачи без зависимостей |
+| `code-reviewer` | После крупного шага проекта |
+
+### Порядок применения
+
+1. В начале сессии: `using-superpowers` — определить применимые скиллы.
+2. Перед новой фичей: `brainstorming`.
+3. При плане: `writing-plans` -> `executing-plans`.
+4. При баге: `systematic-debugging`.
+5. Перед завершением: `verification-before-completion`.

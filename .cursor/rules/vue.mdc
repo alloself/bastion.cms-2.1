@@ -1,0 +1,359 @@
+---
+description: Vue 3.5 Cookbook — правила, паттерны и рецепты для Vue-компонентов
+alwaysApply: true
+---
+
+# Vue 3.5 Cookbook
+
+## Reactivity и Props
+
+### Деструктуризация props сохраняет реактивность (Vue 3.5+)
+
+В Vue 3.5+ переменные, деструктурированные из `defineProps`, остаются реактивными. Компилятор Vue автоматически подставляет `props.` перед обращениями к ним.
+
+```vue
+<script setup lang="ts">
+interface IProps {
+  title: string
+  count?: number
+  items?: string[]
+}
+
+const {
+  title,
+  count = 0,
+  items = [],
+} = defineProps<IProps>()
+
+watchEffect(() => {
+  // перезапустится при изменении title или count
+  console.log(title, count)
+})
+</script>
+```
+
+- **CRITICAL: Всегда использовать generic-синтаксис `defineProps<T>()`**, а НЕ runtime-декларацию `defineProps({ ... })`.
+- Значения по умолчанию задаются прямо в деструктуризации: `count = 0`.
+- Алиасы работают: `foo: bar` — обращение через `bar`, реактивность сохраняется.
+
+### defineEmits — типизированные события
+
+```vue
+<script setup lang="ts">
+const emit = defineEmits<{
+  click: [id: number]
+  change: [value: string]
+  submit: []
+}>()
+
+const handleClick = (id: number) => {
+  emit('click', id)
+}
+</script>
+```
+
+### defineModel — двусторонний binding (Vue 3.4+)
+
+Заменяет `prop` + `emit('update:...')` одним вызовом. Возвращает `ref`, мутация которого автоматически emit-ит обновление в родителя.
+
+```vue
+<script setup lang="ts">
+// v-model (modelValue)
+const model = defineModel<string>()
+
+// v-model:title
+const title = defineModel<string>('title')
+
+// v-model:count с дефолтом
+const count = defineModel<number>('count', { default: 0 })
+
+// С модификаторами
+const [value, modifiers] = defineModel<string>({
+  set(val) {
+    if (modifiers.trim) {
+      return val.trim()
+    }
+    return val
+  },
+})
+</script>
+
+<template>
+  <input v-model="model" />
+</template>
+```
+
+Родитель:
+```vue
+<ChildComponent v-model="message" v-model:title="postTitle" v-model:count="counter" />
+```
+
+### useTemplateRef — доступ к DOM (Vue 3.5+)
+
+```vue
+<script setup lang="ts">
+const inputRef = useTemplateRef<HTMLInputElement>('inputEl')
+
+const focusInput = () => {
+  inputRef.value?.focus()
+}
+</script>
+
+<template>
+  <input ref="inputEl" />
+</template>
+```
+
+- **CRITICAL: Использовать `useTemplateRef('name')` вместо `const ref = ref<HTMLElement>()`.**
+
+---
+
+## Composition API — паттерны
+
+### watch vs watchEffect
+
+- `watchEffect` — автоматически отслеживает все реактивные зависимости внутри callback, запускается сразу.
+- `watch` — явно указывает источник, имеет доступ к предыдущему значению, ленивый по умолчанию.
+
+```ts
+// watchEffect — отслеживает всё, что используется внутри
+watchEffect(() => {
+  console.log(count.value, name.value)
+})
+
+// watch — точечное отслеживание
+watch(count, (newVal, oldVal) => {
+  console.log(`${oldVal} -> ${newVal}`)
+})
+
+// watch нескольких источников
+watch([count, name], ([newCount, newName]) => {
+  console.log(newCount, newName)
+})
+```
+
+### computed с getter/setter
+
+```ts
+const fullName = computed({
+  get: () => `${firstName.value} ${lastName.value}`,
+  set: (val: string) => {
+    const [first, ...rest] = val.split(' ')
+    firstName.value = first
+    lastName.value = rest.join(' ')
+  },
+})
+```
+
+### toValue — разворачивание MaybeRefOrGetter
+
+```ts
+import { toValue, type MaybeRefOrGetter } from 'vue'
+
+const useFormattedDate = (date: MaybeRefOrGetter<Date>) => {
+  const formatted = computed(() => {
+    const rawDate = toValue(date)
+    return rawDate.toLocaleDateString()
+  })
+
+  return { formatted }
+}
+```
+
+### shallowRef и triggerRef — оптимизация больших объектов
+
+```ts
+const largeList = shallowRef<TItem[]>([])
+
+// Не тригерит обновление — мутация внутреннего массива
+largeList.value.push(newItem)
+
+// Ручной тригер после мутации
+triggerRef(largeList)
+
+// Или замена целиком — тригерит автоматически
+largeList.value = [...largeList.value, newItem]
+```
+
+---
+
+## Компоненты — обязательные правила
+
+### Структура SFC
+
+```vue
+<script setup lang="ts">
+// 1. Импорты
+// 2. defineOptions / defineProps / defineEmits / defineModel / defineSlots
+// 3. Composables (useRouter, useI18n, useStore, ...)
+// 4. Ref / reactive / computed
+// 5. Watch / watchEffect
+// 6. Функции-обработчики
+// 7. Lifecycle hooks (onMounted, onUnmounted, ...)
+</script>
+
+<template>
+  <!-- HTML с BEM-классами -->
+</template>
+
+<style lang="scss" scoped>
+// BEM-стили
+</style>
+```
+
+### defineOptions — именование компонента
+
+```vue
+<script setup lang="ts">
+defineOptions({ name: 'TaskCard' })
+</script>
+```
+
+### defineSlots — типизация слотов
+
+```vue
+<script setup lang="ts" generic="TItem">
+defineSlots<{
+  default(props: { item: TItem; index: number }): void
+  header(): void
+  empty(): void
+}>()
+</script>
+```
+
+### provide / inject с InjectionKey
+
+```ts
+// keys.ts
+import type { InjectionKey, Ref } from 'vue'
+
+export const THEME_KEY: InjectionKey<Ref<string>> = Symbol('theme')
+
+// Provider.vue
+import { provide, ref } from 'vue'
+import { THEME_KEY } from './keys'
+
+const theme = ref('light')
+provide(THEME_KEY, theme)
+
+// Consumer.vue
+import { inject } from 'vue'
+import { THEME_KEY } from './keys'
+
+const theme = inject(THEME_KEY)
+```
+
+---
+
+## Оптимизация
+
+### v-once и v-memo
+
+```vue
+<template>
+  <!-- Рендерится один раз, больше не обновляется -->
+  <div v-once>{{ staticContent }}</div>
+
+  <!-- Перерендеривается только при изменении itemId -->
+  <div v-memo="[item.id]">
+    <HeavyComponent :data="item" />
+  </div>
+</template>
+```
+
+### defineAsyncComponent — ленивая загрузка
+
+```ts
+import { defineAsyncComponent } from 'vue'
+
+const HeavyModal = defineAsyncComponent(() =>
+  import('./components/HeavyModal.vue')
+)
+```
+
+### keep-alive
+
+```vue
+<template>
+  <keep-alive :include="['TaskList', 'TaskBoard']" :max="5">
+    <component :is="currentView" />
+  </keep-alive>
+</template>
+```
+
+---
+
+## VueUse — обязательные composables
+
+- **CRITICAL: Запрещено использовать `addEventListener` напрямую. Только composables из VueUse.**
+
+| Задача | VueUse composable |
+|--------|-------------------|
+| Подписка на DOM-события | `useEventListener` |
+| Отслеживание размеров | `useResizeObserver` |
+| Intersection Observer | `useIntersectionObserver` |
+| Debounce функции | `useDebounceFn` |
+| Throttle функции | `useThrottleFn` |
+| Клик вне элемента | `onClickOutside` |
+| v-model helper | `useVModel` |
+| Медиа-запросы | `useMediaQuery` |
+| LocalStorage / SessionStorage | `useLocalStorage`, `useSessionStorage` |
+| Infinite scroll | `useInfiniteScroll` |
+
+---
+
+## Стилизация
+
+- **CRITICAL: Все цвета из `front/src/styles/themes/_theme.scss`** (CSS-переменные: `$surface-primary`, `$background-main-primary` и т.д.).
+- **Типографика**: размеры и веса шрифтов из `front/src/styles/_variables.scss` (`$size-xs`, `$weight-bold` и т.д.).
+- **Hover**: использовать миксин `@include hover { ... }`.
+- **Scoped стили обязательны**: `<style lang="scss" scoped>`.
+- **BEM-методология**:
+
+```scss
+.task-card {
+  display: flex;
+
+  &__header {
+    font-size: $size-sm;
+    font-weight: $weight-semibold;
+  }
+
+  &__title {
+    color: $text-primary;
+  }
+
+  &--active {
+    border-color: $accent-brand-primary;
+  }
+}
+```
+
+---
+
+## Teleport и Suspense
+
+### Teleport — рендер в другое место DOM
+
+```vue
+<template>
+  <Teleport to="body">
+    <ModalOverlay v-if="isOpen" @close="isOpen = false" />
+  </Teleport>
+</template>
+```
+
+### Suspense — ожидание async-компонентов
+
+```vue
+<template>
+  <Suspense>
+    <template #default>
+      <AsyncDashboard />
+    </template>
+    <template #fallback>
+      <Loader />
+    </template>
+  </Suspense>
+</template>
+```
