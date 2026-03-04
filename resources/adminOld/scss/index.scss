@@ -1,0 +1,36 @@
+@use 'vuetify/styles';
+@forward './vuetify.scss';
+
+.admin-html {
+    overflow: hidden;
+
+    * {
+        &::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        &::-webkit-scrollbar-track {
+            background: rgba(var(--v-theme-on-surface), 0.05);
+            border-radius: 4px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: rgba(var(--v-theme-on-surface), 0.2);
+            border-radius: 4px;
+
+            &:hover {
+                background: rgba(var(--v-theme-on-surface), 0.3);
+            }
+
+            &:active {
+                background: rgba(var(--v-theme-primary), 0.6);
+            }
+        }
+    }
+
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(var(--v-theme-on-surface), 0.2) rgba(var(--v-theme-on-surface), 0.05);
+    }
+}

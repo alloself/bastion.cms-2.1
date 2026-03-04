@@ -1,0 +1,104 @@
+import type { QueryCache } from '@pinia/colada'
+import type { AuditModel, Link } from '@shared/types/models'
+import type { PartialDeep } from 'type-fest'
+import type { ComputedRef } from 'vue'
+import type { MaybeRefOrGetter } from 'vue'
+
+import type { IBSmartFormField } from '../components/BSmartForm'
+
+export type TAuditEvent = 'created' | 'updated' | 'deleted' | 'restored'
+
+export interface IAuditResolvedValue {
+    old?: string
+    new?: string
+}
+
+export type TAuditModelWithResolved = AuditModel & {
+    resolved_values?: Record<string, IAuditResolvedValue>
+}
+
+export interface IBaseEntity {
+    id?: string
+    audits?: TAuditModelWithResolved[]
+}
+
+
+export interface ILinkableEntity<T extends IBaseEntity = IBaseEntity> extends IBaseTreeEntity<T> {
+    link?: Link
+}
+
+export interface IBaseTreeEntity<T extends IBaseEntity = IBaseEntity> extends IBaseEntity {
+    children?: T[]
+    has_children: boolean | null
+    parent_id: string | null
+    parent?: T
+}
+
+export interface ITableHeader {
+    title: string
+    key: string
+    sortable?: boolean
+}
+
+export interface IModuleForm<T extends IBaseEntity> {
+    fields: ComputedRef<IBSmartFormField[]>
+    layout?: string
+    createInitialValues: () => PartialDeep<T>
+}
+
+export interface IModule<T extends IBaseEntity = IBaseEntity> {
+    key: string
+    title: string
+    icon?: string
+    to?: string
+    showInNavigation?: boolean
+    isDefault?: boolean
+    headers: ITableHeader[]
+    getDetailTabTitle(entity?: T | null): string
+    createForm: (entity?: MaybeRefOrGetter<T | undefined>) => IModuleForm<T>
+    relations?: {
+        list?: string[]
+        detail?: string[]
+    }
+    onEntityUpdate?: (entity: T, queryCache: QueryCache) => void
+}
+
+export type TUUID = `${string}-${string}-${string}-${string}-${string}`
+
+export interface ISortBy {
+    key: string
+    order: 'asc' | 'desc'
+}
+
+export interface IInfiniteQueryPage<T> {
+    data: T[]
+}
+
+export interface IInfiniteQueryData<T> {
+    pages: IInfiniteQueryPage<T>[]
+}
+
+export interface IServerDataList<T> {
+    data: T[]
+    links: {
+        first: string | null
+        last: string | null
+        prev: string | null
+        next: string | null
+    }
+    meta: {
+        current_page: number
+        from: number | null
+        last_page: number
+        links: Array<{
+            url: string | null
+            label: string
+            page: number | null
+            active: boolean
+        }>
+        path: string
+        per_page: number
+        to: number | null
+        total: number
+    }
+}
