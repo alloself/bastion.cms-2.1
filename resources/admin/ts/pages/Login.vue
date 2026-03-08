@@ -1,15 +1,14 @@
 <template>
     <VContainer class="h-full flex items-center justify-center" fluid>
         <VCard class="elevation-12 w-full max-w-[400px]" @keyup.enter="handler">
-            <VToolbar dark flat>
+            <VToolbar>
                 <BLogo />
                 <VToolbarTitle>Вход</VToolbarTitle>
                 <VSpacer></VSpacer>
             </VToolbar>
             <VCardText> </VCardText>
             <VCardActions>
-                <VSpacer></VSpacer>
-                <VBtn @click="handler" :loading="loading">Вход</VBtn>
+                <VBtn block variant="tonal" @click="handler" :loading="loading">Вход</VBtn>
             </VCardActions>
         </VCard>
     </VContainer>
