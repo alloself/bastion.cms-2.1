@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import { fileURLToPath, URL } from "node:url";
+import tailwindcss from "@tailwindcss/vite";
 import laravel from "laravel-vite-plugin";
 import vue from "@vitejs/plugin-vue";
 import vuetify, { transformAssetUrls } from "vite-plugin-vuetify";
@@ -24,9 +25,9 @@ export default defineConfig({
         hmr: { host: "localhost", port: 5174 },
     },
     plugins: [
+        tailwindcss(),
         laravel({
             input: [
-                "resources/admin/scss/index.scss",
                 "resources/admin/ts/index.ts",
             ],
             refresh: true,
@@ -35,21 +36,19 @@ export default defineConfig({
         }),
         vue({ template: { transformAssetUrls } }),
         vuetify({
+            autoImport: true,
             styles: {
-                configFile: "resources/admin/scss/vuetify.scss",
+                configFile: "resources/admin/styles/settings.scss",
             },
         }),
     ],
     optimizeDeps: {
-        exclude: ["vuetify", "vue-router",'monaco-editor'],
+        exclude: ["vuetify", "vue-router", "monaco-editor"],
     },
     resolve: {
         alias: {
             "@": fileURLToPath(new URL("./resources/admin", import.meta.url)),
             "@shared": fileURLToPath(new URL("./resources/shared", import.meta.url)),
         },
-    },
-    css: {
-        postcss: "./postcss.admin.config.ts",
     },
 });

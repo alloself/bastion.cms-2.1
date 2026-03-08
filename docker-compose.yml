@@ -75,13 +75,15 @@ services:
       - mysql
 
   node:
-    image: node:24-alpine
+    build:
+      context: .
+      dockerfile: docker/node/Dockerfile
     container_name: bastion_cms_2_1-node
     restart: unless-stopped
     working_dir: /var/www
-    user: "1000:1000"
     volumes:
       - ./:/var/www
+      - node_modules:/var/www/node_modules
     ports:
       - "5173:5173"
       - "5174:5174"
@@ -90,7 +92,7 @@ services:
     environment:
       CHOKIDAR_USEPOLLING: 1
       WATCHPACK_POLLING: true
-    command: sh -c "corepack enable && corepack prepare pnpm@10.31.0 --activate && pnpm install && pnpm run dev:all -- --host 0.0.0.0"
+    command: sh -c "pnpm install && pnpm run dev:all"
 
   redis:
     image: redis:7.4.3-alpine
@@ -107,4 +109,6 @@ networks:
 
 volumes:
   mysql_data:
+    driver: local
+  node_modules:
     driver: local

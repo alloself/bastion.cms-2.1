@@ -1,0 +1,143 @@
+# Vuetify 4 + TailwindCSS 4
+
+## Архитектура стилей
+
+Проект использует Vuetify 4 совместно с TailwindCSS 4. Ключевые файлы в `resources/admin/scss/`:
+
+| Файл | Назначение |
+|------|-----------|
+| `settings.scss` | SASS-конфигурация Vuetify (`@use 'vuetify/settings' with (...)`). Единственный файл с SCSS-синтаксисом. Используется `vite-plugin-vuetify` как `configFile`. |
+| `layers.scss` | Порядок CSS-слоёв (`@layer`). Импортируется в `plugins/vuetify.ts`. |
+| `tailwind.scss` | Bridge Vuetify ↔ TailwindCSS 4: маппинг `--v-theme-*` → Tailwind, брейкпоинты, кастомные утилиты. Импортируется в `ts/index.ts`. |
+| `index.scss` | Vuetify overrides в `@layer vuetify-overrides`. Импортируется в `ts/index.ts`. |
+
+---
+
+## CSS-слои (приоритет)
+
+```
+tailwind-theme < tailwind-reset < vuetify-core < vuetify-components
+  < vuetify-overrides < vuetify-utilities < tailwind-utilities < vuetify-final
+```
+
+`tailwind-utilities` побеждает компоненты Vuetify, `vuetify-final` имеет наивысший приоритет.
+
+---
+
+## Утилиты: только Tailwind
+
+- **CRITICAL: НЕ использовать Vuetify utility-классы** (`v-bg-primary`, `v-text-h1` и т.д.) — они отключены (`utilities: false`).
+- Для стилизации использовать только **Tailwind-утилиты**.
+
+```vue
+<!-- Плохо — Vuetify утилиты отключены -->
+<div class="v-bg-surface v-text-primary">...</div>
+
+<!-- Хорошо — Tailwind -->
+<div class="bg-surface text-on-surface">...</div>
+```
+
+---
+
+## Цвета темы
+
+Vuetify CSS-переменные (`--v-theme-*`) замаппены в Tailwind `@theme`:
+
+| Tailwind-класс | CSS-переменная Vuetify |
+|---|---|
+| `bg-primary` | `--v-theme-primary` |
+| `bg-surface` | `--v-theme-surface` |
+| `bg-background` | `--v-theme-background` |
+| `text-on-surface` | `--v-theme-on-surface` |
+| `bg-error` | `--v-theme-error` |
+| `bg-warning` | `--v-theme-warning` |
+| `bg-success` | `--v-theme-success` |
+| `bg-info` | `--v-theme-info` |
+
+---
+
+## Тёмная / светлая тема
+
+Кастомные варианты Tailwind на основе Vuetify-классов:
+
+```html
+<!-- Стиль применяется только в тёмной теме -->
+<div class="dark:bg-surface-variant">...</div>
+
+<!-- Стиль применяется только в светлой теме -->
+<div class="light:border-primary">...</div>
+```
+
+Варианты работают через `.v-theme--dark` / `.v-theme--light` классы на корневом `<v-app>`.
+
+---
+
+## Брейкпоинты
+
+Брейкпоинты Vuetify и Tailwind синхронизированы:
+
+| Имя | Значение |
+|-----|---------|
+| `xs` | 0px |
+| `sm` | 600px |
+| `md` | 840px |
+| `lg` | 1145px |
+| `xl` | 1545px |
+| `xxl` | 2138px |
+
+```html
+<!-- Tailwind responsive-префиксы работают с Vuetify-брейкпоинтами -->
+<div class="md:flex lg:grid">...</div>
+```
+
+---
+
+## Кастомные утилиты
+
+### Elevation (MD3)
+
+```html
+<div class="elevation-0"><!-- без тени --></div>
+<div class="elevation-1"><!-- тень 1 --></div>
+<!-- elevation-0 ... elevation-5 -->
+<div class="elevation-overlay"><!-- overlay эффект --></div>
+```
+
+### Border-radius
+
+```html
+<div class="rounded-pill"><!-- border-radius: 9999px --></div>
+<div class="rounded-circle"><!-- border-radius: 50% --></div>
+<div class="rounded-shaped"><!-- border-radius: 24px 0 --></div>
+```
+
+---
+
+## Vuetify overrides
+
+Для переопределения стилей Vuetify-компонентов использовать `@layer vuetify-overrides` в `scss/index.scss`:
+
+```scss
+@layer vuetify-overrides {
+  .v-btn {
+    text-transform: none;
+  }
+}
+```
+
+---
+
+## Иконки
+
+MDI иконки через `@mdi/font`:
+
+```vue
+<v-icon icon="mdi-home" />
+<v-btn prepend-icon="mdi-plus">Добавить</v-btn>
+```
+
+---
+
+## Регистрация плагинов
+
+Vuetify, Pinia и Router регистрируются через `registerPlugins()` в `ts/app/plugins/index.ts`. Не вызывать `.use(vuetify)` / `.use(pinia)` вручную в других местах.
