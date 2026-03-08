@@ -29,6 +29,7 @@ export default defineConfig({
         laravel({
             input: [
                 'resources/admin/styles/layers.css',
+                'resources/admin/styles/tailwind.css',
                 'resources/admin/styles/index.scss',
                 'resources/admin/ts/index.ts',
             ],

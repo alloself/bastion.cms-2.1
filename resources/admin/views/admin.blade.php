@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Bastion.CMS</title>
-    {{ Vite::useHotFile(storage_path('framework/vite.admin.hot'))->useBuildDirectory('build/admin')->withEntryPoints(['resources/admin/styles/layers.css', 'resources/admin/styles/index.scss', 'resources/admin/ts/index.ts']) }}
+    {{ Vite::useHotFile(storage_path('framework/vite.admin.hot'))->useBuildDirectory('build/admin')->withEntryPoints(['resources/admin/styles/layers.css', 'resources/admin/styles/tailwind.css', 'resources/admin/styles/index.scss', 'resources/admin/ts/index.ts']) }}
 </head>
 
 <body>
