@@ -1,5 +1,1 @@
-export { installPlugins } from "./plugins";
-export {
-    handleAuthError,
-    handleUnprocessableEntityError,
-} from "./api";
+export { default as App } from './componets/App.vue'

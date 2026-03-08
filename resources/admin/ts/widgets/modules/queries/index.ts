@@ -1,1 +1,0 @@
-export { useModuleListQuery } from "./list";

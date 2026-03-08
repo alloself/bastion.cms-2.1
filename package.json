@@ -3,20 +3,21 @@
     "private": true,
     "type": "module",
     "name": "bastion.cms-2.1",
+    "packageManager": "pnpm@10.31.0",
     "scripts": {
         "dev:site": "vite --config vite.site.config.ts",
         "dev:admin": "vite --config vite.admin.config.ts",
         "build:site": "vite build --config vite.site.config.ts",
         "build:admin": "vite build --config vite.admin.config.ts",
-        "dev:all": "concurrently -k -n site,admin -c yellow,cyan \"npm:dev:site\" \"npm:dev:admin\"",
+        "dev:all": "concurrently -k -n site,admin -c yellow,cyan \"pnpm:dev:site\" \"pnpm:dev:admin\"",
         "format": "prettier --write \"resources/**/*.{ts,vue,scss,css}\"",
         "format:check": "prettier --check \"resources/**/*.{ts,vue,scss,css}\""
     },
     "devDependencies": {
-        "@pinia/colada-devtools": "^0.4.4",
+        "@pinia/colada-devtools": "^0.4.5",
         "@trivago/prettier-plugin-sort-imports": "^6.0.2",
         "@types/lodash": "^4.17.24",
-        "@types/node": "^25.3.3",
+        "@types/node": "^25.3.5",
         "@vitejs/plugin-vue": "^6.0.4",
         "@vue/tsconfig": "^0.9.0",
         "concurrently": "^9.2.1",
@@ -32,8 +33,8 @@
     },
     "dependencies": {
         "@mdi/font": "^7.4.47",
-        "@pinia/colada": "^0.21.7",
-        "@pinia/colada-plugin-cache-persister": "^0.1.3",
+        "@pinia/colada": "^1.0.0",
+        "@pinia/colada-plugin-cache-persister": "^0.1.4",
         "@vueuse/core": "^14.2.1",
         "axios": "^1.13.6",
         "idb-keyval": "^6.2.2",
@@ -48,6 +49,9 @@
         "zod": "^4.3.6"
     },
     "overrides": {
-        "@pinia/colada": "^0.21.7"
+        "@pinia/colada": "^1.0.0"
+    },
+    "pnpm": {
+        "onlyBuiltDependencies": ["@parcel/watcher", "esbuild"]
     }
 }

@@ -1,27 +1,10 @@
-import { isCacheReady } from '@pinia/colada-plugin-cache-persister'
 import { createApp } from 'vue'
+import { App } from './app'
 
-import { handleAuthError, handleUnprocessableEntityError, installPlugins } from '@/ts/app'
-import App from '@/ts/app/App.vue'
-import { configureClient, getCSRFToken } from '@/ts/shared'
-
-const bootstrapAdminApp = async () => {
-    const container = document.getElementById('admin-app')
-    if (!container) {
-        return
-    }
-
-    await getCSRFToken()
-
-    configureClient({
-        error: [handleAuthError, handleUnprocessableEntityError],
-    })
-
+const mountAdminApp = async () => {
     const app = createApp(App)
 
-    installPlugins(app)
-    // await isCacheReady()
-    app.mount(container)
+    app.mount('#admin-app')
 }
 
-window.addEventListener('DOMContentLoaded', bootstrapAdminApp)
+window.addEventListener('DOMContentLoaded', mountAdminApp)

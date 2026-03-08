@@ -1,1 +1,0 @@
-export { client, getCSRFToken, configureClient } from "./client";
