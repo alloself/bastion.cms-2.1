@@ -181,7 +181,13 @@ largeList.value = [...largeList.value, newItem]
 
 ### Структура SFC
 
+- **CRITICAL: `<template>` всегда идёт первым блоком в SFC**, затем `<script setup>`, затем `<style>`.
+
 ```vue
+<template>
+  <!-- HTML с BEM-классами -->
+</template>
+
 <script setup lang="ts">
 // 1. Импорты
 // 2. defineOptions / defineProps / defineEmits / defineModel / defineSlots
@@ -192,10 +198,6 @@ largeList.value = [...largeList.value, newItem]
 // 7. Lifecycle hooks (onMounted, onUnmounted, ...)
 </script>
 
-<template>
-  <!-- HTML с BEM-классами -->
-</template>
-
 <style lang="scss" scoped>
 // BEM-стили
 </style>
@@ -203,9 +205,18 @@ largeList.value = [...largeList.value, newItem]
 
 ### defineOptions — именование компонента
 
+- **CRITICAL: Не использовать `defineOptions({ name })`, если он содержит только `name`.** Имя компонента выводится автоматически из имени файла.
+- `defineOptions` применяется только когда нужно задать дополнительные опции: `inheritAttrs`, `customOptions` и т.д.
+
 ```vue
+<!-- Плохо — только name, не нужен -->
 <script setup lang="ts">
 defineOptions({ name: 'TaskCard' })
+</script>
+
+<!-- Хорошо — есть дополнительная опция помимо name -->
+<script setup lang="ts">
+defineOptions({ inheritAttrs: false })
 </script>
 ```
 
