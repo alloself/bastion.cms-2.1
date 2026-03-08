@@ -1,7 +1,9 @@
 <template>
     <VApp>
-        <RouterView v-slot="{ Component }">
-            <component :is="Component" />
-        </RouterView>
+        <VMain>
+            <RouterView v-slot="{ Component }">
+                <component :is="Component" />
+            </RouterView>
+        </VMain>
     </VApp>
 </template>

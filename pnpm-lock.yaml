@@ -8,6 +8,12 @@ importers:
 
   .:
     dependencies:
+      '@fontsource/roboto':
+        specifier: ^5.2.10
+        version: 5.2.10
+      '@fontsource/roboto-mono':
+        specifier: ^5.2.8
+        version: 5.2.8
       '@mdi/font':
         specifier: ^7.4.47
         version: 7.4.47
@@ -306,6 +312,12 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
+
+  '@fontsource/roboto-mono@5.2.8':
+    resolution: {integrity: sha512-M0XPRcvkOKiTPooXwX7yJSNpuad3CPcQwsADBfnopz3apBs+VKI47pc42mlvAxJjNTRauu5rndSxHc8F52bR7Q==}
+
+  '@fontsource/roboto@5.2.10':
+    resolution: {integrity: sha512-8HlA5FtSfz//oFSr2eL7GFXAiE7eIkcGOtx7tjsLKq+as702x9+GU7K95iDeWFapHC4M2hv9RrpXKRTGGBI8Zg==}
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -1790,6 +1802,10 @@ snapshots:
 
   '@esbuild/win32-x64@0.27.3':
     optional: true
+
+  '@fontsource/roboto-mono@5.2.8': {}
+
+  '@fontsource/roboto@5.2.10': {}
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:

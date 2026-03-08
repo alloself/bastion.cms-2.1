@@ -35,6 +35,8 @@
         "vue-tsc": "^3.2.5"
     },
     "dependencies": {
+        "@fontsource/roboto": "^5.2.10",
+        "@fontsource/roboto-mono": "^5.2.8",
         "@mdi/font": "^7.4.47",
         "@pinia/colada": "^1.0.0",
         "@pinia/colada-plugin-cache-persister": "0.1.4",
