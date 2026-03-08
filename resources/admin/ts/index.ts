@@ -1,8 +1,8 @@
 import { createApp } from 'vue'
-import { App } from './app'
-import { registerPlugins } from './app/plugins'
 
-const mountAdminApp = async () => {
+import { App, registerPlugins } from './app'
+
+const mountAdminApp = () => {
     const app = createApp(App)
 
     registerPlugins(app)
