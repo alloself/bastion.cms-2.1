@@ -1,7 +1,7 @@
 <template>
     <VContainer class="h-full flex items-center justify-center" fluid>
         <VCard class="elevation-12 w-full max-w-[400px]" @keyup.enter="handler">
-            <VToolbar>
+            <VToolbar density="compact">
                 <BLogo />
                 <VToolbarTitle>Вход</VToolbarTitle>
                 <VSpacer></VSpacer>
