@@ -1,6 +1,19 @@
-import { routeNames } from '@/ts/shared/const';
+import type { RouteRecordRaw } from 'vue-router'
+import { routeNames } from '@/ts/shared/const'
 
-export const routes = [
+declare module 'vue-router' {
+    interface RouteMeta {
+        requiresAuth?: boolean
+    }
+}
+
+export const routes: RouteRecordRaw[] = [
+    {
+        path: '/',
+        name: routeNames.Authenticated,
+        component: () => import('@/ts/layouts/Authenticated.vue'),
+        meta: { requiresAuth: true },
+    },
     {
         path: '/login',
         name: routeNames.Login,

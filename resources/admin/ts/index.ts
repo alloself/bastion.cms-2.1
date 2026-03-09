@@ -1,11 +1,25 @@
+import { useQueryCache } from '@pinia/colada'
 import { createApp } from 'vue'
 
-import { App, registerPlugins } from './app'
+import { App, registerPlugins } from '@/ts/app'
+import router from '@/ts/app/router'
+import { setupGuards } from '@/ts/app/router/guards'
+import { authErrorHandler } from '@/ts/features/auth/api/interceptors'
+import { configureClient, getCSRFToken } from '@/ts/shared/api'
 
-const mountAdminApp = () => {
+const mountAdminApp = async () => {
+    await getCSRFToken()
+
     const app = createApp(App)
-
     registerPlugins(app)
+    
+    const queryCache = useQueryCache()
+
+    setupGuards(queryCache, router)
+
+    configureClient({
+        error: [authErrorHandler(router, queryCache)],
+    })
 
     app.mount('#admin-app')
 }
