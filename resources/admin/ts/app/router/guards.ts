@@ -8,45 +8,32 @@ const getCurrentUser = (queryCache: QueryCache) => {
     return queryCache.getQueryData(currentUserQuery.key)
 }
 
-export const ensureCurrentUserLoaded = async (queryCache: QueryCache) => {
-    const entry = queryCache.ensure(currentUserQuery)
-
-    await queryCache.refresh(entry)
-}
-
-export const resolveProtectedRouteGuard = (to: RouteLocationNormalized, queryCache: QueryCache) => {
-    if (to.meta.requiresAuth && !getCurrentUser(queryCache)) {
-        return { name: routeNames.Login, query: { redirect: to.fullPath } }
-    }
-
-    return true
-}
-
-export const resolveLoginRouteGuard = (to: RouteLocationNormalized, queryCache: QueryCache) => {
-    if (to.name === routeNames.Login && getCurrentUser(queryCache)) {
-        return { name: routeNames.Authenticated }
-    }
-
-    return true
-}
-
 export const setupGuards = (queryCache: QueryCache, router: Router) => {
     const guards = [
         {
             handler: async () => {
-                await ensureCurrentUserLoaded(queryCache)
+                const existingEntry = queryCache.get(currentUserQuery.key)
+
+                if (existingEntry?.state?.value?.status === 'error') {
+                    return true
+                }
+
+                try {
+                    await queryCache.refresh(queryCache.ensure(currentUserQuery))
+                } catch {
+                    return true
+                }
 
                 return true
             },
         },
         {
             handler: async (to: RouteLocationNormalized) => {
-                return resolveLoginRouteGuard(to, queryCache)
-            },
-        },
-        {
-            handler: async (to: RouteLocationNormalized) => {
-                return resolveProtectedRouteGuard(to, queryCache)
+                if (to.name === routeNames.Login && getCurrentUser(queryCache)) {
+                    return { name: routeNames.Authenticated }
+                }
+
+                return true
             },
         },
     ]

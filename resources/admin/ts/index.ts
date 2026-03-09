@@ -12,14 +12,14 @@ const mountAdminApp = async () => {
 
     const app = createApp(App)
     registerPlugins(app)
-    
-    const queryCache = useQueryCache()
 
-    setupGuards(queryCache, router)
+    const queryCache = useQueryCache()
 
     configureClient({
         error: [authErrorHandler(router, queryCache)],
     })
+
+    setupGuards(queryCache, router)
 
     app.mount('#admin-app')
 }
