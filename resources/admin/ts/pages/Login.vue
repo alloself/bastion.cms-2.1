@@ -6,7 +6,14 @@
                 <VToolbarTitle>Вход</VToolbarTitle>
                 <VSpacer></VSpacer>
             </VToolbar>
-            <VCardText> </VCardText>
+            <VCardText>
+                <BSmartForm
+                    :fields="fields"
+                    :initial-values="initialValues"
+                    v-model:form="form"
+                    :loading="loading"
+                />
+            </VCardText>
             <VCardActions>
                 <VBtn block variant="tonal" @click="handler" :loading="loading">Вход</VBtn>
             </VCardActions>
@@ -15,13 +22,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import type { FormContext } from 'vee-validate'
+import { ref, shallowRef } from 'vue'
 
-import { BLogo } from '@/ts/shared/components'
+import { BLogo, BSmartForm } from '@/ts/shared/components'
+
+import { type LoginFormValues, useLoginFormFields } from '../features/auth'
 
 const loading = ref(false)
+
+const { fields } = useLoginFormFields()
+
+const form = shallowRef<FormContext<LoginFormValues, LoginFormValues>>()
 
 const handler = () => {
     console.log('handler')
 }
+
+const initialValues =
+    import.meta.env.MODE === 'development'
+        ? {
+              email: 'root@example.com',
+              password: 'password',
+          }
+        : undefined
+
+
 </script>
